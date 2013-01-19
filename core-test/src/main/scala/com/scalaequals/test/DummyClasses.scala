@@ -21,7 +21,7 @@ class Dummy(
   protected def o: Int = i
   private def p: Int = j
 
-  override def equals(other: Any): Boolean = Equals.equal[Dummy](other)
+  override def equals(other: Any): Boolean = Equals.equal(other)
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[Dummy]
 
@@ -42,7 +42,7 @@ class DummySub(
   override val h: Int = b
   override def o: Int = a
 
-  override def equals(other: Any): Boolean = Equals.equal[DummySub](other)
+  override def equals(other: Any): Boolean = Equals.equal(other)
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[DummySub]
 
@@ -68,7 +68,7 @@ class DummyC(
   protected def o: Int = i
   private def p: Int = j
 
-  override def equals(other: Any): Boolean = Equals.equalC[DummyC](other)
+  override def equals(other: Any): Boolean = Equals.equalC(other)
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[DummyC]
 
@@ -89,7 +89,7 @@ class DummyCSub(
   override val h: Int = b
   override def o: Int = a
 
-  override def equals(other: Any): Boolean = Equals.equalC[DummyCSub](other)
+  override def equals(other: Any): Boolean = Equals.equalC(other)
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[DummyCSub]
 
@@ -115,7 +115,7 @@ class DummyParams(
   protected def o: Int = i
   private def p: Int = j
 
-  override def equals(other: Any): Boolean = Equals.equal[DummyParams](other, b, c, e, f, k)
+  override def equals(other: Any): Boolean = Equals.equal(other, b, c, e, f, k)
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[DummyParams]
 
@@ -136,7 +136,7 @@ class DummyParamsSub(
   override val h: Int = b
   override def o: Int = a
 
-  override def equals(other: Any): Boolean = Equals.equal[DummyParamsSub](other, a, b, h, x, y)
+  override def equals(other: Any): Boolean = Equals.equal(other, a, b, h, x, y)
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[DummyParamsSub]
 
