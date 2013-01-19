@@ -90,6 +90,7 @@ object EqualsImpl {
       }
 
       def createCondition(values: Seq[TermSymbol]): c.Expr[Boolean] = {
+        c.enclosingMethod.updateAttachment[Seq[TermSymbol]](values)
         val termEquals = (values map createTermEquals).toList
         val and = (hasCanEqual, hasSuperClassWithEquals) match {
           case (true, true) => createNestedAnd(createCanEqual() :: createSuperEquals() :: termEquals)
@@ -103,7 +104,6 @@ object EqualsImpl {
       }
 
       def make(): c.Expr[Boolean] = {
-        c.enclosingClass
         val values = selfTpe.members filter {_.isTerm} map {_.asTerm} filter
           {m => m.isVal && !m.getter.isInstanceOf[Symbols#NoSymbol]}
         createCondition(values.toSeq.reverse)

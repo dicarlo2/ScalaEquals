@@ -34,4 +34,6 @@ object Equals {
    * @return true if instance.equals(other)
    */
   def equal(other: Any, param: Any, params: Any*): Boolean = macro EqualsImpl.equalParamImpl
+
+  def hash: Int = macro HashImpl.hash
 }
