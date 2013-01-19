@@ -4,14 +4,15 @@ import reflect.macros.Context
 import reflect.internal.Symbols
 import scala.language.experimental.macros
 
-object Equals {
-  def equal[T](other: Any): Boolean = macro equalImpl[T]
-
-  def equal[T](other: Any, param: Any, params: Any*): Boolean = macro equalParamImpl[T]
-
+object EqualsImpl {
   def equalImpl[T: c.WeakTypeTag](c: Context)(other: c.Expr[Any]): c.Expr[Boolean] = {
     val eqm = new EqualsMaker[c.type](c)
     new eqm.EqualsMakerInner[T](other).make()
+  }
+
+  def equalCImpl[T: c.WeakTypeTag](c: Context)(other: c.Expr[Any]): c.Expr[Boolean] = {
+    val eqm = new EqualsMaker[c.type](c)
+    new eqm.EqualsMakerInner[T](other).makeC()
   }
 
   def equalParamImpl[T: c.WeakTypeTag](c: Context)
@@ -65,36 +66,21 @@ object Equals {
       }
 
       def make(): c.Expr[Boolean] = {
-        val values = c.weakTypeTag[T].tpe.members filter {_.isTerm} map {_.asTerm} filter {_.isVal}
-        createCondition(values.toSeq)
+        val values = c.weakTypeTag[T].tpe.members filter {_.isTerm} map {_.asTerm} filter
+          {m => m.isVal && !m.getter.isInstanceOf[Symbols#NoSymbol]}
+        createCondition(values.toSeq.reverse)
+      }
+
+      def makeC(): c.Expr[Boolean] = {
+        val values = c.weakTypeTag[T].tpe.members filter {_.isTerm} map {_.asTerm} filter
+          {m => m.isVal && m.isParamAccessor && !m.getter.isInstanceOf[Symbols#NoSymbol]}
+        createCondition(values.toSeq.reverse)
       }
 
       def make(params: Seq[c.Expr[Any]]): c.Expr[Boolean] = {
         val terms = params map {_.tree.symbol.asTerm}
-        createCondition(terms)
+        createCondition(terms, hasSuperClassWithEquals)
       }
     }
   }
 }
-//
-//class Test1(val x: Int) {
-//  override def equals(other: Any): Boolean = Equals.equal[Test1](other, x)
-//
-//  def canEqual(other: Any): Boolean = other.isInstanceOf[Test1]
-//}
-//
-//// value <none> is not a member of Test2
-//class Test2(override val x: Int, val y: Int) extends Test1(x) {
-//  override def equals(other: Any): Boolean = Equals.equal[Test2](other, x, y)
-//
-//  override def canEqual(other: Any): Boolean = other.isInstanceOf[Test2]
-//}
-//
-//object hello {
-//  val test1 = new Test1(1)
-//  val test11 = new Test1(1)
-//  val test111 = new Test1(2)
-//  val test2 = new Test2(1, 2)
-//  val test22 = new Test2(1, 2)
-//  val test222 = new Test2(2, 2)
-//}
