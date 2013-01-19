@@ -23,7 +23,6 @@ object EqualsImpl {
 
   private[EqualsImpl] class EqualsMaker[C <: Context](val c: C) {
     class EqualsMakerInner(other: c.Expr[Any]) {
-
       import c.universe._
 
       private val selfSymbol: Symbol = c.enclosingClass.symbol
@@ -41,9 +40,19 @@ object EqualsImpl {
       def createCanEqual(): Apply =
         Apply(Select(Ident(newTermName("that")), newTermName("canEqual")), List(This(tpnme.EMPTY)))
 
-      def createTermEquals(term: c.universe.TermSymbol): Apply =
-        Apply(Select(Select(Ident(newTermName("that")), term.getter), newTermName("$eq$eq")),
-          List(Select(This(tpnme.EMPTY), term.getter)))
+      def createTermEquals(term: TermSymbol): Apply = {
+        def createEquals(term: Symbol): Apply =
+          Apply(
+            Select(
+              Select(
+                Ident(newTermName("that")),
+                term),
+              newTermName("$eq$eq")),
+            List(
+              Select(This(tpnme.EMPTY), term))
+          )
+        if (term.isMethod) createEquals(term) else createEquals(term.getter)
+      }
 
       def createAnd(left: Apply): Select = Select(left, newTermName("$amp$amp"))
 
@@ -53,17 +62,35 @@ object EqualsImpl {
       }
 
       def createSuperEquals(): Apply =
-        Apply(Select(Super(This(tpnme.EMPTY), tpnme.EMPTY), newTermName("equals")), List(Ident(newTermName("that"))))
+        Apply(
+          Select(
+            Super(This(tpnme.EMPTY), tpnme.EMPTY),
+            newTermName("equals")),
+          List(
+            Ident(newTermName("that")))
+        )
 
       def createMatch(condition: Apply): Match = {
-        Match(Ident(other.tree.symbol.asTerm), List(
-          CaseDef(Bind(newTermName("that"), Typed(Ident(nme.WILDCARD), Ident(selfSymbol))), condition),
-          CaseDef(Ident(nme.WILDCARD), EmptyTree, Literal(Constant(false)))
+        Match(
+          Ident(other.tree.symbol.asTerm),
+          List(
+            CaseDef(
+              Bind(
+                newTermName("that"),
+                Typed(
+                  Ident(nme.WILDCARD),
+                  Ident(selfSymbol))),
+              condition),
+            CaseDef(
+              Ident(nme.WILDCARD),
+              EmptyTree,
+              Literal(Constant(false))
+            )
         ))
       }
 
       def createCondition(values: Seq[TermSymbol]): c.Expr[Boolean] = {
-        val termEquals = (values map {createTermEquals(_)}).toList
+        val termEquals = (values map createTermEquals).toList
         val and = (hasCanEqual, hasSuperClassWithEquals) match {
           case (true, true) => createNestedAnd(createCanEqual() :: createSuperEquals() :: termEquals)
           case (false, true) => createNestedAnd(createSuperEquals() :: termEquals)
@@ -89,8 +116,8 @@ object EqualsImpl {
       }
 
       def make(params: Seq[c.Expr[Any]]): c.Expr[Boolean] = {
-        val terms = params map {_.tree.symbol.asTerm}
-        createCondition(terms)
+        val values = params map {_.tree.symbol.asTerm}
+        createCondition(values)
       }
     }
   }
