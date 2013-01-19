@@ -54,7 +54,7 @@ object EqualsImpl {
 
       def createCondition(values: Seq[TermSymbol], superEquals: Boolean = false): c.Expr[Boolean] = {
         val termEquals = (values map {createTermEquals(_)}).toList
-        val terms = if (superEquals) createSuperEquals() :: termEquals else termEquals
+        val terms = if (hasSuperClassWithEquals) createSuperEquals() :: termEquals else termEquals
         val and = if (hasCanEqual) createNestedAnd(createCanEqual() :: terms) else createNestedAnd(terms)
         val eqExpr = c.Expr[Boolean](and)
         reify {
@@ -74,7 +74,7 @@ object EqualsImpl {
       def makeC(): c.Expr[Boolean] = {
         val values = c.weakTypeTag[T].tpe.members filter {_.isTerm} map {_.asTerm} filter
           {m => m.isVal && m.isParamAccessor && !m.getter.isInstanceOf[Symbols#NoSymbol]}
-        createCondition(values.toSeq.reverse)
+        createCondition(values.toSeq.reverse, hasSuperClassWithEquals)
       }
 
       def make(params: Seq[c.Expr[Any]]): c.Expr[Boolean] = {

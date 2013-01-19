@@ -9,12 +9,13 @@ object BuildSettings {
     organization := "org.scalaequals",
     version := buildVersion,
     scalaVersion := buildScalaVersion,
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Ymacro-debug-lite")
   )
 }
 
 object Dependencies {
   val scalatest =  "org.scalatest" %% "scalatest" % "2.0.M5b"
+  val scalacheck = "org.scalacheck" %% "scalacheck" % "1.10.0"
   val reflect = "org.scala-lang" % "scala-reflect" % BuildSettings.buildScalaVersion
 }
 
@@ -40,6 +41,6 @@ object ScalaEqualsBuild extends Build {
     base = file("core-test"),
     settings = buildSettings ++ Seq(
       name := "ScalaEquals Core Tests",
-      libraryDependencies ++= Seq(scalatest)
+      libraryDependencies ++= Seq(scalatest, scalacheck)
     )) dependsOn(core)
 }
