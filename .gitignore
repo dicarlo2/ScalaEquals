@@ -1,0 +1,9 @@
+*.iml
+.idea/
+*/gen/*
+*/target/*
+*/tmp/*
+*/out/*
+out/
+target/
+lib/
