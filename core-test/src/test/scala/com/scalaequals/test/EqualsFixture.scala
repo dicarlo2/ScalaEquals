@@ -16,7 +16,7 @@ trait EqualsFixture[T] extends FeatureSpec with
   def subClassName: String = ""
   def subClassGen: Option[Gen[_ <: T]] = None
 
-  feature("Equals is Reflexive") {
+  feature("ScalaEquals is Reflexive") {
     scenario(s"$name") {
       Given("any non-null value x")
       When("x.equals(x)")
@@ -27,7 +27,7 @@ trait EqualsFixture[T] extends FeatureSpec with
     }
   }
 
-  feature("Equals is Symmetric") {
+  feature("ScalaEquals is Symmetric") {
     def checkSymmetric(name: String, gen: Gen[List[T]]) {
       scenario(s"$name") {
         Given("any non-null values x and y")
@@ -57,7 +57,7 @@ trait EqualsFixture[T] extends FeatureSpec with
       checkSymmetric(s"$name and $subClassName", Gen.sequence[List, T](Seq(classGen, subClassGen.get)))
   }
 
-  feature("Equals is Transitive") {
+  feature("ScalaEquals is Transitive") {
     def checkTransProp(x: T, y: T, z: T) {
       if (x.equals(y) && y.equals(z))
         x.equals(z) should be(true)
@@ -89,7 +89,7 @@ trait EqualsFixture[T] extends FeatureSpec with
       checkTransitive(s"$name and $subClassName", Gen.containerOfN[List, T](3, Gen.oneOf[T](classGen, subClassGen.get)))
   }
 
-  feature("Equals with null") {
+  feature("ScalaEquals with null") {
     scenario(s"$name") {
       Given("any non-null value x")
       When("x.equals(null)")
@@ -100,7 +100,7 @@ trait EqualsFixture[T] extends FeatureSpec with
     }
   }
 
-  feature("Equals is consistent with hashCode") {
+  feature("ScalaEquals is consistent with hashCode") {
     scenario(s"Equal pairs of $name") {
       Given("any non-null values x and y")
       When("x.equals(y) returns true")

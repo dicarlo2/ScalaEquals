@@ -9,9 +9,9 @@ import scala.language.experimental.macros
   * {{{
   *   class Test(x: Int, val y: Int, private val z: Int, var a: Int) {
   *     val w: Int = x * z      // Ignored by equalAllVals
-  *     override def equals(other: Any) = Equals.equal(other)
-  *     override def hashCode() = Equals.hash
-  *     def canEqual(other: Any) = Equals.canEqual(other)
+  *     override def equals(other: Any) = ScalaEquals.equal(other)
+  *     override def hashCode() = ScalaEquals.hash
+  *     def canEqual(other: Any) = ScalaEquals.canEqual(other)
   *   }
   *
   *   new Test(0, 1, 2, 3) == new Test(1, 1, 2, 4) // true -> y == y and z == z
@@ -24,9 +24,9 @@ import scala.language.experimental.macros
   *   class Test(x: Int, val y: Int, private val z: Int, var a: Int) {
   *     val w: Int = x * z
   *     def q: Int = x        // Ignored by equalAllVals
-  *     override def equals(other: Any) = Equals.equalAllVals(other)
-  *     override def hashCode() = Equals.hash
-  *     def canEqual(other: Any) = Equals.canEqual(other)
+  *     override def equals(other: Any) = ScalaEquals.equalAllVals(other)
+  *     override def hashCode() = ScalaEquals.hash
+  *     def canEqual(other: Any) = ScalaEquals.canEqual(other)
   *   }
   *
   *   new Test(0, 1, 2, 3) == new Test(1, 1, 2, 4) // false -> y == y and z == z and w != w
@@ -38,9 +38,9 @@ import scala.language.experimental.macros
   * {{{
   *   class Test(x: Int, val y: Int, private val z: Int, var a: Int) {
   *     def w: Int = x * z
-  *     override def equals(other: Any) = Equals.equal(other, w, z)
-  *     override def hashCode() = Equals.hash
-  *     def canEqual(other: Any) = Equals.canEqual(other)
+  *     override def equals(other: Any) = ScalaEquals.equal(other, w, z)
+  *     override def hashCode() = ScalaEquals.hash
+  *     def canEqual(other: Any) = ScalaEquals.canEqual(other)
   *   }
   *
   *   new Test(1, 2, 2, 3) == new Test(1, 1, 2, 4) // false -> w == w and a != a
@@ -48,7 +48,7 @@ import scala.language.experimental.macros
   * }}}
   *
   */
-object Equals {
+object ScalaEquals {
   /**
    * Equality check using all private/protected/public/lazy vals of the class
    * defined in the constructor
@@ -73,7 +73,7 @@ object Equals {
    * {{{
    * final class Test(val x: Int, var y: Int) {
    *   def z: Int
-   *   override def equals(other: Any): Boolean = Equals.equal(other, y, z)
+   *   override def equals(other: Any): Boolean = ScalaEquals.equal(other, y, z)
    * }
    * }}}
    *
@@ -92,10 +92,10 @@ object Equals {
   /**
    * Looks up the elements tested in `equals` (including `super.equals`) and uses them
    * in `java.util.Objects.hash(elements)`. Works with all 3 forms of `equal`. Does not
-   * work with custom `equals` implementations, one of `Equals.equal(other)`,
-   * `Equals.equal(other, params)`, or `Equals.equal(other)` must be used
+   * work with custom `equals` implementations, one of `ScalaEquals.equal(other)`,
+   * `ScalaEquals.equal(other, params)`, or `ScalaEquals.equal(other)` must be used
    *
-   * MUST BE CALLED AFTER `Equals.equal` IN THE CLASS DEFINITION.
+   * MUST BE CALLED AFTER `ScalaEquals.equal` IN THE CLASS DEFINITION.
    *
    * @return hashCode generated from fields used in `equals`
    */
