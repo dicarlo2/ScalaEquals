@@ -1,6 +1,28 @@
-package com.scalaequals.test
+/*
+ * Copyright (c) 2013 Alex DiCarlo
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
-import com.scalaequals.ScalaEquals
+package org.scalaequals.test
+
+import org.scalaequals.ScalaEquals
 
 class Dummy(
     a: Int,
@@ -26,7 +48,7 @@ class Dummy(
 
   override def equals(other: Any): Boolean = ScalaEquals.equalAllVals(other)
 
-  def canEqual(other: Any): Boolean = ScalaEquals.canEqual(other)
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
 
   override def hashCode: Int = ScalaEquals.hash
 
@@ -50,7 +72,7 @@ class DummySub(
 
   override def equals(other: Any): Boolean = ScalaEquals.equalAllVals(other)
 
-  override def canEqual(other: Any): Boolean = ScalaEquals.canEqual(other)
+  override def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
 
   override def hashCode: Int = ScalaEquals.hash
 
@@ -81,7 +103,7 @@ class DummyC(
 
   override def equals(other: Any): Boolean = ScalaEquals.equal(other)
 
-  def canEqual(other: Any): Boolean = ScalaEquals.canEqual(other)
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
 
   override def hashCode: Int = ScalaEquals.hash
 
@@ -105,7 +127,7 @@ class DummyCSub(
 
   override def equals(other: Any): Boolean = ScalaEquals.equal(other)
 
-  override def canEqual(other: Any): Boolean = ScalaEquals.canEqual(other)
+  override def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
 
   override def hashCode: Int = ScalaEquals.hash
 
@@ -136,7 +158,7 @@ class DummyParams(
 
   override def equals(other: Any): Boolean = ScalaEquals.equal(other, b, c, e, f, k, n, o, p, q, r, s)
 
-  def canEqual(other: Any): Boolean = ScalaEquals.canEqual(other)
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
 
   override def hashCode: Int = ScalaEquals.hash
 
@@ -160,7 +182,7 @@ class DummyParamsSub(
 
   override def equals(other: Any): Boolean = ScalaEquals.equal(other, a, b, h, x, y, o, c)
 
-  override def canEqual(other: Any): Boolean = ScalaEquals.canEqual(other)
+  override def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
 
   override def hashCode: Int = ScalaEquals.hash
 

@@ -1,17 +1,39 @@
-package com.scalaequals
+/*
+ * Copyright (c) 2013 Alex DiCarlo
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+package org.scalaequals
 
 import scala.language.experimental.macros
 
-/** Main entry point for ScalaEquals
+/** Entry point for ScalaEquals
   *
   * Examples:
   * Test equality with only vals in constructor:
   * {{{
   *   class Test(x: Int, val y: Int, private val z: Int, var a: Int) {
-  *     val w: Int = x * z      // Ignored by equalAllVals
+  *     val w: Int = x * z      // Ignored by equal
   *     override def equals(other: Any) = ScalaEquals.equal(other)
   *     override def hashCode() = ScalaEquals.hash
-  *     def canEqual(other: Any) = ScalaEquals.canEqual(other)
+  *     def canEqual(other: Any) = ScalaEquals.canEquals(other)
   *   }
   *
   *   new Test(0, 1, 2, 3) == new Test(1, 1, 2, 4) // true -> y == y and z == z
@@ -26,7 +48,7 @@ import scala.language.experimental.macros
   *     def q: Int = x        // Ignored by equalAllVals
   *     override def equals(other: Any) = ScalaEquals.equalAllVals(other)
   *     override def hashCode() = ScalaEquals.hash
-  *     def canEqual(other: Any) = ScalaEquals.canEqual(other)
+  *     def canEqual(other: Any) = ScalaEquals.canEquals(other)
   *   }
   *
   *   new Test(0, 1, 2, 3) == new Test(1, 1, 2, 4) // false -> y == y and z == z and w != w
@@ -38,19 +60,40 @@ import scala.language.experimental.macros
   * {{{
   *   class Test(x: Int, val y: Int, private val z: Int, var a: Int) {
   *     def w: Int = x * z
-  *     override def equals(other: Any) = ScalaEquals.equal(other, w, z)
+  *     override def equals(other: Any) = ScalaEquals.equal(other, w, a)
   *     override def hashCode() = ScalaEquals.hash
-  *     def canEqual(other: Any) = ScalaEquals.canEqual(other)
+  *     def canEqual(other: Any) = ScalaEquals.canEquals(other)
   *   }
   *
   *   new Test(1, 2, 2, 3) == new Test(1, 1, 2, 4) // false -> w == w and a != a
   *   new Test(1, 2, 2, 4) == new Test(1, 1, 2, 4) // true -> w == w and a == a
   * }}}
   *
+  * Specifically, the above example (test equality with selected parameters) is converted
+  * to the following code:
+  * {{{
+  *   class Test(x: Int, val y: Int, private val z: Int, var a: Int) {
+  *     def w: Int = x * z
+  *     override def equals(other: Any) = other match {
+  *       case that: Test => (that canEqual this) && that.w == this.w && that.a == this.a
+  *       case _ => false
+  *     }
+  *     override def hashCode() = Objects.hash(Seq(w, z))
+  *     def canEqual(other: Any) = other.isInstanceOf[Test]
+  *   }
+  *
+  *   new Test(1, 2, 2, 3) == new Test(1, 1, 2, 4) // false -> w == w and a != a
+  *   new Test(1, 2, 2, 4) == new Test(1, 1, 2, 4) // true -> w == w and a == a
+  * }}}
+  *
+  *
+  * @author Alex DiCarlo
+  * @version 0.3.0
+  * @since 0.3.0
   */
 object ScalaEquals {
   /**
-   * Equality check using all private/protected/public/lazy vals of the class
+   * Equality check using all private/protected/public of the class
    * defined in the constructor
    *
    * @param other the instance to compare to
@@ -68,19 +111,10 @@ object ScalaEquals {
   def equalAllVals(other: Any): Boolean = macro EqualsImpl.equalImpl
 
   /**
-   * Equality check using only parameters passed in to test for equality. Example:
-   *
-   * {{{
-   * final class Test(val x: Int, var y: Int) {
-   *   def z: Int
-   *   override def equals(other: Any): Boolean = ScalaEquals.equal(other, y, z)
-   * }
-   * }}}
-   *
-   * `Test`'s `equals` method will check only `y` and `z`.
+   * Equality check using only parameters passed in to test for equality.
    *
    * Acceptable arguments include private/protected/public vals, vars, lazy vals,
-   * and defs with no arguments
+   * and defs with no arguments.
    *
    * @param other the instance to test for equality
    * @param param first param to test with
@@ -95,11 +129,12 @@ object ScalaEquals {
    * work with custom `equals` implementations, one of `ScalaEquals.equal(other)`,
    * `ScalaEquals.equal(other, params)`, or `ScalaEquals.equal(other)` must be used
    *
-   * MUST BE CALLED AFTER `ScalaEquals.equal` IN THE CLASS DEFINITION.
+   *
+   * '''MUST BE CALLED AFTER ScalaEquals.equal IN THE CLASS DEFINITION.'''
    *
    * @return hashCode generated from fields used in `equals`
    */
-  def hash: Int = macro HashImpl.hash
+  def hash: Int = macro HashCodeImpl.hash
 
   /**
    * Simple macro that expands to the following:
@@ -108,7 +143,7 @@ object ScalaEquals {
    * }}}
    *
    * @param other the instance to test for equality
-   * @return true if instance.canEqual(other)
+   * @return true if other.isInstanceOf[Class]
    */
-  def canEqual(other: Any): Boolean = macro CanEqualImpl.canEqual
+  def canEquals(other: Any): Boolean = macro CanEqualImpl.canEquals
 }
