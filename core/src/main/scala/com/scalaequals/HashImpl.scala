@@ -1,12 +1,29 @@
 package com.scalaequals
 
 import reflect.macros.Context
+import com.scalaequals.EqualsImpl.EqualsPayload
 
 object HashImpl {
   def hash(c: Context): c.Expr[Int] = {
+    new HashMaker[c.type](c).make()
+  }
+
+  private[HashImpl] class HashMaker[C <: Context](val c: C) {
+
     import c.universe._
 
-    def createHash(terms: Seq[TermSymbol]): Tree = {
+    val selfSymbol: Symbol = c.enclosingClass.symbol
+    val selfTpe: Type = selfSymbol.asType.toType
+
+    def createSuperHashCode(): Apply =
+      Apply(
+        Select(
+          Super(This(tpnme.EMPTY), tpnme.EMPTY),
+          newTermName("hashCode")),
+        List()
+      )
+
+    def createHash(terms: List[Tree]): Tree = {
       Apply(
         Select(
           Select(
@@ -22,29 +39,29 @@ object HashImpl {
                   Ident(newTermName("scala")), newTermName("collection")),
                 newTermName("Seq")),
               newTermName("apply")),
-            terms.map(term => Select(This(tpnme.EMPTY), term)).toList)))
+            terms)))
     }
-    val hash: Tree =
-      c.enclosingClass.find(t => t.isDef && t.symbol.isMethod && t.symbol.asMethod.name == ("equals": TermName)) match {
-        case Some(method) =>
-          c.echo(c.enclosingPosition, method.attachments.all.toString())
-          method.attachments.all.find(_.isInstanceOf[Seq[TermSymbol]]) match {
-            case Some(attachments: Seq[TermSymbol]) =>
-              createHash(attachments)
-            case None =>
-              c.error(c.enclosingPosition, "No attachments found on equals, are you sure you used Equals.equal?")
-              Literal(Constant(0))
-          }
-        case None =>
-          c.error(c.enclosingPosition, "No equals method found")
-          Literal(Constant(0))
+
+    def extractPayload(): EqualsPayload = {
+      val equalsMethod = c.enclosingClass find {t =>
+        t.isDef && t.symbol.isMethod && t.symbol.asMethod.name == ("equals": TermName)
       }
-    c.Expr[Int](hash)
+      equalsMethod match {
+        case Some(method) => method.attachments.get[EqualsImpl.EqualsPayload] match {
+          case Some(payload) => payload
+          case None => c.abort(c.enclosingPosition, "No attachments found on equals, did you use Equals.equal?")
+        }
+        case None => c.abort(c.enclosingPosition, "No overriding equals method found")
+      }
+    }
+
+    def make(): c.Expr[Int] = {
+      val payload = extractPayload()
+      val values =
+        selfTpe.members.filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
+      val terms = values map {t => Select(This(tpnme.EMPTY), t)} toList
+      val hash = if (payload.superHashCode) createHash(createSuperHashCode() :: terms) else createHash(terms)
+      c.Expr[Int](hash)
+    }
   }
-}
-
-class Test(val x: Int, val y: Int) {
-  override def equals(other: Any): Boolean = Equals.equal(other)
-
-  override def hashCode: Int = Equals.hash
 }

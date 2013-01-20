@@ -25,14 +25,10 @@ object EqualsImpl {
     class EqualsMakerInner(other: c.Expr[Any]) {
       import c.universe._
 
-      private val selfSymbol: Symbol = c.enclosingClass.symbol
-      private val selfTpe: Type = selfSymbol.asType.toType
-
-      def findOwner(owner: Symbol): Symbol = if (owner.isType) owner.asType else findOwner(owner.owner)
-
-      def hasCanEqual: Boolean = !selfTpe.member("canEqual": TermName).isInstanceOf[Symbols#NoSymbol]
-
-      def hasSuperClassWithEquals: Boolean = {
+      val selfSymbol: Symbol = c.enclosingClass.symbol
+      val selfTpe: Type = selfSymbol.asType.toType
+      val hasCanEqual: Boolean = !selfTpe.member("canEqual": TermName).isInstanceOf[Symbols#NoSymbol]
+      val hasSuperClassWithEquals: Boolean = {
         val overriding = selfTpe.baseClasses map {_.asType.toType} filter {_.member("equals": TermName).isOverride}
         overriding exists {tpe => !(tpe =:= typeOf[AnyRef] || tpe =:= typeOf[Object] || tpe =:= selfTpe)}
       }
@@ -90,7 +86,8 @@ object EqualsImpl {
       }
 
       def createCondition(values: Seq[TermSymbol]): c.Expr[Boolean] = {
-        c.enclosingMethod.updateAttachment[Seq[TermSymbol]](values)
+        val payload = EqualsPayload(values map {_.name.encoded}, hasSuperClassWithEquals || values.size == 0)
+        c.enclosingMethod.updateAttachment(payload)
         val termEquals = (values map createTermEquals).toList
         val and = (hasCanEqual, hasSuperClassWithEquals) match {
           case (true, true) => createNestedAnd(createCanEqual() :: createSuperEquals() :: termEquals)
@@ -121,4 +118,6 @@ object EqualsImpl {
       }
     }
   }
+
+  case class EqualsPayload(values: Seq[String], superHashCode: Boolean)
 }

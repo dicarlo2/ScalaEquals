@@ -27,6 +27,8 @@ class Dummy(
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[Dummy]
 
+  override def hashCode: Int = Equals.hash
+
   override def toString: String = s"Dummy($a, $b, $c, $d, $e, $f, $g)"
 }
 
@@ -47,6 +49,8 @@ class DummySub(
   override def equals(other: Any): Boolean = Equals.equal(other)
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[DummySub]
+
+  override def hashCode: Int = Equals.hash
 
   override def toString: String = s"DummySub($a, $b, $c, $d, $e, $f, $g)"
 }
@@ -76,6 +80,8 @@ class DummyC(
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[DummyC]
 
+  override def hashCode: Int = Equals.hash
+
   override def toString: String = s"DummyC($a, $b, $c, $d, $e, $f, $g)"
 }
 
@@ -96,6 +102,8 @@ class DummyCSub(
   override def equals(other: Any): Boolean = Equals.equalC(other)
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[DummyCSub]
+
+  override def hashCode: Int = Equals.hash
 
   override def toString: String = s"DummyCSub($a, $b, $c, $d, $e, $f, $g)"
 }
@@ -125,6 +133,8 @@ class DummyParams(
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[DummyParams]
 
+  override def hashCode: Int = Equals.hash
+
   override def toString: String = s"DummyParams($a, $b, $c, $d, $e, $f, $g)"
 }
 
@@ -145,6 +155,8 @@ class DummyParamsSub(
   override def equals(other: Any): Boolean = Equals.equal(other, a, b, h, x, y, o, c)
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[DummyParamsSub]
+
+  override def hashCode: Int = Equals.hash
 
   override def toString: String = s"DummyParamsSub($a, $b, $c, $d, $e, $f, $g)"
 }

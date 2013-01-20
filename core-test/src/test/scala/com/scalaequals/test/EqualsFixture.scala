@@ -11,12 +11,8 @@ trait EqualsFixture[T] extends FeatureSpec with
                                GeneratorDrivenPropertyChecks {
   def name: String
   def classGen: Gen[T]
-  def equal2ClassGen: Gen[(T, T)] = for {
-    cp <- classGen
-  } yield (cp, cp)
-  def equal3ClassGen: Gen[(T, T, T)] = for {
-    cp <- classGen
-  } yield (cp, cp, cp)
+  def equal2ClassGen: Gen[(T, T)]
+  def equal3ClassGen: Gen[(T, T, T)]
   def subClassName: String = ""
   def subClassGen: Option[Gen[_ <: T]] = None
 
@@ -95,6 +91,17 @@ trait EqualsFixture[T] extends FeatureSpec with
       Then("the result is false")
       forAll(classGen) {x =>
         x.equals(null) should be(false)
+      }
+    }
+  }
+
+  feature("Equals is consistent with hashCode") {
+    scenario(s"Equal pairs of $name") {
+      Given("any non-null values x and y")
+      When("x.equals(y) returns true")
+      Then("x.hashCode == y.hashCode")
+      forAll(equal2ClassGen) {case (x, y) =>
+        x.hashCode() should equal(y.hashCode())
       }
     }
   }
