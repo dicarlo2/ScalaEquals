@@ -19,7 +19,9 @@ object HashImpl {
     def createSuperHashCode(): Apply =
       Apply(
         Select(
-          Super(This(tpnme.EMPTY), tpnme.EMPTY),
+          Super(
+            This(tpnme.EMPTY),
+            tpnme.EMPTY),
           newTermName("hashCode")),
         List()
       )
@@ -29,7 +31,8 @@ object HashImpl {
         Select(
           Select(
             Select(
-              Ident(newTermName("java")), newTermName("util")),
+              Ident(newTermName("java")),
+              newTermName("util")),
             newTermName("Objects")),
           newTermName("hash")),
         List(
@@ -37,7 +40,8 @@ object HashImpl {
             Select(
               Select(
                 Select(
-                  Ident(newTermName("scala")), newTermName("collection")),
+                  Ident(newTermName("scala")),
+                  newTermName("collection")),
                 newTermName("Seq")),
               newTermName("apply")),
             terms)))
@@ -50,13 +54,15 @@ object HashImpl {
       equalsMethod match {
         case Some(method) => method.attachments.get[EqualsImpl.EqualsPayload] match {
           case Some(payload) => payload
-          case None => c.abort(c.enclosingPosition, "No attachments found on equals, did you use Equals.equal?")
+          case None => c.abort(c.enclosingPosition, Errors.incorrectHashOrdering)
         }
-        case None => c.abort(c.enclosingPosition, "No overriding equals method found")
+        case None => c.abort(c.enclosingPosition, Errors.missingEquals)
       }
     }
 
     def make(): c.Expr[Int] = {
+      if (c.enclosingMethod.symbol.name != ("hashCode": TermName))
+        c.abort(c.enclosingPosition, Errors.incorrectHashCallSite)
       val payload = extractPayload()
       val values =
         selfTpe.members.filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}

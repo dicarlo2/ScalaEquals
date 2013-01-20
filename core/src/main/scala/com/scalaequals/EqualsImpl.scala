@@ -33,7 +33,12 @@ object EqualsImpl {
       }
 
       def createCanEqual(): Apply =
-        Apply(Select(Ident(newTermName("that")), newTermName("canEqual")), List(This(tpnme.EMPTY)))
+        Apply(
+          Select(
+            Ident(newTermName("that")),
+            newTermName("canEqual")),
+          List(
+            This(tpnme.EMPTY)))
 
       def createTermEquals(term: TermSymbol): Apply = {
         def createEquals(term: Symbol): Apply =
@@ -44,8 +49,9 @@ object EqualsImpl {
                 term),
               newTermName("$eq$eq")),
             List(
-              Select(This(tpnme.EMPTY), term))
-          )
+              Select(
+                This(tpnme.EMPTY),
+                term)))
         if (term.isMethod) createEquals(term) else createEquals(term.getter)
       }
 
@@ -85,6 +91,8 @@ object EqualsImpl {
       }
 
       def createCondition(values: Seq[TermSymbol]): c.Expr[Boolean] = {
+        if (c.enclosingMethod.symbol.name != ("equals": TermName))
+          c.abort(c.enclosingPosition, Errors.incorrectEqualCallSite)
         val payload = EqualsPayload(values map {_.name.encoded}, hasSuperClassWithEquals || values.size == 0)
         c.enclosingMethod.updateAttachment(payload)
         val termEquals = (values map createTermEquals).toList

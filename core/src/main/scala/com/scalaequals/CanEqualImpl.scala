@@ -5,6 +5,8 @@ import reflect.macros.Context
 object CanEqualImpl {
   def canEqual(c: Context)(other: Any): c.Expr[Boolean] = {
     import c.universe._
+    if (c.enclosingMethod.symbol.name != ("canEqual": TermName))
+      c.abort(c.enclosingPosition, Errors.incorrectCanEqualCallSite)
     val tree =
       TypeApply(
         Select(
