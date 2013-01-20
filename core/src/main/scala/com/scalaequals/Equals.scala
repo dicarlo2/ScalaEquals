@@ -20,7 +20,7 @@ object Equals {
   def equalC(other: Any): Boolean = macro EqualsImpl.equalCImpl
 
   /**
-   * Equality using only parameters passed in to test for equality. Example:
+   * Equality check using only parameters passed in to test for equality. Example:
    *
    * final class Test(val x: Int, var y: Int) {
    *   override def equals(other: Any): Boolean = Equals.equal(other, x, y)
@@ -36,4 +36,6 @@ object Equals {
   def equal(other: Any, param: Any, params: Any*): Boolean = macro EqualsImpl.equalParamImpl
 
   def hash: Int = macro HashImpl.hash
+
+  def canEqual(other: Any): Boolean = macro CanEqualImpl.canEqual
 }

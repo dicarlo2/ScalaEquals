@@ -25,7 +25,7 @@ class Dummy(
 
   override def equals(other: Any): Boolean = Equals.equal(other)
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[Dummy]
+  def canEqual(other: Any): Boolean = Equals.canEqual(other)
 
   override def hashCode: Int = Equals.hash
 
@@ -48,7 +48,7 @@ class DummySub(
 
   override def equals(other: Any): Boolean = Equals.equal(other)
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[DummySub]
+  override def canEqual(other: Any): Boolean = Equals.canEqual(other)
 
   override def hashCode: Int = Equals.hash
 
@@ -78,7 +78,7 @@ class DummyC(
 
   override def equals(other: Any): Boolean = Equals.equalC(other)
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[DummyC]
+  def canEqual(other: Any): Boolean = Equals.canEqual(other)
 
   override def hashCode: Int = Equals.hash
 
@@ -101,7 +101,7 @@ class DummyCSub(
 
   override def equals(other: Any): Boolean = Equals.equalC(other)
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[DummyCSub]
+  override def canEqual(other: Any): Boolean = Equals.canEqual(other)
 
   override def hashCode: Int = Equals.hash
 
@@ -131,7 +131,7 @@ class DummyParams(
 
   override def equals(other: Any): Boolean = Equals.equal(other, b, c, e, f, k, n, o, p, q, r, s)
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[DummyParams]
+  def canEqual(other: Any): Boolean = Equals.canEqual(other)
 
   override def hashCode: Int = Equals.hash
 
@@ -154,7 +154,7 @@ class DummyParamsSub(
 
   override def equals(other: Any): Boolean = Equals.equal(other, a, b, h, x, y, o, c)
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[DummyParamsSub]
+  override def canEqual(other: Any): Boolean = Equals.canEqual(other)
 
   override def hashCode: Int = Equals.hash
 

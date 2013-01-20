@@ -2,7 +2,6 @@ package com.scalaequals
 
 import reflect.macros.Context
 import reflect.internal.Symbols
-import scala.language.experimental.macros
 
 object EqualsImpl {
   def equalImpl(c: Context)(other: c.Expr[Any]): c.Expr[Boolean] = {

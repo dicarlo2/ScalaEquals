@@ -2,6 +2,7 @@ package com.scalaequals
 
 import reflect.macros.Context
 import com.scalaequals.EqualsImpl.EqualsPayload
+import scala.language.postfixOps
 
 object HashImpl {
   def hash(c: Context): c.Expr[Int] = {
