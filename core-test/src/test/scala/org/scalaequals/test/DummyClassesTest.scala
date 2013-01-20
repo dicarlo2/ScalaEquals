@@ -25,12 +25,11 @@ package org.scalaequals.test
 import org.scalacheck.Gen
 import org.scalacheck.Arbitrary._
 import scala.Some
-import org.scalaequals.test._
-import scala.Some
 
-object DummyShared {
-  type Arg = (Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)
-  def dummyArgGen: Gen[Arg] = for {
+case class DummyArg(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int, g: Int, x: Int, y: Int, t: Int, _h: Int, _q: Int)
+
+object DummyArg {
+  def gen: Gen[DummyArg] = for {
     a <- arbitrary[Int]
     b <- arbitrary[Int]
     c <- arbitrary[Int]
@@ -38,124 +37,219 @@ object DummyShared {
     e <- arbitrary[Int]
     f <- arbitrary[Int]
     g <- arbitrary[Int]
-    i <- arbitrary[Int]
     x <- arbitrary[Int]
     y <- arbitrary[Int]
-  } yield (a, b, c, d, e, f, g, i, x, y)
-  def dummySubName: String = "DummySub"
-  def createDummySub(arg: Arg): DummySub = arg match {
-    case (a, b, c, d, e, f, g, i, x, y) => new DummySub(a, b, c, d, e, f, g, i, x, y)
-  }
-  def dummySubGen: Option[Gen[DummySub]] = Some(for {
-    arg <- dummyArgGen
-  } yield createDummySub(arg))
+    t <- arbitrary[Int]
+    _h <- arbitrary[Int]
+    _q <- arbitrary[Int]
+  } yield DummyArg(a, b, c, d, e, f, g, x, y, t, _h, _q)
 }
 
-class DummyTest extends EqualsFixture[Dummy] {
+trait DummyFixture[T] extends EqualsFixture[T, DummyArg] {
+  def gen: Gen[DummyArg] = DummyArg.gen
+}
+
+trait DummySubFixture[T] {
+  def create(arg: DummyArg): T
+
+  def dummySubGen: Option[Gen[T]] = Some(for {
+    arg <- DummyArg.gen
+  } yield create(arg))
+}
+
+// Equals on b, c, d, h, i, j, q, r, and s
+// On constructor: b, c, d, e, _h, _q
+// Not on constructor: a, f, g, t
+class DummyTest extends DummyFixture[Dummy] {
   def name: String = "Dummy"
-  def createDummy(arg: DummyShared.Arg): Dummy = arg match {
-    case (a, b, c, d, e, f, g, i, x, y) => new Dummy(a, b, c, d, e, f, g, i)
+
+  def create(arg: DummyArg): Dummy = new Dummy(arg.a, arg.b, arg.c, arg.d, arg.e, arg.f, arg.g, arg.t, arg._h, arg._q)
+
+  def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg = arg.copy(a = arg2.a, f = arg2.f, g = arg2.g, t = arg2.t)
+
+  def changeRandom(arg: DummyArg, arg2: DummyArg): DummyArg = {
+    val swapped = swap(IndexedSeq(arg.b, arg.c, arg.d, arg.e, arg._h, arg._q),
+      IndexedSeq(arg2.b, arg2.c, arg2.d, arg2.e, arg2._h, arg2._q))
+    arg.copy(b = swapped(0), c = swapped(1), d = swapped(2), e = swapped(3), _h = swapped(4), _q = swapped(5))
   }
-  def classGen: Gen[Dummy] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield createDummy(arg)
-  def equal2ClassGen: Gen[(Dummy, Dummy)] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield (createDummy(arg), createDummy(arg))
-  def equal3ClassGen: Gen[(Dummy, Dummy, Dummy)] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield (createDummy(arg), createDummy(arg), createDummy(arg))
-  override def subClassName: String = DummyShared.dummySubName
-  override def subClassGen: Option[Gen[DummySub]] = DummyShared.dummySubGen
+
+  /* true if arg and arg2 differ in a field not checked by equality*/
+  def diff(arg: DummyArg, arg2: DummyArg): Boolean =
+    arg.a != arg2.a || arg.f != arg2.f || arg.g != arg2.g || arg.t != arg2.t
+
+  /* true if arg and arg2 differ in a field checked by equality */
+  def unequal(arg: DummyArg, arg2: DummyArg): Boolean =
+    arg.b != arg2.b || arg.c != arg2.c || arg.d != arg2.d || arg.e != arg2.e || arg._h != arg2._h || arg._q != arg2._q
+
+  override def subClassName: String = DummySubTest.dummySubName
+
+  override def subClassGen: Option[Gen[DummySub]] = DummySubTest.dummySubGen
 }
 
-class DummySubTest extends EqualsFixture[DummySub] {
-  def name: String = DummyShared.dummySubName
-  def classGen: Gen[DummySub] = DummyShared.dummySubGen.get
-  def equal2ClassGen: Gen[(DummySub, DummySub)] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield (DummyShared.createDummySub(arg), DummyShared.createDummySub(arg))
-  def equal3ClassGen: Gen[(DummySub, DummySub, DummySub)] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield (DummyShared.createDummySub(arg), DummyShared.createDummySub(arg), DummyShared.createDummySub(arg))
+// DummySub - equals on super, a, x (all = DummySub.a, b, c, d, x, h, i, j, q, r, s)
+// On constructor: a, x (all = a, b, c, d, e, x, _h, _q)
+// Not on constructor: f, g, y, t
+object DummySubTest extends DummySubFixture[DummySub] {
+  def dummySubName: String = "DummySub"
+
+  def create(arg: DummyArg): DummySub =
+    new DummySub(arg.a, arg.b, arg.c, arg.d, arg.e, arg.f, arg.g, arg.x, arg.y, arg.t, arg._h, arg._q)
 }
 
-object DummyCShared {
-  def dummySubName: String = "DummyCSub"
-  def createDummyCSub(arg: DummyShared.Arg): DummyCSub = arg match {
-    case (a, b, c, d, e, f, g, i, x, y) => new DummyCSub(a, b, c, d, e, f, g, i, x, y)
+class DummySubTest extends DummyFixture[DummySub] {
+  def name: String = DummySubTest.dummySubName
+
+  def create(arg: DummyArg): DummySub = DummySubTest.create(arg)
+
+  def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg =
+    arg.copy(f = arg2.f, g = arg2.g, y = arg2.y, t = arg2.t)
+
+  def changeRandom(arg: DummyArg, arg2: DummyArg): DummyArg = {
+    val swapped = swap(IndexedSeq(arg.a, arg.b, arg.c, arg.d, arg.e, arg.x, arg._h, arg._q),
+      IndexedSeq(arg2.a, arg2.b, arg2.c, arg2.d, arg2.e, arg2.x, arg2._h, arg2._q))
+    arg.copy(a = swapped(0), b = swapped(1), c = swapped(2), d = swapped(3), e = swapped(4),
+      x = swapped(5), _h = swapped(6), _q = swapped(7))
   }
-  def dummySubGen: Option[Gen[DummyCSub]] = Some(for {
-    arg <- DummyShared.dummyArgGen
-  } yield createDummyCSub(arg))
+
+  /* true if arg and arg2 differ in a field not checked by equality*/
+  def diff(arg: DummyArg, arg2: DummyArg): Boolean =
+    arg.f != arg2.f || arg.g != arg2.g || arg.y != arg2.y || arg.t != arg2.t
+
+  /* true if arg and arg2 differ in a field checked by equality */
+  def unequal(arg: DummyArg, arg2: DummyArg): Boolean =
+    arg.a != arg2.a || arg.b != arg2.b || arg.c != arg2.c || arg.d != arg2.d || arg.e != arg2.e ||
+      arg.x != arg2.x || arg._h != arg2._h || arg._q != arg2._q
 }
 
-class DummyCTest extends EqualsFixture[DummyC] {
+// Equals on b, c, d
+// On constructor: b, c, d
+// Not on constructor: a, e, f, g, t, _h, _q
+class DummyCTest extends DummyFixture[DummyC] {
   def name: String = "DummyC"
-  def createDummyC(arg: DummyShared.Arg): DummyC = arg match {
-    case (a, b, c, d, e, f, g, i, x, y) => new DummyC(a, b, c, d, e, f, g, i)
+
+  def create(arg: DummyArg): DummyC =
+    new DummyC(arg.a, arg.b, arg.c, arg.d, arg.e, arg.f, arg.g, arg.t, arg._h, arg._q)
+
+  def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg =
+    arg.copy(a = arg2.a, e = arg2.e, f = arg2.f, g = arg2.g, t = arg2.t, _h = arg2._h, _q = arg2._q)
+
+  def changeRandom(arg: DummyArg, arg2: DummyArg): DummyArg = {
+    val swapped = swap(IndexedSeq(arg.b, arg.c, arg.d), IndexedSeq(arg2.b, arg2.c, arg2.d))
+    arg.copy(b = swapped(0), c = swapped(1), d = swapped(2))
   }
-  def classGen: Gen[DummyC] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield createDummyC(arg)
-  def equal2ClassGen: Gen[(DummyC, DummyC)] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield (createDummyC(arg), createDummyC(arg))
-  def equal3ClassGen: Gen[(DummyC, DummyC, DummyC)] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield (createDummyC(arg), createDummyC(arg), createDummyC(arg))
 
-  override def subClassName: String = DummyCShared.dummySubName
-  override def subClassGen: Option[Gen[DummyCSub]] = DummyCShared.dummySubGen
+  /* true if arg and arg2 differ in a field not checked by equality*/
+  def diff(arg: DummyArg, arg2: DummyArg): Boolean =
+    arg.a != arg2.a || arg.e != arg2.e || arg.f != arg2.f || arg.g != arg2.g || arg.t != arg2.t ||
+      arg._h != arg2._h || arg._q != arg2._q
+
+  /* true if arg and arg2 differ in a field checked by equality */
+  def unequal(arg: DummyArg, arg2: DummyArg): Boolean =
+    arg.b != arg2.b || arg.c != arg2.c || arg.d != arg2.d
+
+  override def subClassName: String = DummyCSubTest.dummySubName
+
+  override def subClassGen: Option[Gen[DummyCSub]] = DummyCSubTest.dummySubGen
 }
 
-class DummyCSubTest extends EqualsFixture[DummyCSub] {
-  def name: String = DummyCShared.dummySubName
-  def classGen: Gen[DummyCSub] = DummyCShared.dummySubGen.get
-  def equal2ClassGen: Gen[(DummyCSub, DummyCSub)] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield (DummyCShared.createDummyCSub(arg), DummyCShared.createDummyCSub(arg))
-  def equal3ClassGen: Gen[(DummyCSub, DummyCSub, DummyCSub)] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield (DummyCShared.createDummyCSub(arg), DummyCShared.createDummyCSub(arg), DummyCShared.createDummyCSub(arg))
+// Equals on super, a, x (all = DummySub.a, b, c, d, x)
+// On constructor: a, x (all = a, b, c, d, x)
+// Not on constructor: e, f, g, y, t, _h, _q
+object DummyCSubTest extends DummySubFixture[DummyCSub] {
+  def dummySubName: String = "DummyCSub"
+
+  def create(arg: DummyArg): DummyCSub =
+    new DummyCSub(arg.a, arg.b, arg.c, arg.d, arg.e, arg.f, arg.g, arg.x, arg.y, arg.t, arg._h, arg._q)
 }
 
-object DummyParamsShared {
-  def dummySubName: String = "DummyParamsSub"
-  def createDummyParamsSub(arg: DummyShared.Arg): DummyParamsSub = arg match {
-    case (a, b, c, d, e, f, g, i, x, y) => new DummyParamsSub(a, b, c, d, e, f, g, i, x, y)
+class DummyCSubTest extends DummyFixture[DummyCSub] {
+  def name: String = DummyCSubTest.dummySubName
+
+  def create(arg: DummyArg): DummyCSub = DummyCSubTest.create(arg)
+
+  def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg =
+    arg.copy(e = arg2.e, f = arg2.f, g = arg2.g, y = arg2.y, t = arg2.t, _h = arg2._h, _q = arg2._q)
+
+  def changeRandom(arg: DummyArg, arg2: DummyArg): DummyArg = {
+    val swapped = swap(IndexedSeq(arg.a, arg.b, arg.c, arg.d, arg.x),
+      IndexedSeq(arg2.a, arg2.b, arg2.c, arg2.d, arg2.x))
+    arg.copy(a = swapped(0), b = swapped(1), c = swapped(2), d = swapped(3), x = swapped(4))
   }
-  def dummySubGen: Option[Gen[DummyParamsSub]] = Some(for {
-    arg <- DummyShared.dummyArgGen
-  } yield createDummyParamsSub(arg))
+
+  /* true if arg and arg2 differ in a field not checked by equality*/
+  def diff(arg: DummyArg, arg2: DummyArg): Boolean =
+    arg.e != arg2.e || arg.f != arg2.f || arg.g != arg2.g || arg.y != arg2.y || arg.t != arg2.t ||
+      arg._h != arg2._h || arg._q != arg2._q
+
+  /* true if arg and arg2 differ in a field checked by equality */
+  def unequal(arg: DummyArg, arg2: DummyArg): Boolean =
+    arg.a != arg2.a || arg.b != arg2.b || arg.c != arg2.c || arg.d != arg2.d || arg.x != arg2.x
 }
 
-class DummyParamsTest extends EqualsFixture[DummyParams] {
+// Equals on       b, c, e, f, k, n, o , p, q , r, s
+// On constructor: b, c, e, f, a, g, _h, b, _q, e, e (Set(a, b, c, e, f, g, _h, _q))
+// Not on constructor: d, t
+class DummyParamsTest extends DummyFixture[DummyParams] {
   def name: String = "DummyParams"
-  def createDummyParams(arg: DummyShared.Arg): DummyParams = arg match {
-    case (a, b, c, d, e, f, g, i, x, y) => new DummyParams(a, b, c, d, e, f, g, i)
+
+  def create(arg: DummyArg): DummyParams =
+    new DummyParams(arg.a, arg.b, arg.c, arg.d, arg.e, arg.f, arg.g, arg.t, arg._h, arg._q)
+
+  def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg =
+    arg.copy(d = arg2.d, t = arg2.t)
+
+  def changeRandom(arg: DummyArg, arg2: DummyArg): DummyArg = {
+    val swapped = swap(IndexedSeq(arg.a, arg.b, arg.c, arg.e, arg.f, arg.g, arg._h, arg._q),
+      IndexedSeq(arg2.a, arg2.b, arg2.c, arg2.e, arg2.f, arg2.g, arg2._h, arg2._q))
+    arg.copy(a = swapped(0), b = swapped(1), c = swapped(2), e = swapped(3), f = swapped(4), g = swapped(5),
+      _h = swapped(6), _q = swapped(7))
   }
-  def classGen: Gen[DummyParams] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield createDummyParams(arg)
-  def equal2ClassGen: Gen[(DummyParams, DummyParams)] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield (createDummyParams(arg), createDummyParams(arg))
-  def equal3ClassGen: Gen[(DummyParams, DummyParams, DummyParams)] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield (createDummyParams(arg), createDummyParams(arg), createDummyParams(arg))
-  override def subClassName: String = DummyParamsShared.dummySubName
-  override def subClassGen: Option[Gen[DummyParamsSub]] = DummyParamsShared.dummySubGen
+
+  /* true if arg and arg2 differ in a field not checked by equality*/
+  def diff(arg: DummyArg, arg2: DummyArg): Boolean =
+    arg.d != arg2.d || arg.t != arg2.t
+
+  /* true if arg and arg2 differ in a field checked by equality */
+  def unequal(arg: DummyArg, arg2: DummyArg): Boolean =
+    arg.a != arg2.a || arg.b != arg2.b || arg.c != arg2.c || arg.e != arg2.e || arg.f != arg2.f || arg.g != arg2.g ||
+      arg._h != arg2._h || arg._q != arg2._q
+
+  override def subClassName: String = DummyParamsSubTest.dummySubName
+
+  override def subClassGen: Option[Gen[DummyParamsSub]] = DummyParamsSubTest.dummySubGen
 }
 
-class DummyParamsSubTest extends EqualsFixture[DummyParamsSub] {
-  def name: String = DummyParamsShared.dummySubName
-  def classGen: Gen[DummyParamsSub] = DummyParamsShared.dummySubGen.get
-  def equal2ClassGen: Gen[(DummyParamsSub, DummyParamsSub)] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield (DummyParamsShared.createDummyParamsSub(arg), DummyParamsShared.createDummyParamsSub(arg))
-  def equal3ClassGen: Gen[(DummyParamsSub, DummyParamsSub, DummyParamsSub)] = for {
-    arg <- DummyShared.dummyArgGen
-  } yield (DummyParamsShared.createDummyParamsSub(arg), DummyParamsShared.createDummyParamsSub(arg), DummyParamsShared.createDummyParamsSub(arg))
+// Equals on super, super, a, b, h , y, o
+// On constructor:       , a, b, _q, y, a (Set(a, b, _q, y), all = a, b, c, e, f, g, y, _h, _q)
+// Not on constructor:  d, x, t
+object DummyParamsSubTest extends DummySubFixture[DummyParamsSub] {
+  def dummySubName: String = "DummyParamsSub"
 
+  def create(arg: DummyArg): DummyParamsSub =
+    new DummyParamsSub(arg.a, arg.b, arg.c, arg.d, arg.e, arg.f, arg.g, arg.x, arg.y, arg.t, arg._h, arg._q)
+}
+
+class DummyParamsSubTest extends DummyFixture[DummyParamsSub] {
+  def name: String = DummyParamsSubTest.dummySubName
+
+  def create(arg: DummyArg): DummyParamsSub = DummyParamsSubTest.create(arg)
+
+  def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg =
+    arg.copy(d = arg2.d, x = arg2.x, t = arg.t)
+
+  def changeRandom(arg: DummyArg, arg2: DummyArg): DummyArg = {
+    val swapped = swap(IndexedSeq(arg.a, arg.b, arg.c, arg.e, arg.f, arg.g, arg.y, arg._h, arg._q),
+      IndexedSeq(arg2.a, arg2.b, arg2.c, arg2.e, arg2.f, arg2.g, arg2.y, arg2._h, arg2._q))
+    arg.copy(a = swapped(0), b = swapped(1), c = swapped(2), e = swapped(3), f = swapped(4), g = swapped(5),
+      y = swapped(6), _h = swapped(7), _q = swapped(8))
+  }
+
+  /* true if arg and arg2 differ in a field not checked by equality*/
+  def diff(arg: DummyArg, arg2: DummyArg): Boolean =
+     arg.t != arg2.t || arg.d != arg2.d || arg.x != arg2.x
+
+  /* true if arg and arg2 differ in a field checked by equality */
+  def unequal(arg: DummyArg, arg2: DummyArg): Boolean =
+    arg.a != arg2.a || arg.b != arg2.b || arg.c != arg2.c  || arg.e != arg2.e || arg.f != arg2.f ||
+      arg.g != arg2.g || arg.y != arg2.y  || arg._h != arg2._h || arg._q != arg2._q
 }

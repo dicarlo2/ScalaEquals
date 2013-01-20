@@ -24,40 +24,38 @@ package org.scalaequals.test
 
 import org.scalacheck.Gen
 
-class ColoredPointTest extends EqualsFixture[ColoredPoint] {
-  def name: String = "ColoredPoint"
-  def classGen: Gen[ColoredPoint] = ColoredPointTest.classGen
-  def equal2ClassGen: Gen[(ColoredPoint, ColoredPoint)] = ColoredPointTest.equal2ClassGen
-  def equal3ClassGen: Gen[(ColoredPoint, ColoredPoint, ColoredPoint)] = ColoredPointTest.equal3ClassGen
-  override def subClassName: String = "FourDColoredPoint"
-  override def subClassGen: Option[Gen[FourDColoredPoint]] = Some(FourDColoredPointTest.classGen)
+class ColoredPointTest extends PointFixture[ColoredPoint] {
+  def name: String = ColoredPointTest.name
 
-  feature("equal calls super.equals if it is available (and not Object or AnyRef)") {
-    scenario("ColoredPoints with different (private) z values") {
-      Given("2 ColoredPoints, x and y, with different z values")
-      val x = new ColoredPoint(1, 2, 3, Color.Blue)
-      val y = new ColoredPoint(1, 2, 4, Color.Blue)
-      When("x.equals(y)")
-      Then("the result is false")
-      x.equals(y) should be(false)
-    }
+  /* Creates a T from B */
+  def create(arg: PointArg): ColoredPoint = ColoredPointTest.create(arg)
+
+  /* Changes one random argument that is part of equals to arg2's value */
+  def changeRandom(arg: PointArg, arg2: PointArg): PointArg = {
+    val swapped = swap(IndexedSeq(arg.x, arg.y, arg.z, arg.color), IndexedSeq(arg2.x, arg2.y, arg2.z, arg2.color))
+    arg.copy(x = swapped(0).asInstanceOf[Int], y = swapped(1).asInstanceOf[Int],
+      z = swapped(2).asInstanceOf[Int], color = swapped(3).asInstanceOf[Color.Value])
   }
+
+  /* true if arg and arg2 differ in a field not checked by equality or there are no fields that can differ */
+  def diff(arg: PointArg, arg2: PointArg): Boolean = true
+
+  /* true if arg and arg2 differ in a field checked by equality */
+  def unequal(arg: PointArg, arg2: PointArg): Boolean =
+    arg.x != arg2.x || arg.y != arg2.y || arg.z != arg2.z || arg.color != arg2.color
+
+  override def subClassName: String = FourDColoredPointTest.name
+
+  override def subClassGen: Option[Gen[FourDColoredPoint]] = Some(FourDColoredPointTest.gen)
 }
 
 object ColoredPointTest {
-  private[test] def createCP(arg: (Int, Int, Int, Int, Color.Value)): ColoredPoint = arg match {
-    case (_, x, y, z, color) => new ColoredPoint(x, y, z, color)
-  }
+  def name: String = "ColoredPoint"
 
-  private[test] def classGen: Gen[ColoredPoint] = for {
-    arg <- FourDColoredPointTest.argGen
-  } yield createCP(arg)
+  /* Creates a T from B */
+  def create(arg: PointArg): ColoredPoint = new ColoredPoint(arg.x, arg.y, arg.z, arg.color)
 
-  private[test] def equal2ClassGen: Gen[(ColoredPoint, ColoredPoint)] = for {
+  def gen: Gen[ColoredPoint] = for {
     arg <- FourDColoredPointTest.argGen
-  } yield (createCP(arg), createCP(arg))
-
-  private[test] def equal3ClassGen: Gen[(ColoredPoint, ColoredPoint, ColoredPoint)] = for {
-    arg <- FourDColoredPointTest.argGen
-  } yield (createCP(arg), createCP(arg), createCP(arg))
+  } yield create(arg)
 }

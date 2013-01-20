@@ -24,7 +24,7 @@ package org.scalaequals.test
 
 import org.scalaequals.ScalaEquals
 
-class Point(val x: Int, val y: Int, private val z: Int) {
+class Point(val x: Int, val y: Int, val z: Int) {
   override def equals(other: Any): Boolean = ScalaEquals.equalAllVals(other)
   override def hashCode: Int = ScalaEquals.hash
   def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
@@ -42,7 +42,7 @@ class ColoredPoint(x: Int, y: Int, z: Int, val color: Color.Value) extends Point
   override def toString: String = s"ColoredPoint($x, $y, $z, $color)"
 }
 
-class FourDColoredPoint(w: Int, x: Int, y: Int, z: Int, color: Color.Value) extends ColoredPoint(x, y, z, color) {
+class FourDColoredPoint(val w: Int, x: Int, y: Int, z: Int, color: Color.Value) extends ColoredPoint(x, y, z, color) {
   override def equals(other: Any): Boolean = ScalaEquals.equalAllVals(other)
   override def hashCode: Int = ScalaEquals.hash
   override def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)

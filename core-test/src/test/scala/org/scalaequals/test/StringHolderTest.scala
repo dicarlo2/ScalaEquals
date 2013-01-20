@@ -24,15 +24,23 @@ package org.scalaequals.test
 
 import org.scalacheck.Gen
 
-class StringHolderTest extends EqualsFixture[StringHolder] {
+class StringHolderTest extends EqualsFixture[StringHolder, String] {
   def name: String = "StringHolder"
-  def classGen: Gen[StringHolder] = for {
-    string <- Gen.alphaStr
-  } yield new StringHolder(name)
-  def equal2ClassGen: Gen[(StringHolder, StringHolder)] = for {
-    string <- Gen.alphaStr
-  } yield (new StringHolder(name), new StringHolder(name))
-  def equal3ClassGen: Gen[(StringHolder, StringHolder, StringHolder)] = for {
-    string <- Gen.alphaStr
-  } yield (new StringHolder(name), new StringHolder(name), new StringHolder(name))
+
+  def gen: Gen[String] = Gen.alphaStr
+
+  /* Creates a T from B */
+  def create(arg: String): StringHolder = new StringHolder(arg)
+
+  /* Swaps all constructor arguments that are not part of equals from arg to arg2's values */
+  def changeDiff(arg: String, arg2: String): String = arg
+
+  /* Changes one random argument that is part of equals to arg2's value */
+  def changeRandom(arg: String, arg2: String): String = arg2
+
+  /* true if arg and arg2 differ in a field not checked by equality or there are no fields that can differ */
+  def diff(arg: String, arg2: String): Boolean = true
+
+  /* true if arg and arg2 differ in a field checked by equality */
+  def unequal(arg: String, arg2: String): Boolean = arg != arg2
 }

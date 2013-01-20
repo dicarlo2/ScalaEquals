@@ -25,20 +25,33 @@ package org.scalaequals.test
 import org.scalacheck.Gen
 import scala.Some
 
-class PointTest extends EqualsFixture[Point] {
+case class PointArg(w: Int, x: Int, y: Int, z: Int, color: Color.Value)
+
+trait PointFixture[A] extends EqualsFixture[A, PointArg] {
+  /* Swaps all constructor arguments that are not part of equals from arg to arg2's values */
+  def changeDiff(arg: PointArg, arg2: PointArg): PointArg = arg
+
+  def gen: Gen[PointArg] = FourDColoredPointTest.argGen
+}
+
+class PointTest extends PointFixture[Point] {
   def name: String = "Point"
-  def createP(arg: (Int, Int, Int, Int, Color.Value)): Point = arg match {
-    case (_, x, y, z, _) => new Point(x, y, z)
+
+  /* Creates a T from B */
+  def create(arg: PointArg): Point = new Point(arg.x, arg.y, arg.z)
+
+  /* Changes one random argument that is part of equals to arg2's value */
+  def changeRandom(arg: PointArg, arg2: PointArg): PointArg = {
+    val swapped = swap(IndexedSeq(arg.x, arg.y, arg.z), IndexedSeq(arg2.x, arg2.y, arg2.z))
+    arg.copy(x = swapped(0), y = swapped(1), z = swapped(2))
   }
-  def classGen: Gen[Point] = for {
-    arg <- FourDColoredPointTest.argGen
-  } yield createP(arg)
-  override def subClassName: String = "ColoredPoint"
-  override def subClassGen: Option[Gen[ColoredPoint]] = Some(ColoredPointTest.classGen)
-  def equal2ClassGen: Gen[(Point, Point)] = for {
-    arg <- FourDColoredPointTest.argGen
-  } yield (createP(arg), createP(arg))
-  def equal3ClassGen: Gen[(Point, Point, Point)] = for {
-    arg <- FourDColoredPointTest.argGen
-  } yield (createP(arg), createP(arg), createP(arg))
+
+  /* true if arg and arg2 differ in a field not checked by equality or there are no fields that can differ */
+  def diff(arg: PointArg, arg2: PointArg): Boolean = true
+
+  /* true if arg and arg2 differ in a field checked by equality */
+  def unequal(arg: PointArg, arg2: PointArg): Boolean = arg.x != arg2.x || arg.y != arg2.y || arg.z != arg2.z
+
+  override def subClassName: String = ColoredPointTest.name
+  override def subClassGen: Option[Gen[ColoredPoint]] = Some(ColoredPointTest.gen)
 }

@@ -24,14 +24,14 @@ import sbt._
 import Keys._
 
 object BuildSettings {
-  val buildVersion = "0.3.0"
+  val buildVersion = "0.4.0"
   val buildScalaVersion = "2.10.0"
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "org.scalaequals",
     version := buildVersion,
     scalaVersion := buildScalaVersion,
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Ymacro-debug-lite")
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
   )
 }
 

@@ -24,6 +24,7 @@ package org.scalaequals.test
 
 import org.scalaequals.ScalaEquals
 
+// Equals on b, c, d, h, i, j, q, r, and s
 class Dummy(
     a: Int,
     val b: Int,
@@ -32,19 +33,21 @@ class Dummy(
     var e: Int,
     private var f: Int,
     protected var g: Int,
-    t: => Int) {
-  val h: Int = a
+    t: => Int,
+    _h: Int,
+    _q: Int) {
+  val h: Int = _h
   protected val i: Int = b
   private val j: Int = c
-  var k: Int = d
+  var k: Int = a
   protected var l: Int = e
-  private var m: Int = f
+  private var m: Int = t
   def n: Int = g
   protected def o: Int = h
   private def p: Int = i
-  lazy val q: Int = k
-  protected lazy val r: Int = l
-  private lazy val s: Int = m
+  lazy val q: Int = _q
+  protected lazy val r: Int = e
+  private lazy val s: Int = e
 
   override def equals(other: Any): Boolean = ScalaEquals.equalAllVals(other)
 
@@ -52,9 +55,11 @@ class Dummy(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String = s"Dummy($a, $b, $c, $d, $e, $f, $g)"
+  override def toString: String =
+    "Dummy(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d)".format(a, b, c, d, e, f, g, t, _h, _q)
 }
 
+// Equals on super, a, x
 class DummySub(
     val a: Int,
     override val b: Int,
@@ -65,10 +70,12 @@ class DummySub(
     g: Int,
     val x: Int,
     var y: Int,
-    t: => Int) extends Dummy(a, b, c, d, e, f, g, t) {
-  override val h: Int = b
+    t: => Int,
+    _h: Int,
+    _q: Int) extends Dummy(a, b, c, d, e, f, g, t, _h, _q) {
+  override val h: Int = _q
   override def o: Int = a
-  override lazy val q: Int = c
+  override lazy val q: Int = _h
 
   override def equals(other: Any): Boolean = ScalaEquals.equalAllVals(other)
 
@@ -76,9 +83,11 @@ class DummySub(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String = s"DummySub($a, $b, $c, $d, $e, $f, $g)"
+  override def toString: String =
+    "DummySub(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)".format(a, b, c, d, e, f, g, x, y, t, _h, _q)
 }
 
+// Equals on b, c, d
 class DummyC(
     a: Int,
     val b: Int,
@@ -87,19 +96,21 @@ class DummyC(
     var e: Int,
     private var f: Int,
     protected var g: Int,
-    t: => Int) {
-  val h: Int = a
+    t: => Int,
+    _h: Int,
+    _q: Int) {
+  val h: Int = _h
   protected val i: Int = b
   private val j: Int = c
-  var k: Int = d
+  var k: Int = a
   protected var l: Int = e
-  private var m: Int = f
+  private var m: Int = t
   def n: Int = g
-  protected def o: Int = i
-  private def p: Int = j
-  lazy val q: Int = k
-  protected lazy val r: Int = l
-  private lazy val s: Int = m
+  protected def o: Int = h
+  private def p: Int = i
+  lazy val q: Int = _q
+  protected lazy val r: Int = e
+  private lazy val s: Int = e
 
   override def equals(other: Any): Boolean = ScalaEquals.equal(other)
 
@@ -107,23 +118,27 @@ class DummyC(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String = s"DummyC($a, $b, $c, $d, $e, $f, $g)"
+  override def toString: String =
+    "DummyC(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d)".format(a, b, c, d, e, f, g, t, _h, _q)
 }
 
+// Equals on super, a, x
 class DummyCSub(
     val a: Int,
     override val b: Int,
-    override val c: Int,
+    c: Int,
     d: Int,
     e: Int,
     f: Int,
     g: Int,
     val x: Int,
     var y: Int,
-    t: => Int) extends DummyC(a, b, c, d, e, f, g, t) {
-  override val h: Int = b
+    t: => Int,
+    _h: Int,
+    _q: Int) extends DummyC(a, b, c, d, e, f, g, t, _h, _q) {
+  override val h: Int = _q
   override def o: Int = a
-  override lazy val q: Int = c
+  override lazy val q: Int = _h
 
   override def equals(other: Any): Boolean = ScalaEquals.equal(other)
 
@@ -131,9 +146,11 @@ class DummyCSub(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String = s"DummyCSub($a, $b, $c, $d, $e, $f, $g)"
+  override def toString: String =
+    "DummyCSub(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)".format(a, b, c, d, e, f, g, x, y, t, _h, _q)
 }
 
+// Equals on b, c, e, f, k, n, o, p, q, r, s
 class DummyParams(
     a: Int,
     val b: Int,
@@ -142,19 +159,21 @@ class DummyParams(
     var e: Int,
     private var f: Int,
     protected var g: Int,
-    t: => Int) {
-  val h: Int = a
+    t: => Int,
+    _h: Int,
+    _q: Int) {
+  val h: Int = _h
   protected val i: Int = b
   private val j: Int = c
-  var k: Int = d
+  var k: Int = a
   protected var l: Int = e
-  private var m: Int = f
+  private var m: Int = t
   def n: Int = g
-  protected def o: Int = i
-  private def p: Int = j
-  lazy val q: Int = k
-  protected lazy val r: Int = l
-  private lazy val s: Int = m
+  protected def o: Int = h
+  private def p: Int = i
+  lazy val q: Int = _q
+  protected lazy val r: Int = e
+  private lazy val s: Int = e
 
   override def equals(other: Any): Boolean = ScalaEquals.equal(other, b, c, e, f, k, n, o, p, q, r, s)
 
@@ -162,29 +181,34 @@ class DummyParams(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String = s"DummyParams($a, $b, $c, $d, $e, $f, $g)"
+  override def toString: String =
+    "DummyParams(%d, %d, %d, %d, %d, %d, %d, %s, %d, %d)".format(a, b, c, d, e, f, g, t, _h, _q)
 }
 
+// Equals on super, a, b, h, y, o
 class DummyParamsSub(
     val a: Int,
     override val b: Int,
-    override val c: Int,
+    c: Int,
     d: Int,
     e: Int,
     f: Int,
     g: Int,
     val x: Int,
     var y: Int,
-    t: => Int) extends DummyParams(a, b, c, d, e, f, g, t) {
-  override val h: Int = b
+    t: => Int,
+    _h: Int,
+    _q: Int) extends DummyParams(a, b, c, d, e, f, g, t, _h, _q) {
+  override val h: Int = _q
   override def o: Int = a
-  override lazy val q: Int = c
+  override lazy val q: Int = _h
 
-  override def equals(other: Any): Boolean = ScalaEquals.equal(other, a, b, h, x, y, o, c)
+  override def equals(other: Any): Boolean = ScalaEquals.equal(other, a, b, h, y, o)
 
   override def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String = s"DummyParamsSub($a, $b, $c, $d, $e, $f, $g)"
+  override def toString: String =
+    "DummyParamsSub(%d, %d, %d, %d, %d, %d, %d, %d, %d, %s, %d, %d)".format(a, b, c, d, e, f, g, x, y, t, _h, _q)
 }

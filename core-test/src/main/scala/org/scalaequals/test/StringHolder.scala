@@ -28,4 +28,5 @@ import org.scalaequals.ScalaEquals
 final class StringHolder(val string: String) {
   override def equals(other: Any): Boolean = ScalaEquals.equalAllVals(other)
   override def hashCode: Int = ScalaEquals.hash
+  override def toString: String = s"StringHolder($string)"
 }

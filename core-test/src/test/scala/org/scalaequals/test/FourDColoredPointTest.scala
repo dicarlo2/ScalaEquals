@@ -25,49 +25,43 @@ package org.scalaequals.test
 import org.scalacheck.Gen
 import org.scalacheck.Arbitrary._
 
-class FourDColoredPointTest extends EqualsFixture[FourDColoredPoint] {
-  def name: String = "FourDColoredPoint"
-  def classGen: Gen[FourDColoredPoint] =
-    FourDColoredPointTest.classGen
-  def equal2ClassGen: Gen[(FourDColoredPoint, FourDColoredPoint)] =
-    FourDColoredPointTest.equal2ClassGen
-  def equal3ClassGen: Gen[(FourDColoredPoint, FourDColoredPoint, FourDColoredPoint)] =
-    FourDColoredPointTest.equal3ClassGen
+class FourDColoredPointTest extends PointFixture[FourDColoredPoint] {
+  def name: String = FourDColoredPointTest.name
 
-  feature("equal calls super.equals if available (and not Object or AnyRef") {
-    scenario("FourDColoredPoint with different (private) z values") {
-      Given("2 FourDColoredPoint, x and y, with different z values")
-      val x = new FourDColoredPoint(1, 2, 3, 4, Color.Blue)
-      val y = new FourDColoredPoint(1, 2, 3, 5, Color.Blue)
-      When("x.equals(y)")
-      Then("the result is false")
-      x.equals(y) should be(false)
-    }
+  /* Creates a T from B */
+  def create(arg: PointArg): FourDColoredPoint = FourDColoredPointTest.create(arg)
+
+  /* Swaps one random pair of constructor arguments that are part of equals */
+  def changeRandom(arg: PointArg, arg2: PointArg): PointArg = {
+    val swapped = swap(IndexedSeq(arg.w, arg.x, arg.y, arg.z, arg.color),
+      IndexedSeq(arg2.w, arg2.x, arg2.y, arg2.z, arg2.color))
+    arg.copy(w = swapped(0).asInstanceOf[Int], x = swapped(1).asInstanceOf[Int], y = swapped(2).asInstanceOf[Int],
+    z = swapped(3).asInstanceOf[Int], color = swapped(4).asInstanceOf[Color.Value])
   }
+
+  /* true if arg and arg2 differ in a field not checked by equality or there are no fields that can differ */
+  def diff(arg: PointArg, arg2: PointArg): Boolean = true
+
+  /* true if arg and arg2 differ in a field checked by equality */
+  def unequal(arg: PointArg, arg2: PointArg): Boolean =
+    arg.w != arg2.w || arg.x != arg2.x || arg.y != arg2.y || arg.z != arg2.z || arg.color != arg2.color
 }
 
 object FourDColoredPointTest {
-  private[test] val argGen: Gen[(Int, Int, Int, Int, Color.Value)] = for {
+  def argGen: Gen[PointArg] = for {
     w <- arbitrary[Int]
     x <- arbitrary[Int]
     y <- arbitrary[Int]
     z <- arbitrary[Int]
     color <- Gen.oneOf(Color.values.toSeq)
-  } yield (w, x, y, z, color)
+  } yield PointArg(w, x, y, z, color)
 
-  private[test] def create4DP(arg: (Int, Int, Int, Int, Color.Value)): FourDColoredPoint = arg match {
-    case (w, x, y, z, color) => new FourDColoredPoint(w, x, y, z, color)
-  }
+  def name: String = "FourDColoredPoint"
 
-  private[test] def classGen: Gen[FourDColoredPoint] = for {
-    arg <- FourDColoredPointTest.argGen
-  } yield create4DP(arg)
+  /* Creates a T from B */
+  def create(arg: PointArg): FourDColoredPoint = new FourDColoredPoint(arg.w, arg.x, arg.y, arg.z, arg.color)
 
-  private[test] def equal2ClassGen: Gen[(FourDColoredPoint, FourDColoredPoint)] = for {
-    arg <- FourDColoredPointTest.argGen
-  } yield (create4DP(arg), create4DP(arg))
-
-  private[test] def equal3ClassGen: Gen[(FourDColoredPoint, FourDColoredPoint, FourDColoredPoint)] = for {
-    arg <- FourDColoredPointTest.argGen
-  } yield (create4DP(arg), create4DP(arg), create4DP(arg))
+  def gen: Gen[FourDColoredPoint] = for {
+    arg <- argGen
+  } yield create(arg)
 }
