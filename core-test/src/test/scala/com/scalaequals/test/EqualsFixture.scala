@@ -43,6 +43,8 @@ trait EqualsFixture[T] extends FeatureSpec with
 
     checkSymmetric(name, Gen.containerOfN[List, T](2, classGen))
     scenario(s"Equal pairs of $name") {
+      Given("2 equal non-null values x and y")
+      Then("x.equals(y) and y.equals(x) is true")
       forAll(equal2ClassGen) {case (x, y) =>
         if (x.equals(y)) {
           x.equals(y) should be(true)
@@ -75,6 +77,9 @@ trait EqualsFixture[T] extends FeatureSpec with
 
     checkTransitive(name, Gen.containerOfN[List, T](3, classGen))
     scenario(s"Equal triples of $name") {
+      Given("any non-null values x, y, and z")
+      When("x.equals(y) is true and y.equals(z) is true ")
+      Then("x.equals(z) is true")
       forAll(equal3ClassGen) {case (x, y, z) =>
         checkTransProp(x, y, z)
       }
