@@ -11,7 +11,7 @@ class ColoredPointTest extends EqualsFixture[ColoredPoint] {
   override def subClassName: String = "FourDColoredPoint"
   override def subClassGen: Option[Gen[FourDColoredPoint]] = Some(FourDColoredPointTest.classGen)
 
-  feature("equalC calls super.equals if it is available (and not Object or AnyRef)") {
+  feature("equal calls super.equals if it is available (and not Object or AnyRef)") {
     scenario("ColoredPoints with different (private) z values") {
       Given("2 ColoredPoints, x and y, with different z values")
       val x = new ColoredPoint(1, 2, 3, Color.Blue)

@@ -23,7 +23,7 @@ class Dummy(
   protected lazy val r: Int = l
   private lazy val s: Int = m
 
-  override def equals(other: Any): Boolean = Equals.equal(other)
+  override def equals(other: Any): Boolean = Equals.equalAllVals(other)
 
   def canEqual(other: Any): Boolean = Equals.canEqual(other)
 
@@ -46,7 +46,7 @@ class DummySub(
   override def o: Int = a
   override lazy val q: Int = c
 
-  override def equals(other: Any): Boolean = Equals.equal(other)
+  override def equals(other: Any): Boolean = Equals.equalAllVals(other)
 
   override def canEqual(other: Any): Boolean = Equals.canEqual(other)
 
@@ -76,7 +76,7 @@ class DummyC(
   protected lazy val r: Int = l
   private lazy val s: Int = m
 
-  override def equals(other: Any): Boolean = Equals.equalC(other)
+  override def equals(other: Any): Boolean = Equals.equal(other)
 
   def canEqual(other: Any): Boolean = Equals.canEqual(other)
 
@@ -99,7 +99,7 @@ class DummyCSub(
   override def o: Int = a
   override lazy val q: Int = c
 
-  override def equals(other: Any): Boolean = Equals.equalC(other)
+  override def equals(other: Any): Boolean = Equals.equal(other)
 
   override def canEqual(other: Any): Boolean = Equals.canEqual(other)
 
