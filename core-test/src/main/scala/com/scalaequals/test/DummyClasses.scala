@@ -9,7 +9,8 @@ class Dummy(
     private val d: Int,
     var e: Int,
     private var f: Int,
-    protected var g: Int) {
+    protected var g: Int,
+    t: => Int) {
   val h: Int = a
   protected val i: Int = b
   private val j: Int = c
@@ -41,7 +42,8 @@ class DummySub(
     f: Int,
     g: Int,
     val x: Int,
-    var y: Int) extends Dummy(a, b, c, d, e, f, g) {
+    var y: Int,
+    t: => Int) extends Dummy(a, b, c, d, e, f, g, t) {
   override val h: Int = b
   override def o: Int = a
   override lazy val q: Int = c
@@ -62,7 +64,8 @@ class DummyC(
     private val d: Int,
     var e: Int,
     private var f: Int,
-    protected var g: Int) {
+    protected var g: Int,
+    t: => Int) {
   val h: Int = a
   protected val i: Int = b
   private val j: Int = c
@@ -94,7 +97,8 @@ class DummyCSub(
     f: Int,
     g: Int,
     val x: Int,
-    var y: Int) extends DummyC(a, b, c, d, e, f, g) {
+    var y: Int,
+    t: => Int) extends DummyC(a, b, c, d, e, f, g, t) {
   override val h: Int = b
   override def o: Int = a
   override lazy val q: Int = c
@@ -115,7 +119,8 @@ class DummyParams(
     private val d: Int,
     var e: Int,
     private var f: Int,
-    protected var g: Int) {
+    protected var g: Int,
+    t: => Int) {
   val h: Int = a
   protected val i: Int = b
   private val j: Int = c
@@ -147,7 +152,8 @@ class DummyParamsSub(
     f: Int,
     g: Int,
     val x: Int,
-    var y: Int) extends DummyParams(a, b, c, d, e, f, g) {
+    var y: Int,
+    t: => Int) extends DummyParams(a, b, c, d, e, f, g, t) {
   override val h: Int = b
   override def o: Int = a
   override lazy val q: Int = c

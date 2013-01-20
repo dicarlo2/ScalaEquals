@@ -5,7 +5,7 @@ import org.scalacheck.Arbitrary._
 import scala.Some
 
 object DummyShared {
-  type Arg = (Int, Int, Int, Int, Int, Int, Int, Int, Int)
+  type Arg = (Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)
   def dummyArgGen: Gen[Arg] = for {
     a <- arbitrary[Int]
     b <- arbitrary[Int]
@@ -14,12 +14,13 @@ object DummyShared {
     e <- arbitrary[Int]
     f <- arbitrary[Int]
     g <- arbitrary[Int]
+    i <- arbitrary[Int]
     x <- arbitrary[Int]
     y <- arbitrary[Int]
-  } yield (a, b, c, d, e, f, g, x, y)
+  } yield (a, b, c, d, e, f, g, i, x, y)
   def dummySubName: String = "DummySub"
   def createDummySub(arg: Arg): DummySub = arg match {
-    case (a, b, c, d, e, f, g, x, y) => new DummySub(a, b, c, d, e, f, g, x, y)
+    case (a, b, c, d, e, f, g, i, x, y) => new DummySub(a, b, c, d, e, f, g, i, x, y)
   }
   def dummySubGen: Option[Gen[DummySub]] = Some(for {
     arg <- dummyArgGen
@@ -29,7 +30,7 @@ object DummyShared {
 class DummyTest extends EqualsFixture[Dummy] {
   def name: String = "Dummy"
   def createDummy(arg: DummyShared.Arg): Dummy = arg match {
-    case (a, b, c, d, e, f, g, x, y) => new Dummy(a, b, c, d, e, f, g)
+    case (a, b, c, d, e, f, g, i, x, y) => new Dummy(a, b, c, d, e, f, g, i)
   }
   def classGen: Gen[Dummy] = for {
     arg <- DummyShared.dummyArgGen
@@ -58,7 +59,7 @@ class DummySubTest extends EqualsFixture[DummySub] {
 object DummyCShared {
   def dummySubName: String = "DummyCSub"
   def createDummyCSub(arg: DummyShared.Arg): DummyCSub = arg match {
-    case (a, b, c, d, e, f, g, x, y) => new DummyCSub(a, b, c, d, e, f, g, x, y)
+    case (a, b, c, d, e, f, g, i, x, y) => new DummyCSub(a, b, c, d, e, f, g, i, x, y)
   }
   def dummySubGen: Option[Gen[DummyCSub]] = Some(for {
     arg <- DummyShared.dummyArgGen
@@ -68,7 +69,7 @@ object DummyCShared {
 class DummyCTest extends EqualsFixture[DummyC] {
   def name: String = "DummyC"
   def createDummyC(arg: DummyShared.Arg): DummyC = arg match {
-    case (a, b, c, d, e, f, g, x, y) => new DummyC(a, b, c, d, e, f, g)
+    case (a, b, c, d, e, f, g, i, x, y) => new DummyC(a, b, c, d, e, f, g, i)
   }
   def classGen: Gen[DummyC] = for {
     arg <- DummyShared.dummyArgGen
@@ -98,7 +99,7 @@ class DummyCSubTest extends EqualsFixture[DummyCSub] {
 object DummyParamsShared {
   def dummySubName: String = "DummyParamsSub"
   def createDummyParamsSub(arg: DummyShared.Arg): DummyParamsSub = arg match {
-    case (a, b, c, d, e, f, g, x, y) => new DummyParamsSub(a, b, c, d, e, f, g, x, y)
+    case (a, b, c, d, e, f, g, i, x, y) => new DummyParamsSub(a, b, c, d, e, f, g, i, x, y)
   }
   def dummySubGen: Option[Gen[DummyParamsSub]] = Some(for {
     arg <- DummyShared.dummyArgGen
@@ -108,7 +109,7 @@ object DummyParamsShared {
 class DummyParamsTest extends EqualsFixture[DummyParams] {
   def name: String = "DummyParams"
   def createDummyParams(arg: DummyShared.Arg): DummyParams = arg match {
-    case (a, b, c, d, e, f, g, x, y) => new DummyParams(a, b, c, d, e, f, g)
+    case (a, b, c, d, e, f, g, i, x, y) => new DummyParams(a, b, c, d, e, f, g, i)
   }
   def classGen: Gen[DummyParams] = for {
     arg <- DummyShared.dummyArgGen
