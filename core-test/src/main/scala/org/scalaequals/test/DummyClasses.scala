@@ -37,8 +37,8 @@ class Dummy(
   protected val i: Int = b
   private val j: Int = c
   var k: Int = d
-  protected val l: Int = e
-  private val m: Int = f
+  protected var l: Int = e
+  private var m: Int = f
   def n: Int = g
   protected def o: Int = h
   private def p: Int = i
@@ -58,7 +58,7 @@ class Dummy(
 class DummySub(
     val a: Int,
     override val b: Int,
-    override val c: Int,
+    c: Int,
     d: Int,
     e: Int,
     f: Int,
@@ -92,8 +92,8 @@ class DummyC(
   protected val i: Int = b
   private val j: Int = c
   var k: Int = d
-  protected val l: Int = e
-  private val m: Int = f
+  protected var l: Int = e
+  private var m: Int = f
   def n: Int = g
   protected def o: Int = i
   private def p: Int = j
@@ -147,8 +147,8 @@ class DummyParams(
   protected val i: Int = b
   private val j: Int = c
   var k: Int = d
-  protected val l: Int = e
-  private val m: Int = f
+  protected var l: Int = e
+  private var m: Int = f
   def n: Int = g
   protected def o: Int = i
   private def p: Int = j

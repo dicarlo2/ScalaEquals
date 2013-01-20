@@ -31,6 +31,7 @@ trait EqualsFixture[T] extends FeatureSpec with
                                GivenWhenThen with
                                ShouldMatchers with
                                GeneratorDrivenPropertyChecks {
+  implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 10000, workers = 4)
   def name: String
   def classGen: Gen[T]
   def equal2ClassGen: Gen[(T, T)]
@@ -83,8 +84,6 @@ trait EqualsFixture[T] extends FeatureSpec with
     def checkTransProp(x: T, y: T, z: T) {
       if (x.equals(y) && y.equals(z))
         x.equals(z) should be(true)
-      else
-        x.equals(z) should be(false)
     }
     def checkTransitive(name: String, gen: Gen[List[T]]) {
       scenario(s"$name") {

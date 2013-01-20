@@ -31,7 +31,7 @@ object BuildSettings {
     organization := "org.scalaequals",
     version := buildVersion,
     scalaVersion := buildScalaVersion,
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Ymacro-debug-lite")
   )
 }
 

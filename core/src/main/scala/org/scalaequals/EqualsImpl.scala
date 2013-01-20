@@ -37,9 +37,9 @@ object EqualsImpl {
     new eqm.EqualsMakerInner(other).make()
   }
 
-  def equalCImpl(c: Context)(other: c.Expr[Any]): c.Expr[Boolean] = {
+  def equalAllValsImpl(c: Context)(other: c.Expr[Any]): c.Expr[Boolean] = {
     val eqm = new EqualsMaker[c.type](c)
-    new eqm.EqualsMakerInner(other).makeC()
+    new eqm.EqualsMakerInner(other).makeAll()
   }
 
   def equalParamImpl(c: Context)
@@ -50,10 +50,10 @@ object EqualsImpl {
 
   private[EqualsImpl] class EqualsMaker[C <: Context](val c: C) {
     class EqualsMakerInner(other: c.Expr[Any]) {
+
       import c.universe._
 
-      val selfSymbol: Symbol = c.enclosingClass.symbol
-      val selfTpe: Type = selfSymbol.asType.toType
+      val selfTpe: Type = c.enclosingClass.symbol.asType.toType
       val hasCanEqual: Boolean = !selfTpe.member("canEqual": TermName).isInstanceOf[Symbols#NoSymbol]
       val hasSuperClassWithEquals: Boolean = {
         val overriding = selfTpe.baseClasses map {_.asType.toType} filter {_.member("equals": TermName).isOverride}
@@ -108,7 +108,7 @@ object EqualsImpl {
                 newTermName("that"),
                 Typed(
                   Ident(nme.WILDCARD),
-                  Ident(selfSymbol))),
+                  TypeTree(selfTpe))),
               condition),
             CaseDef(
               Ident(nme.WILDCARD),
@@ -135,16 +135,21 @@ object EqualsImpl {
         c.Expr[Boolean](createMatch(and))
       }
 
+      def isVal(term: TermSymbol): Boolean = term.isStable && term.isMethod
+      def isInherited(term: TermSymbol): Boolean = term.owner != selfTpe.typeSymbol || term.isOverride
+      def isAccessible(term: TermSymbol): Boolean = term.owner == selfTpe.typeSymbol || !term.isPrivate
+
+      def notInheritedVal(): Seq[TermSymbol] =
+        (selfTpe.members filter {_.isTerm} map {_.asTerm} filter {t => isVal(t) && !isInherited(t)}).toSeq.reverse
+
       def make(): c.Expr[Boolean] = {
-        val values = selfTpe.members filter {_.isTerm} map {_.asTerm} filter
-          {m => m.isVal && !m.getter.isInstanceOf[Symbols#NoSymbol]}
-        createCondition(values.toSeq.reverse)
+        val values = notInheritedVal() filter  {_.isParamAccessor}
+        createCondition(values)
       }
 
-      def makeC(): c.Expr[Boolean] = {
-        val values = selfTpe.members filter {_.isTerm} map {_.asTerm} filter
-          {m => m.isVal && m.isParamAccessor && !m.getter.isInstanceOf[Symbols#NoSymbol]}
-        createCondition(values.toSeq.reverse)
+      def makeAll(): c.Expr[Boolean] = {
+        val values = notInheritedVal()
+        createCondition(values)
       }
 
       def make(params: Seq[c.Expr[Any]]): c.Expr[Boolean] = {

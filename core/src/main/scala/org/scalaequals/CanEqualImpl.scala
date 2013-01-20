@@ -42,7 +42,7 @@ object CanEqualImpl {
             newTermName("other")),
           newTermName("isInstanceOf")),
         List(
-          Ident(c.enclosingClass.symbol)))
+          TypeTree(c.enclosingClass.symbol.asType.toType)))
     c.Expr[Boolean](tree)
   }
 }

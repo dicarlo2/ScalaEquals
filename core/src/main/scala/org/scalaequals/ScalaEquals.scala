@@ -94,21 +94,24 @@ import scala.language.experimental.macros
 object ScalaEquals {
   /**
    * Equality check using all private/protected/public of the class
-   * defined in the constructor
+   * defined in the constructor. Does not use inherited or overriden vals.
+   * Do not use with traits, it will only generate a `super.equals(that)`
+   * call, instead use `equalAllVals`
    *
    * @param other the instance to compare to
    * @return true if instance.equals(other)
    */
-  def equal(other: Any): Boolean = macro EqualsImpl.equalCImpl
+  def equal(other: Any): Boolean = macro EqualsImpl.equalImpl
 
   /**
    * Equality check using all private/protected/public/lazy vals of the class
-   * defined in the constructor AND the body of the class
+   * defined in the constructor AND the body of the class. Does not use
+   * inherited or overriden vals.
    *
    * @param other the instance to compare to
    * @return true if instance.equals(other)
    */
-  def equalAllVals(other: Any): Boolean = macro EqualsImpl.equalImpl
+  def equalAllVals(other: Any): Boolean = macro EqualsImpl.equalAllValsImpl
 
   /**
    * Equality check using only parameters passed in to test for equality.
