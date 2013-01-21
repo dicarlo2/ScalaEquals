@@ -27,8 +27,8 @@ import reflect.macros.Context
 /** Implementation of `ScalaEquals.canEquals` macro
   *
   * @author Alex DiCarlo
-  * @version 0.3.0
-  * @since 0.3.0
+  * @version 1.0.0
+  * @since 0.2.0
   */
 object CanEqualImpl {
   def canEquals(c: Context)(other: Any): c.Expr[Boolean] = {

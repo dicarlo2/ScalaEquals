@@ -88,8 +88,8 @@ import scala.language.experimental.macros
   *
   *
   * @author Alex DiCarlo
-  * @version 0.3.0
-  * @since 0.3.0
+  * @version 1.0.0
+  * @since 0.1.0
   */
 object ScalaEquals {
   /**

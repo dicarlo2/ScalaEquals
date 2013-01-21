@@ -28,8 +28,8 @@ import reflect.internal.Symbols
 /** Implementation of `ScalaEquals.equal` and `ScalaEquals.equalAllVals` macro
   *
   * @author Alex DiCarlo
-  * @version 0.3.0
-  * @since 0.3.0
+  * @version 1.0.0
+  * @since 0.1.0
   */
 object EqualsImpl {
   def equalImpl(c: Context)(other: c.Expr[Any]): c.Expr[Boolean] = {
@@ -140,7 +140,7 @@ object EqualsImpl {
       def isAccessible(term: TermSymbol): Boolean = term.owner == selfTpe.typeSymbol || !term.isPrivate
 
       def notInheritedVal(): Seq[TermSymbol] =
-        (selfTpe.members filter {_.isTerm} map {_.asTerm} filter {t => isVal(t) && !isInherited(t)}).toSeq.reverse
+        (selfTpe.members filter {_.isTerm} map {_.asTerm} filter {t => isVal(t) && !isInherited(t)}).toSeq
 
       def make(): c.Expr[Boolean] = {
         val values = notInheritedVal() filter  {_.isParamAccessor}

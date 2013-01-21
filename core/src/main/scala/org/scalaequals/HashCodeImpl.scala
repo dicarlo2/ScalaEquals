@@ -24,13 +24,12 @@ package org.scalaequals
 
 import org.scalaequals.EqualsImpl.EqualsPayload
 import reflect.macros.Context
-import scala.language.postfixOps
 
 /** Implementation of `ScalaEquals.hash` macro
   *
   * @author Alex DiCarlo
-  * @version 0.3.0
-  * @since 0.3.0
+  * @version 1.0.0
+  * @since 0.2.0
   */
 object HashCodeImpl {
   def hash(c: Context): c.Expr[Int] = {
@@ -94,7 +93,7 @@ object HashCodeImpl {
       val payload = extractPayload()
       val values =
         selfTpe.members.filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
-      val terms = values map {t => Select(This(tpnme.EMPTY), t)} toList
+      val terms = (values map {t => Select(This(tpnme.EMPTY), t)}).toList
       val hash = if (payload.superHashCode) createHash(createSuperHashCode() :: terms) else createHash(terms)
       c.Expr[Int](hash)
     }
