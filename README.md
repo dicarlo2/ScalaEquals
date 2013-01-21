@@ -19,6 +19,9 @@ in equals comparisons on the objects is modified.
 • For any non-null value x, x.equals(null) should return false.
 
 Additionally, using `ScalaEquals.hash` will guarantee that `hashCode()` is always consistent with `equals`.
+As a bonus, the macros also check that `equals`/`hashCode`/`canEqual` are defined correctly, 
+it will catch misspellings, incorrect types, etc.
+
 In the documentation and in this README, anywhere `ScalaEquals.equal` is seen it is assumed that 
 `ScalaEquals.equalAllVals` also applies, unless otherwise stated.
 
