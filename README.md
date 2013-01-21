@@ -54,8 +54,7 @@ class Point(_x: Int, var y: Int) {
 ## Downloading
 
 Packaged jars are available in the root directory. ScalaEquals 1.0.0 was built and
-packaged with [`sbt`][simple], feel free to checkout the repo 
-and build it!
+packaged with [`sbt`][simple], feel free to checkout the repo and build it!
 
 ## Details
 
@@ -88,6 +87,8 @@ in `equals`.
  - Works with classes, traits, abstract classes and generic variants (parameterized and
 with abstract type members). As always, be careful about initialization order when using 
 traits and abstract classes.
+
+ - Requires Scala 2.10.0 and Java 1.7. Contact me if this is an issue.
 
 ## Feedback
 
