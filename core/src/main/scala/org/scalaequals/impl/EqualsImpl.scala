@@ -20,18 +20,17 @@
  * THE SOFTWARE.
  */
 
-package org.scalaequals
+package org.scalaequals.impl
 
 import reflect.macros.Context
-import reflect.internal.Symbols
 
 /** Implementation of `ScalaEquals.equal` and `ScalaEquals.equalAllVals` macro
   *
   * @author Alex DiCarlo
-  * @version 1.0.0
+  * @version 1.0.1
   * @since 0.1.0
   */
-object EqualsImpl {
+private[scalaequals] object EqualsImpl {
   def equalImpl(c: Context)(other: c.Expr[Any]): c.Expr[Boolean] = {
     val eqm = new EqualsMaker[c.type](c)
     new eqm.EqualsMakerInner(other).make()
@@ -50,15 +49,12 @@ object EqualsImpl {
 
   private[EqualsImpl] class EqualsMaker[C <: Context](val c: C) {
     class EqualsMakerInner(other: c.Expr[Any]) {
-
       import c.universe._
 
       val selfTpe: Type = c.enclosingClass.symbol.asType.toType
-      val hasCanEqual: Boolean = !selfTpe.member("canEqual": TermName).isInstanceOf[Symbols#NoSymbol]
-      val hasSuperClassWithEquals: Boolean = {
-        val overriding = selfTpe.baseClasses map {_.asType.toType} filter {_.member("equals": TermName).isOverride}
-        overriding exists {tpe => !(tpe =:= typeOf[AnyRef] || tpe =:= typeOf[Object] || tpe =:= selfTpe)}
-      }
+      val locator: Locator[c.type] = new Locator[c.type](c)
+      val hasCanEqual: Boolean = locator.hasCanEqual(selfTpe)
+      val hasSuperOverridingEquals: Boolean = locator.hasSuperOverridingEquals(selfTpe)
 
       def createCanEqual(): Apply =
         Apply(
@@ -69,7 +65,7 @@ object EqualsImpl {
             This(tpnme.EMPTY)))
 
       def createTermEquals(term: TermSymbol): Apply = {
-        def createEquals(term: Symbol): Apply =
+        def createEquals(term: Symbol): Apply = {
           Apply(
             Select(
               Select(
@@ -80,6 +76,7 @@ object EqualsImpl {
               Select(
                 This(tpnme.EMPTY),
                 term)))
+        }
         if (term.isMethod) createEquals(term) else createEquals(term.getter)
       }
 
@@ -118,13 +115,15 @@ object EqualsImpl {
           ))
       }
 
-      def createCondition(values: Seq[TermSymbol]): c.Expr[Boolean] = {
-        if (c.enclosingMethod.symbol.name != ("equals": TermName))
-          c.abort(c.enclosingPosition, Errors.incorrectEqualCallSite)
-        val payload = EqualsPayload(values map {_.name.encoded}, hasSuperClassWithEquals || values.size == 0)
+      def createCondition(values: List[TermSymbol]): c.Expr[Boolean] = {
+        if (!locator.isEquals(c.enclosingMethod.symbol))
+          c.abort(c.enclosingMethod.pos, Errors.badEqualCallSite)
+
+        val payload = EqualsPayload(values map {_.name.encoded}, hasSuperOverridingEquals || values.isEmpty)
         c.enclosingMethod.updateAttachment(payload)
-        val termEquals = (values map createTermEquals).toList
-        val and = (hasCanEqual, hasSuperClassWithEquals) match {
+
+        val termEquals = values map createTermEquals
+        val and = (hasCanEqual, hasSuperOverridingEquals) match {
           case (true, true) => createNestedAnd(createCanEqual() :: createSuperEquals() :: termEquals)
           case (false, true) => createNestedAnd(createSuperEquals() :: termEquals)
           case (true, false) if termEquals.size == 0 => createNestedAnd(List(createCanEqual(), createSuperEquals()))
@@ -132,28 +131,20 @@ object EqualsImpl {
           case (false, false) if termEquals.size == 0 => createSuperEquals()
           case (false, false) => createNestedAnd(termEquals)
         }
+
         c.Expr[Boolean](createMatch(and))
       }
 
-      def isVal(term: TermSymbol): Boolean = term.isStable && term.isMethod
-      def isInherited(term: TermSymbol): Boolean = term.owner != selfTpe.typeSymbol || term.isOverride
-      def isAccessible(term: TermSymbol): Boolean = term.owner == selfTpe.typeSymbol || !term.isPrivate
-
-      def notInheritedVal(): Seq[TermSymbol] =
-        (selfTpe.members filter {_.isTerm} map {_.asTerm} filter {t => isVal(t) && !isInherited(t)}).toSeq
-
       def make(): c.Expr[Boolean] = {
-        val values = notInheritedVal() filter  {_.isParamAccessor}
-        createCondition(values)
+        createCondition(locator.constructorValsNotInherited(selfTpe))
       }
 
       def makeAll(): c.Expr[Boolean] = {
-        val values = notInheritedVal()
-        createCondition(values)
+        createCondition(locator.valsNotInherited(selfTpe))
       }
 
       def make(params: Seq[c.Expr[Any]]): c.Expr[Boolean] = {
-        val values = params map {_.tree.symbol.asTerm}
+        val values = (params map {_.tree.symbol.asTerm}).toList
         createCondition(values)
       }
     }

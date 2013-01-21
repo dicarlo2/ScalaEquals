@@ -22,6 +22,7 @@
 
 package org.scalaequals
 
+import impl.{HashCodeImpl, EqualsImpl, CanEqualImpl}
 import scala.language.experimental.macros
 
 /** Entry point for ScalaEquals
@@ -88,15 +89,15 @@ import scala.language.experimental.macros
   *
   *
   * @author Alex DiCarlo
-  * @version 1.0.0
+  * @version 1.0.1
   * @since 0.1.0
   */
 object ScalaEquals {
   /**
-   * Equality check using all private/protected/public of the class
+   * Equality check using all private/protected/public vals of the class
    * defined in the constructor. Does not use inherited or overriden vals.
    * Do not use with traits, it will only generate a `super.equals(that)`
-   * call, instead use `equalAllVals`
+   * call, instead use `equalAllVals`.
    *
    * @param other the instance to compare to
    * @return true if instance.equals(other)

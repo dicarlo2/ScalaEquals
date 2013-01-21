@@ -20,30 +20,29 @@
  * THE SOFTWARE.
  */
 
-package org.scalaequals
+package org.scalaequals.impl
 
-import org.scalaequals.EqualsImpl.EqualsPayload
 import reflect.macros.Context
+import org.scalaequals.impl.EqualsImpl.EqualsPayload
 
 /** Implementation of `ScalaEquals.hash` macro
   *
   * @author Alex DiCarlo
-  * @version 1.0.0
+  * @version 1.0.1
   * @since 0.2.0
   */
-object HashCodeImpl {
+private[scalaequals] object HashCodeImpl {
   def hash(c: Context): c.Expr[Int] = {
     new HashMaker[c.type](c).make()
   }
 
   private[HashCodeImpl] class HashMaker[C <: Context](val c: C) {
-
     import c.universe._
 
-    val selfSymbol: Symbol = c.enclosingClass.symbol
-    val selfTpe: Type = selfSymbol.asType.toType
+    val selfTpe: Type = c.enclosingClass.symbol.asType.toType
+    val locator: Locator[c.type] = new Locator[c.type](c)
 
-    def createSuperHashCode(): Apply =
+    private def createSuperHashCode(): Apply =
       Apply(
         Select(
           Super(
@@ -53,7 +52,7 @@ object HashCodeImpl {
         List()
       )
 
-    def createHash(terms: List[Tree]): Tree = {
+    private def createHash(terms: List[Tree]): Tree = {
       Apply(
         Select(
           Select(
@@ -74,25 +73,21 @@ object HashCodeImpl {
             terms)))
     }
 
-    def extractPayload(): EqualsPayload = {
-      val equalsMethod = c.enclosingClass find {t =>
-        t.isDef && t.symbol.isMethod && t.symbol.asMethod.name == ("equals": TermName)
-      }
-      equalsMethod match {
+    private def extractPayload(): EqualsPayload = {
+      locator.findEquals(c.enclosingClass) match {
         case Some(method) => method.attachments.get[EqualsImpl.EqualsPayload] match {
           case Some(payload) => payload
-          case None => c.abort(c.enclosingPosition, Errors.incorrectHashOrdering)
+          case None => c.abort(c.enclosingPosition, Errors.badHashOrdering)
         }
         case None => c.abort(c.enclosingPosition, Errors.missingEquals)
       }
     }
 
     def make(): c.Expr[Int] = {
-      if (c.enclosingMethod.symbol.name != ("hashCode": TermName))
-        c.abort(c.enclosingPosition, Errors.incorrectHashCallSite)
+      if (!locator.isHashCode(c.enclosingMethod.symbol))
+        c.abort(c.enclosingMethod.pos, Errors.badHashCallSite)
       val payload = extractPayload()
-      val values =
-        selfTpe.members.filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
+      val values = selfTpe.members filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
       val terms = (values map {t => Select(This(tpnme.EMPTY), t)}).toList
       val hash = if (payload.superHashCode) createHash(createSuperHashCode() :: terms) else createHash(terms)
       c.Expr[Int](hash)

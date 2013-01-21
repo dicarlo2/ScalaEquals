@@ -20,21 +20,21 @@
  * THE SOFTWARE.
  */
 
-package org.scalaequals
+package org.scalaequals.impl
 
 import reflect.macros.Context
 
 /** Implementation of `ScalaEquals.canEquals` macro
   *
   * @author Alex DiCarlo
-  * @version 1.0.0
+  * @version 1.0.1
   * @since 0.2.0
   */
-object CanEqualImpl {
+private[scalaequals] object CanEqualImpl {
   def canEquals(c: Context)(other: Any): c.Expr[Boolean] = {
     import c.universe._
-    if (c.enclosingMethod.symbol.name != ("canEqual": TermName))
-      c.abort(c.enclosingPosition, Errors.incorrectCanEqualCallSite)
+    if (!new Locator[c.type](c).isCanEqual(c.enclosingMethod.symbol))
+      c.abort(c.enclosingMethod.pos, Errors.badCanEqualsCallSite)
     val tree =
       TypeApply(
         Select(

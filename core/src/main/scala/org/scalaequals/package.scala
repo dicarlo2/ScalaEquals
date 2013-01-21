@@ -90,30 +90,7 @@ package org
   * Chapter 30 (Object equality)
   *
   * @author Alex DiCarlo
-  * @version 1.0.0
+  * @version 1.0.1
   * @since 0.3.0
   */
-package object scalaequals {
-  object Errors {
-    /**
-     * ScalaEquals.canEquals must be called from within a canEquals method
-     */
-    val incorrectCanEqualCallSite: String = "ScalaEquals.canEquals must be called from within a canEqual method!"
-    /**
-     * ScalaEquals.equal must be called from within an equals method
-     */
-    val incorrectEqualCallSite: String = "ScalaEquals.equal must be called from within an equals method!"
-    val incorrectHashCallSite: String = "ScalaEquals.hash must be called from within a hashCode method!"
-    /**
-     * No attachments found on equals. Ensure that the definition of #equals comes before #hashCode() and that you
-     * are using ScalaEquals.equal or ScalaEquals.equalAllVals"
-     */
-    val incorrectHashOrdering: String = "No attachments found on equals. Ensure that the definition of #equals " +
-      "comes before #hashCode() and that you are using ScalaEquals.equal or ScalaEquals.equalAllVals"
-    /**
-     * No equals method found! Ensure you are overriding equals and that it has the correct signature.
-     */
-    val missingEquals: String =
-      "No equals method found! Ensure you are overriding equals and that it has the correct signature."
-  }
-}
+package object scalaequals {}
