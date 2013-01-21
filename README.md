@@ -56,7 +56,7 @@ class Point(_x: Int, var y: Int) {
 
 ## Downloading
 
-Packaged jars are available in the root directory. ScalaEquals 1.0.0 was built and
+Packaged jars are available in the root directory. ScalaEquals was built and
 packaged with [`sbt`][simple], feel free to checkout the repo and build it!
 
 ## Details
