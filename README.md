@@ -19,8 +19,8 @@ in equals comparisons on the objects is modified.
 • For any non-null value x, x.equals(null) should return false.
 
 Additionally, using `ScalaEquals.hash` will guarantee that `hashCode()` is always consistent with `equals`.
-In the documentation, anywhere `ScalaEquals.equal` is seen it is assumed that `ScalaEquals.equalAllVals` 
-also applies, unless otherwise stated.
+In the documentation and in this README, anywhere `ScalaEquals.equal` is seen it is assumed that 
+`ScalaEquals.equalAllVals` also applies, unless otherwise stated.
 
 ## How To Use
 
@@ -53,8 +53,9 @@ class Point(_x: Int, var y: Int) {
 
 ## Downloading
 
-Feel free to fork (or checkout) this repo. Additionally, packaged jars are available
-in the root directory.
+Packaged jars are available in the root directory. ScalaEquals 1.0.0 was built and
+packaged with [`sbt`][simple], feel free to checkout the repo 
+and build it!
 
 ## Details
 
@@ -70,16 +71,17 @@ qualified with `override`.
  - `ScalaEquals.equalAllVals` will use all `val`s in constructor AND body of class,
 subject to the same constraints as above.
 
- - `ScalaEquals.equal(params)` will use ONLY the fields specified in `params`. Valid
-arguments include `val`, `var`, `lazy val`, and `def` that take no arguments. Any access
-modifier is allowed, and unlike `equal` and `equalAllVals`, arguments qualified with 
-`override` may also be used.
+ - `ScalaEquals.equal(params)` will use *only* the fields specified in `params` (as well as
+`super.equals` if applicable). Valid arguments include `val`, `var`, `lazy val`, 
+and `def` that take no arguments. Any access modifier is allowed, and unlike `equal` 
+and `equalAllVals`, arguments inherited from a super class and/or qualified with `override` 
+may also be used.
 
  - `ScalaEquals.hash`, if it is used, *MUST* be used in conjunction with a `ScalaEquals.equal` 
 method and the definition of `hashCode()` *MUST* come after the definition of `equals` in the file.
 
- - `ScalaEquals.hash` will call `super.hashCode()` if `super.equals(that)` is called in
-`equals`.
+ - `ScalaEquals.hash` will use `super.hashCode()` if and only if `super.equals(that)` is called 
+in `equals`.
 
  - `ScalaEquals.canEquals` is a simple macro that converts to `other.isInstanceOf[Class]`
 
@@ -87,14 +89,25 @@ method and the definition of `hashCode()` *MUST* come after the definition of `e
 with abstract type members). As always, be careful about initialization order when using 
 traits and abstract classes.
 
+## Feedback
+
+### Questions or Comments?
+
+Want to tell me how awesome (or horrible) ScalaEquals is? Send me an [email][asde]!
+
+### Found a Bug? Want a New Feature?
+
+Add issues or feature requests here on github at the [issue][] tracker, or better yet, 
+fork the project and submit a pull request.
+
 ## Testing
 
-All implementations have been thoroughly tested using [`ScalaCheck`][check]. Feel free to check
-the `core-test` project for specific details, specifically check out the documentation
-for [`EqualsFixture`][fixture] for exact testing methodology. If you find a problem, please
-submit an [issue][]! As always, even if the implementation is perfect, it is good to
-sanity check your own code to ensure that the logic of `equals` is defined how you want it
-to be.
+All implementations have been thoroughly tested using [`ScalaCheck`][check]. Check out 
+the `core-test` project for details, specifically check out the documentation for 
+[`EqualsFixture`][fixture] for exact testing methodology. If you find a problem, please
+submit an [issue][]! As always, even when the implementation is perfect, it is good to
+sanity check your own code to ensure that the logic of `equals`/`hashCode` is defined 
+how you want it to be.
 
 ## Example Macro Expansion
 
@@ -121,3 +134,6 @@ class Point(val x: Int, val y: Int) {
 [issue]: https://github.com/dicarlo2/ScalaEquals/issues
 [pis]: http://www.amazon.com/Programming-Scala-Comprehensive-Step-Step/dp/0981531644
 [check]: https://github.com/rickynils/scalacheck
+[asd]: https://github.com/dicarlo2
+[asde]: alexdicarlo@gmail.com
+[simple]: http://www.scala-sbt.org/
