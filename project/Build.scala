@@ -31,7 +31,37 @@ object BuildSettings {
     organization := "org.scalaequals",
     version := buildVersion,
     scalaVersion := buildScalaVersion,
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature"),
+
+    publishTo <<= version { (v: String) =>
+      val nexus = "https://oss.sonatype.org/"
+      if (v.trim.endsWith("SNAPSHOT"))
+        Some("snapshots" at nexus + "content/repositories/snapshots")
+      else
+        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+    },
+    pomIncludeRepository := { _ => false },
+    publishArtifact in Test := false,
+    pomExtra := (
+      <url>http://scalaequals.org/</url>
+        <licenses>
+          <license>
+            <name>MIT-style</name>
+            <url>http://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+          </license>
+        </licenses>
+        <scm>
+          <url>git@github.com:dicarlo2/ScalaEquals.git</url>
+          <connection>scm:git:git@github.com:dicarlo2/ScalaEquals.git</connection>
+        </scm>
+        <developers>
+          <developer>
+            <id>dicarlo2</id>
+            <name>Alex DiCarlo</name>
+            <email>alexdicarlo@gmail.com/</email>
+          </developer>
+        </developers>)
   )
 }
 
@@ -48,7 +78,11 @@ object ScalaEqualsBuild extends Build {
   lazy val root = Project(
     id = "ScalaEquals",
     base = file("."),
-    settings = buildSettings) aggregate(core, core_test)
+    settings = buildSettings ++ Seq(
+      publishArtifact in (Compile, packageBin) := false,
+      publishArtifact in (Compile, packageSrc) := false,
+      publishArtifact in (Compile, packageDoc) := false
+    )) aggregate(core, core_test)
 
   lazy val core = Project(
     id = "core",
@@ -63,6 +97,8 @@ object ScalaEqualsBuild extends Build {
     base = file("core-test"),
     settings = buildSettings ++ Seq(
       name := "ScalaEquals Core Tests",
-      libraryDependencies ++= Seq(scalatest, scalacheck)
+      libraryDependencies ++= Seq(scalatest, scalacheck),
+      publish := (),
+      publishLocal := ()
     )) dependsOn(core)
 }
