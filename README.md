@@ -58,8 +58,10 @@ class Point(_x: Int, var y: Int) {
 
 ## Downloading
 
-Packaged jars are available in the root directory. ScalaEquals was built and
-packaged with [`sbt`][simple], feel free to checkout the repo and build it!
+You may download ScalaEquals directly from [Sonatype][sona], or to use with sbt, add the
+following to your project file:
+
+`libraryDependencies += "org.scalaequals" %% "scalaequals-core" % "1.0.1"`
 
 ## Details
 
@@ -106,6 +108,10 @@ Want to tell me how awesome (or horrible) ScalaEquals is? Send me an [email][asd
 Add issues or feature requests here on github at the [issue][] tracker, or better yet, 
 fork the project and submit a pull request.
 
+## Release Notes
+
+View complete release notes [here][release].
+
 ## Testing
 
 All implementations have been thoroughly tested using [`ScalaCheck`][check]. Check out 
@@ -143,3 +149,5 @@ class Point(val x: Int, val y: Int) {
 [asd]: https://github.com/dicarlo2
 [asde]: alexdicarlo@gmail.com
 [simple]: http://www.scala-sbt.org/
+[sona]: http://oss.sonatype.org/content/repositories/releases/org/scalaequals/
+[release]: https://github.com/dicarlo2/ScalaEquals/blob/master/RELEASE_NOTES.md
