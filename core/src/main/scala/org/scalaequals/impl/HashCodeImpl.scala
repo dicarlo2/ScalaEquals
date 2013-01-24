@@ -28,7 +28,7 @@ import org.scalaequals.impl.EqualsImpl.EqualsPayload
 /** Implementation of `ScalaEquals.hash` macro
   *
   * @author Alex DiCarlo
-  * @version 1.0.1
+  * @version 1.0.2
   * @since 0.2.0
   */
 private[scalaequals] object HashCodeImpl {

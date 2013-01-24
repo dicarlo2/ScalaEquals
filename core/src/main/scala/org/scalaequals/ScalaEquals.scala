@@ -32,9 +32,9 @@ import scala.language.experimental.macros
   * {{{
   *   class Test(x: Int, val y: Int, private val z: Int, var a: Int) {
   *     val w: Int = x * z      // Ignored by equal
-  *     override def equals(other: Any) = ScalaEquals.equal(other)
+  *     override def equals(other: Any) = ScalaEquals.equal
   *     override def hashCode() = ScalaEquals.hash
-  *     def canEqual(other: Any) = ScalaEquals.canEquals(other)
+  *     def canEqual(other: Any) = ScalaEquals.canEquals
   *   }
   *
   *   new Test(0, 1, 2, 3) == new Test(1, 1, 2, 4) // true -> y == y and z == z
@@ -47,9 +47,9 @@ import scala.language.experimental.macros
   *   class Test(x: Int, val y: Int, private val z: Int, var a: Int) {
   *     val w: Int = x * z
   *     def q: Int = x        // Ignored by equalAllVals
-  *     override def equals(other: Any) = ScalaEquals.equalAllVals(other)
+  *     override def equals(other: Any) = ScalaEquals.equalAllVals
   *     override def hashCode() = ScalaEquals.hash
-  *     def canEqual(other: Any) = ScalaEquals.canEquals(other)
+  *     def canEqual(other: Any) = ScalaEquals.canEquals
   *   }
   *
   *   new Test(0, 1, 2, 3) == new Test(1, 1, 2, 4) // false -> y == y and z == z and w != w
@@ -61,9 +61,9 @@ import scala.language.experimental.macros
   * {{{
   *   class Test(x: Int, val y: Int, private val z: Int, var a: Int) {
   *     def w: Int = x * z
-  *     override def equals(other: Any) = ScalaEquals.equal(other, w, a)
+  *     override def equals(other: Any) = ScalaEquals.equal(w, a)
   *     override def hashCode() = ScalaEquals.hash
-  *     def canEqual(other: Any) = ScalaEquals.canEquals(other)
+  *     def canEqual(other: Any) = ScalaEquals.canEquals
   *   }
   *
   *   new Test(1, 2, 2, 3) == new Test(1, 1, 2, 4) // false -> w == w and a != a
@@ -89,7 +89,7 @@ import scala.language.experimental.macros
   *
   *
   * @author Alex DiCarlo
-  * @version 1.0.1
+  * @version 1.0.2
   * @since 0.1.0
   */
 object ScalaEquals {
@@ -127,8 +127,8 @@ object ScalaEquals {
   /**
    * Looks up the elements tested in `equals` (including `super.equals`) and uses them
    * in `java.util.Objects.hash(elements)`. Works with all 3 forms of `equal`. Does not
-   * work with custom `equals` implementations, one of `ScalaEquals.equal(other)`,
-   * `ScalaEquals.equal(other, params)`, or `ScalaEquals.equal(other)` must be used
+   * work with custom `equals` implementations, one of `ScalaEquals.equal`,
+   * `ScalaEquals.equal(params)`, or `ScalaEquals.equalAllVals` must be used
    *
    *
    * '''MUST BE CALLED AFTER ScalaEquals.equal IN THE CLASS DEFINITION.'''

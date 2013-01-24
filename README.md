@@ -23,34 +23,36 @@ As a bonus, the macros also check that `equals`/`hashCode`/`canEqual` are define
 they will catch misspellings, incorrect types, etc.
 
 In the documentation and in this README, anywhere `ScalaEquals.equal` is seen it is assumed that 
-`ScalaEquals.equalAllVals` also applies, unless otherwise stated.
+`ScalaEquals.equalAllVals` also applies, unless otherwise stated. Additionally, in the documentation the
+argument names are assumed to be `other`, but this is not a requirement, you may name the parameters
+however you would like, the macros will find the name of the parameter and use it in the expansion.
 
 ## How To Use
 
 ### Equals Using All `val`s In Constructor
 ````scala
 class Point(val x: Int, val y: Int) {
-  override def equals(other: Any): Boolean = ScalaEquals.equal(other)
+  override def equals(other: Any): Boolean = ScalaEquals.equal
   override def hashCode(): Int = ScalaEquals.hash
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
 }
 ````
 ### Equals Using All `val`s In Constructor And Body
 ````scala
 class Point(_x: Int, val y: Int) {
   val x: Int = _x
-  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals(other)
+  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
   override def hashCode(): Int = ScalaEquals.hash
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
 }
 ````
 ### Equals Using User-Defined Fields
 ````scala
 class Point(_x: Int, var y: Int) {
   def x: Int = _x
-  override def equals(other: Any): Boolean = ScalaEquals.equal(other, x, y)
+  override def equals(other: Any): Boolean = ScalaEquals.equal(x, y)
   override def hashCode(): Int = ScalaEquals.hash
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
 }
 ````
 
@@ -117,9 +119,9 @@ how you want it to be.
 
 ````scala
 class Point(val x: Int, val y: Int) {
-  override def equals(other: Any): Boolean = ScalaEquals.equal(other)
+  override def equals(other: Any): Boolean = ScalaEquals.equal
   override def hashCode(): Int = ScalaEquals.hash
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
 }
 ````
 becomes

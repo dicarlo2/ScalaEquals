@@ -27,7 +27,7 @@ import reflect.macros.Context
 /** Locator used to find elements of a type
   *
   * @author Alex DiCarlo
-  * @version 1.0.1
+  * @version 1.0.2
   * @since 1.0.1
   */
 private[impl] class Locator[C <: Context](val c: C) {

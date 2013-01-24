@@ -41,15 +41,16 @@ package org
   * returns false. Additionally, using `ScalaEquals.hash` will guarantee that `hashCode()`
   * is always consistent with `equals`. In the documentation, anywhere `ScalaEquals.equal`
   * is seen it is assumed that `ScalaEquals.equalAllVals` also applies, unless otherwise
-  * stated.
-  *
+  * stated. Additionally, in the documentation the argument names are assumed to be `other`,
+  * but this is not a requirement, you may name the parameters however you would like.
+
   * The typical use case is as follows:
   *
   * {{{
   * class Point(val x: Int, val y: Int) {
-  *     override def equals(other: Any): Boolean = ScalaEquals.equal(other)
+  *     override def equals(other: Any): Boolean = ScalaEquals.equal
   *     override def hashCode(): Int = ScalaEquals.hash
-  *     def canEquals(other: Any): Boolean = ScalaEquals.canEquals(other)
+  *     def canEquals(other: Any): Boolean = ScalaEquals.canEquals
   * }
   *
   * // After macro expansion, the above is converted to:
@@ -90,7 +91,7 @@ package org
   * Chapter 30 (Object equality)
   *
   * @author Alex DiCarlo
-  * @version 1.0.1
+  * @version 1.0.2
   * @since 0.3.0
   */
 package object scalaequals {}

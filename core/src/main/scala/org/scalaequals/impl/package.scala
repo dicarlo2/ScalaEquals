@@ -23,12 +23,12 @@
 package org.scalaequals
 
 /** @author Alex DiCarlo
-  * @version 1.0.1
+  * @version 1.0.2
   * @since 1.0.1
   */
 package object impl {
   /** @author Alex DiCarlo
-    * @version 1.0.1
+    * @version 1.0.2
     * @since 0.3.0
     */
   private[impl] object Errors {
