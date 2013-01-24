@@ -64,6 +64,10 @@ private[impl] class Locator[C <: Context](val c: C) {
 
   def constructorValsNotInherited(tpe: Type): List[TermSymbol] = valsNotInherited(tpe) filter {_.isParamAccessor}
 
+  def findArgument(tree: Tree): TermName = (tree collect {
+    case DefDef(_, _, _, List(List(ValDef(_, termName, _, _))), _, _) => termName
+  }).head
+
   private def isEqualsOverride(term: Symbol): Boolean = term match {
     case equalsTerm: TermSymbol =>
       equalsTerm.alternatives map {_.asTerm} exists {_.allOverriddenSymbols.contains(anyEquals)}

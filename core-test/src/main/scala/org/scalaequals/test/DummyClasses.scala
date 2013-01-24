@@ -49,9 +49,9 @@ class Dummy(
   protected lazy val r: Int = e
   private lazy val s: Int = e
 
-  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals(other)
+  override def equals(any: Any): Boolean = ScalaEquals.equalAllVals
 
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
 
   override def hashCode: Int = ScalaEquals.hash
 
@@ -77,9 +77,9 @@ class DummySub(
   override def o: Int = a
   override lazy val q: Int = _h
 
-  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals(other)
+  override def equals(test: Any): Boolean = ScalaEquals.equalAllVals
 
-  override def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
+  override def canEqual(test: Any): Boolean = ScalaEquals.canEquals
 
   override def hashCode: Int = ScalaEquals.hash
 
@@ -112,9 +112,9 @@ class DummyC(
   protected lazy val r: Int = e
   private lazy val s: Int = e
 
-  override def equals(other: Any): Boolean = ScalaEquals.equal(other)
+  override def equals(any: Any): Boolean = ScalaEquals.equal
 
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
+  def canEqual(b: Any): Boolean = ScalaEquals.canEquals
 
   override def hashCode: Int = ScalaEquals.hash
 
@@ -140,9 +140,9 @@ class DummyCSub(
   override def o: Int = a
   override lazy val q: Int = _h
 
-  override def equals(other: Any): Boolean = ScalaEquals.equal(other)
+  override def equals(a: Any): Boolean = ScalaEquals.equal
 
-  override def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
+  override def canEqual(c: Any): Boolean = ScalaEquals.canEquals
 
   override def hashCode: Int = ScalaEquals.hash
 
@@ -175,9 +175,9 @@ class DummyParams(
   protected lazy val r: Int = e
   private lazy val s: Int = e
 
-  override def equals(other: Any): Boolean = ScalaEquals.equal(other, b, c, e, f, k, n, o, p, q, r, s)
+  override def equals(other: Any): Boolean = ScalaEquals.equal(b, c, e, f, k, n, o, p, q, r, s)
 
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
 
   override def hashCode: Int = ScalaEquals.hash
 
@@ -203,9 +203,9 @@ class DummyParamsSub(
   override def o: Int = a
   override lazy val q: Int = _h
 
-  override def equals(other: Any): Boolean = ScalaEquals.equal(other, a, b, h, y, o)
+  override def equals(other: Any): Boolean = ScalaEquals.equal(a, b, h, y, o)
 
-  override def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
+  override def canEqual(other: Any): Boolean = ScalaEquals.canEquals
 
   override def hashCode: Int = ScalaEquals.hash
 

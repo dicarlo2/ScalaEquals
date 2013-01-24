@@ -31,24 +31,19 @@ import reflect.macros.Context
   * @since 0.1.0
   */
 private[scalaequals] object EqualsImpl {
-  def equalImpl(c: Context)(other: c.Expr[Any]): c.Expr[Boolean] = {
-    val eqm = new EqualsMaker[c.type](c)
-    new eqm.EqualsMakerInner(other).make()
+  def equalImpl(c: Context): c.Expr[Boolean] = {
+    new EqualsMaker[c.type](c).make()
   }
 
-  def equalAllValsImpl(c: Context)(other: c.Expr[Any]): c.Expr[Boolean] = {
-    val eqm = new EqualsMaker[c.type](c)
-    new eqm.EqualsMakerInner(other).makeAll()
+  def equalAllValsImpl(c: Context): c.Expr[Boolean] = {
+    new EqualsMaker[c.type](c).makeAll()
   }
 
-  def equalParamImpl(c: Context)
-    (other: c.Expr[Any], param: c.Expr[Any], params: c.Expr[Any]*): c.Expr[Boolean] = {
-    val eqm = new EqualsMaker[c.type](c)
-    new eqm.EqualsMakerInner(other).make(param +: params)
+  def equalParamImpl(c: Context)(param: c.Expr[Any], params: c.Expr[Any]*): c.Expr[Boolean] = {
+    new EqualsMaker[c.type](c).make(param +: params)
   }
 
   private[EqualsImpl] class EqualsMaker[C <: Context](val c: C) {
-    class EqualsMakerInner(other: c.Expr[Any]) {
       import c.universe._
 
       val selfTpe: Type = c.enclosingClass.symbol.asType.toType
@@ -96,9 +91,9 @@ private[scalaequals] object EqualsImpl {
             Ident(newTermName("that")))
         )
 
-      def createMatch(condition: Apply): Match = {
+      def createMatch(other: TermName, condition: Apply): Match = {
         Match(
-          Ident(other.tree.symbol.asTerm),
+          Ident(other),
           List(
             CaseDef(
               Bind(
@@ -132,7 +127,9 @@ private[scalaequals] object EqualsImpl {
           case (false, false) => createNestedAnd(termEquals)
         }
 
-        c.Expr[Boolean](createMatch(and))
+        val arg = locator.findArgument(c.enclosingMethod)
+
+        c.Expr[Boolean](createMatch(arg, and))
       }
 
       def make(): c.Expr[Boolean] = {
@@ -147,7 +144,6 @@ private[scalaequals] object EqualsImpl {
         val values = (params map {_.tree.symbol.asTerm}).toList
         createCondition(values)
       }
-    }
   }
 
   case class EqualsPayload(values: Seq[String], superHashCode: Boolean)

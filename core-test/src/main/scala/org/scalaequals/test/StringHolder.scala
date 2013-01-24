@@ -26,7 +26,7 @@ import org.scalaequals.ScalaEquals
 
 // Tests that canEquals is not called if it is not available
 final class StringHolder(val string: String) {
-  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals(other)
+  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
   override def hashCode: Int = ScalaEquals.hash
   override def toString: String = s"StringHolder($string)"
 }

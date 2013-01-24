@@ -15,8 +15,8 @@ trait TypeMemberTrait {
   protected def h: A
   private def i: A = h
 
-  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals(other)
+  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
   override def hashCode(): Int = ScalaEquals.hash
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
+  def canEqual(some: Any): Boolean = ScalaEquals.canEquals
   override def toString: String = "TypeMemberTrait(\"%s\", \"%s\", \"%s\")".format(a, b, d)
 }

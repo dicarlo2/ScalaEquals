@@ -99,20 +99,18 @@ object ScalaEquals {
    * Do not use with traits, it will only generate a `super.equals(that)`
    * call, instead use `equalAllVals`.
    *
-   * @param other the instance to compare to
    * @return true if instance.equals(other)
    */
-  def equal(other: Any): Boolean = macro EqualsImpl.equalImpl
+  def equal: Boolean = macro EqualsImpl.equalImpl
 
   /**
    * Equality check using all private/protected/public/lazy vals of the class
    * defined in the constructor AND the body of the class. Does not use
    * inherited or overriden vals.
    *
-   * @param other the instance to compare to
    * @return true if instance.equals(other)
    */
-  def equalAllVals(other: Any): Boolean = macro EqualsImpl.equalAllValsImpl
+  def equalAllVals: Boolean = macro EqualsImpl.equalAllValsImpl
 
   /**
    * Equality check using only parameters passed in to test for equality.
@@ -120,12 +118,11 @@ object ScalaEquals {
    * Acceptable arguments include private/protected/public vals, vars, lazy vals,
    * and defs with no arguments.
    *
-   * @param other the instance to test for equality
    * @param param first param to test with
    * @param params rest of the params
    * @return true if instance.equals(other)
    */
-  def equal(other: Any, param: Any, params: Any*): Boolean = macro EqualsImpl.equalParamImpl
+  def equal(param: Any, params: Any*): Boolean = macro EqualsImpl.equalParamImpl
 
   /**
    * Looks up the elements tested in `equals` (including `super.equals`) and uses them
@@ -146,8 +143,7 @@ object ScalaEquals {
    *   other.isInstanceOf[Class]
    * }}}
    *
-   * @param other the instance to test for equality
    * @return true if other.isInstanceOf[Class]
    */
-  def canEquals(other: Any): Boolean = macro CanEqualImpl.canEquals
+  def canEquals: Boolean = macro CanEqualImpl.canEquals
 }

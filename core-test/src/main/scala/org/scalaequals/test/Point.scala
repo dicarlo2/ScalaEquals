@@ -25,9 +25,9 @@ package org.scalaequals.test
 import org.scalaequals.ScalaEquals
 
 class Point(val x: Int, val y: Int, val z: Int) {
-  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals(other)
+  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
   override def hashCode: Int = ScalaEquals.hash
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
   override def toString: String = s"Point($x, $y, $z)"
 }
 
@@ -36,15 +36,15 @@ object Color extends Enumeration {
 }
 
 class ColoredPoint(x: Int, y: Int, z: Int, val color: Color.Value) extends Point(x, y, z) {
-  override def equals(other: Any): Boolean = ScalaEquals.equal(other)
+  override def equals(other: Any): Boolean = ScalaEquals.equal
   override def hashCode: Int = ScalaEquals.hash
-  override def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
+  override def canEqual(othr: Any): Boolean = ScalaEquals.canEquals
   override def toString: String = s"ColoredPoint($x, $y, $z, $color)"
 }
 
 class FourDColoredPoint(val w: Int, x: Int, y: Int, z: Int, color: Color.Value) extends ColoredPoint(x, y, z, color) {
-  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals(other)
+  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
   override def hashCode: Int = ScalaEquals.hash
-  override def canEqual(other: Any): Boolean = ScalaEquals.canEquals(other)
+  override def canEqual(a: Any): Boolean = ScalaEquals.canEquals
   override def toString: String = s"FourDColoredPoint($w, $x, $y, $z, $color)"
 }

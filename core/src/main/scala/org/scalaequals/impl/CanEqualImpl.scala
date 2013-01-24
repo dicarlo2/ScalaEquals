@@ -31,15 +31,17 @@ import reflect.macros.Context
   * @since 0.2.0
   */
 private[scalaequals] object CanEqualImpl {
-  def canEquals(c: Context)(other: Any): c.Expr[Boolean] = {
+  def canEquals(c: Context): c.Expr[Boolean] = {
     import c.universe._
-    if (!new Locator[c.type](c).isCanEqual(c.enclosingMethod.symbol))
+    val locator = new Locator[c.type](c)
+    if (!locator.isCanEqual(c.enclosingMethod.symbol))
       c.abort(c.enclosingMethod.pos, Errors.badCanEqualsCallSite)
+    val arg = locator.findArgument(c.enclosingMethod)
     val tree =
       TypeApply(
         Select(
           Ident(
-            newTermName("other")),
+            arg),
           newTermName("isInstanceOf")),
         List(
           TypeTree(c.enclosingClass.symbol.asType.toType)))
