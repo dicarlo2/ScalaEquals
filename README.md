@@ -61,7 +61,9 @@ class Point(_x: Int, var y: Int) {
 You may download ScalaEquals directly from [Sonatype][sona], or to use with sbt, add the
 following to your project file:
 
-`libraryDependencies += "org.scalaequals" %% "scalaequals-core" % "1.0.1"`
+```
+libraryDependencies += "org.scalaequals" %% "scalaequals-core" % "1.0.1"
+```
 
 ## Details
 
