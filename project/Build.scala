@@ -24,7 +24,7 @@ import sbt._
 import Keys._
 
 object BuildSettings {
-  val buildVersion = "1.0.3-SNAPSHOT"
+  val buildVersion = "1.0.3"
   val buildScalaVersion = "2.10.0"
 
   val buildSettings = Defaults.defaultSettings ++ Seq(

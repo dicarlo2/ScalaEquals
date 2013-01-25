@@ -1,3 +1,9 @@
+Version 1.0.3:
+
+- `ScalaEquals.hash` no longer needs to be called after `equals`. Any ordering of the methods in the class will work.
+- Change `ScalaEquals.hash` to use `MurmurHash3` instaed of `Objects.hash`
+- Add compiler warning when using `ScalaEquals.equal` with a trait
+
 Version 1.0.2:
 
 - Removed `other` parameter from `equal` and `canEquals` methods
