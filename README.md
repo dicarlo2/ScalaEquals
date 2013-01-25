@@ -94,8 +94,6 @@ in `equals`.
 with abstract type members). As always, be careful about initialization order when using 
 traits and abstract classes.
 
- - Requires Scala 2.10.0.
-
 ## Feedback
 
 ### Questions or Comments?
