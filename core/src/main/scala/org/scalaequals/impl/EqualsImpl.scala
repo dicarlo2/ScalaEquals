@@ -22,12 +22,12 @@
 
 package org.scalaequals.impl
 
-import reflect.macros.Context
+import scala.reflect.macros.Context
 
 /** Implementation of `ScalaEquals.equal` and `ScalaEquals.equalAllVals` macro
   *
   * @author Alex DiCarlo
-  * @version 1.0.2
+  * @version 1.0.3
   * @since 0.1.0
   */
 private[scalaequals] object EqualsImpl {
@@ -44,106 +44,111 @@ private[scalaequals] object EqualsImpl {
   }
 
   private[EqualsImpl] class EqualsMaker[C <: Context](val c: C) {
-      import c.universe._
+    import c.universe._
 
-      val selfTpe: Type = c.enclosingClass.symbol.asType.toType
-      val locator: Locator[c.type] = new Locator[c.type](c)
-      val hasCanEqual: Boolean = locator.hasCanEqual(selfTpe)
-      val hasSuperOverridingEquals: Boolean = locator.hasSuperOverridingEquals(selfTpe)
+    val selfTpe: Type = c.enclosingClass.symbol.asType.toType
+    val locator: Locator[c.type] = new Locator[c.type](c)
+    val hasCanEqual: Boolean = locator.hasCanEqual(selfTpe)
+    val hasSuperOverridingEquals: Boolean = locator.hasSuperOverridingEquals(selfTpe)
 
-      def createCanEqual(): Apply =
+    def make(): c.Expr[Boolean] = {
+      createCondition(constructorValsNotInherited())
+    }
+
+    def makeAll(): c.Expr[Boolean] = {
+      createCondition(valsNotInherited())
+    }
+
+    def make(params: Seq[c.Expr[Any]]): c.Expr[Boolean] = {
+      val values = (params map {_.tree.symbol.asTerm}).toList
+      createCondition(values)
+    }
+
+    def constructorValsNotInherited(): List[TermSymbol] = valsNotInherited() filter {_.isParamAccessor}
+
+    def valsNotInherited(): List[TermSymbol] = {
+      def isVal(term: TermSymbol): Boolean = term.isStable && term.isMethod
+      def isInherited(term: TermSymbol): Boolean = term.owner != selfTpe.typeSymbol || term.isOverride
+      (selfTpe.members filter {_.isTerm} map {_.asTerm} filter {t => isVal(t) && !isInherited(t)}).toList
+    }
+
+    def createCondition(values: List[TermSymbol]): c.Expr[Boolean] = {
+      if (!locator.isEquals(c.enclosingMethod.symbol))
+        c.abort(c.enclosingMethod.pos, Errors.badEqualCallSite)
+
+      val payload = EqualsPayload(values map {_.name.encoded}, hasSuperOverridingEquals || values.isEmpty)
+      c.enclosingMethod.updateAttachment(payload)
+
+      val termEquals = values map createTermEquals
+      val and = (hasCanEqual, hasSuperOverridingEquals) match {
+        case (true, true) => createNestedAnd(createCanEqual() :: createSuperEquals() :: termEquals)
+        case (false, true) => createNestedAnd(createSuperEquals() :: termEquals)
+        case (true, false) if termEquals.size == 0 => createNestedAnd(List(createCanEqual(), createSuperEquals()))
+        case (true, false) => createNestedAnd(createCanEqual() :: termEquals)
+        case (false, false) if termEquals.size == 0 => createSuperEquals()
+        case (false, false) => createNestedAnd(termEquals)
+      }
+
+      val arg = locator.findArgument(c.enclosingMethod)
+
+      c.Expr[Boolean](createMatch(arg, and))
+    }
+
+    def createCanEqual(): Apply =
+      Apply(
+        Select(
+          Ident(newTermName("that")),
+          newTermName("canEqual")),
+        List(
+          This(tpnme.EMPTY)))
+
+    def createTermEquals(term: TermSymbol): Apply = {
+      def createEquals(term: Symbol): Apply = {
         Apply(
           Select(
-            Ident(newTermName("that")),
-            newTermName("canEqual")),
-          List(
-            This(tpnme.EMPTY)))
-
-      def createTermEquals(term: TermSymbol): Apply = {
-        def createEquals(term: Symbol): Apply = {
-          Apply(
             Select(
-              Select(
-                Ident(newTermName("that")),
-                term),
-              newTermName("$eq$eq")),
-            List(
-              Select(
-                This(tpnme.EMPTY),
-                term)))
-        }
-        if (term.isMethod) createEquals(term) else createEquals(term.getter)
-      }
-
-      def createAnd(left: Apply): Select = Select(left, newTermName("$amp$amp"))
-
-      def createNestedAnd(terms: List[Apply]): Apply = terms match {
-        case left :: x :: xs => createNestedAnd(Apply(createAnd(left), List(x)) :: xs)
-        case left :: Nil => left
-      }
-
-      def createSuperEquals(): Apply =
-        Apply(
-          Select(
-            Super(This(tpnme.EMPTY), tpnme.EMPTY),
-            newTermName("equals")),
+              Ident(newTermName("that")),
+              term),
+            newTermName("$eq$eq")),
           List(
-            Ident(newTermName("that")))
-        )
-
-      def createMatch(other: TermName, condition: Apply): Match = {
-        Match(
-          Ident(other),
-          List(
-            CaseDef(
-              Bind(
-                newTermName("that"),
-                Typed(
-                  Ident(nme.WILDCARD),
-                  TypeTree(selfTpe))),
-              condition),
-            CaseDef(
-              Ident(nme.WILDCARD),
-              EmptyTree,
-              Literal(Constant(false))
-            )
-          ))
+            Select(
+              This(tpnme.EMPTY),
+              term)))
       }
+      if (term.isMethod) createEquals(term) else createEquals(term.getter)
+    }
 
-      def createCondition(values: List[TermSymbol]): c.Expr[Boolean] = {
-        if (!locator.isEquals(c.enclosingMethod.symbol))
-          c.abort(c.enclosingMethod.pos, Errors.badEqualCallSite)
+    def createAnd(left: Apply): Select = Select(left, newTermName("$amp$amp"))
 
-        val payload = EqualsPayload(values map {_.name.encoded}, hasSuperOverridingEquals || values.isEmpty)
-        c.enclosingMethod.updateAttachment(payload)
+    def createNestedAnd(terms: List[Apply]): Apply = terms match {
+      case left :: x :: xs => createNestedAnd(Apply(createAnd(left), List(x)) :: xs)
+      case left :: Nil => left
+    }
 
-        val termEquals = values map createTermEquals
-        val and = (hasCanEqual, hasSuperOverridingEquals) match {
-          case (true, true) => createNestedAnd(createCanEqual() :: createSuperEquals() :: termEquals)
-          case (false, true) => createNestedAnd(createSuperEquals() :: termEquals)
-          case (true, false) if termEquals.size == 0 => createNestedAnd(List(createCanEqual(), createSuperEquals()))
-          case (true, false) => createNestedAnd(createCanEqual() :: termEquals)
-          case (false, false) if termEquals.size == 0 => createSuperEquals()
-          case (false, false) => createNestedAnd(termEquals)
-        }
+    def createSuperEquals(): Apply =
+      Apply(
+        Select(
+          Super(This(tpnme.EMPTY), tpnme.EMPTY),
+          newTermName("equals")),
+        List(
+          Ident(newTermName("that"))))
 
-        val arg = locator.findArgument(c.enclosingMethod)
-
-        c.Expr[Boolean](createMatch(arg, and))
-      }
-
-      def make(): c.Expr[Boolean] = {
-        createCondition(locator.constructorValsNotInherited(selfTpe))
-      }
-
-      def makeAll(): c.Expr[Boolean] = {
-        createCondition(locator.valsNotInherited(selfTpe))
-      }
-
-      def make(params: Seq[c.Expr[Any]]): c.Expr[Boolean] = {
-        val values = (params map {_.tree.symbol.asTerm}).toList
-        createCondition(values)
-      }
+    def createMatch(other: TermName, condition: Apply): Match = {
+      Match(
+        Ident(other),
+        List(
+          CaseDef(
+            Bind(
+              newTermName("that"),
+              Typed(
+                Ident(nme.WILDCARD),
+                TypeTree(selfTpe))),
+            condition),
+          CaseDef(
+            Ident(nme.WILDCARD),
+            EmptyTree,
+            Literal(Constant(false)))))
+    }
   }
 
   case class EqualsPayload(values: Seq[String], superHashCode: Boolean)
