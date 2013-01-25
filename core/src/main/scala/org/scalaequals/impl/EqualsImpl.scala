@@ -52,6 +52,8 @@ private[scalaequals] object EqualsImpl {
     val hasSuperOverridingEquals: Boolean = locator.hasSuperOverridingEquals(selfTpe)
 
     def make(): c.Expr[Boolean] = {
+      if(c.enclosingClass.symbol.asClass.isTrait)
+        c.warning(c.enclosingClass.pos, Warnings.equalWithTrait)
       createCondition(constructorValsNotInherited())
     }
 

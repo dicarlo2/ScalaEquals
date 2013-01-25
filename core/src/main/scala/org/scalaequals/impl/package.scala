@@ -62,4 +62,15 @@ package object impl {
     val missingEquals: String =
       "No equals method found! Ensure you are overriding equals and that it has the correct signature."
   }
+  /** @author Alex DiCarlo
+    * @version 1.0.3
+    * @since 1.0.3
+    */
+  private[impl] object Warnings {
+    /**
+     * `ScalaEquals.equal` will only expand to a `super.equals(that)` call for traits.
+     */
+    val equalWithTrait: String =
+      "ScalaEquals.equal on traits will only expand to a super.equals(that) call."
+  }
 }
