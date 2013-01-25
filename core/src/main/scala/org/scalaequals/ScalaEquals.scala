@@ -22,7 +22,7 @@
 
 package org.scalaequals
 
-import impl.{HashCodeImpl, EqualsImpl, CanEqualImpl}
+import org.scalaequals.impl.{GenStringImpl, HashCodeImpl, EqualsImpl, CanEqualImpl}
 import scala.language.experimental.macros
 
 /** Entry point for ScalaEquals
@@ -87,9 +87,26 @@ import scala.language.experimental.macros
   *   new Test(1, 2, 2, 4) == new Test(1, 1, 2, 4) // true -> w == w and a == a
   * }}}
   *
+  * Generating toString:
+  * {{{
+  *   class Test(x: Int, val y: Int, private val z: Int, var a: Int) {
+  *     def w: Int = x * z
+  *     override def toString: String = ScalaEquals.genString
+  *   }
+  * }}}
+  *
+  * Which will expand to:
+  *
+  * {{{
+  *   class Test(x: Int, val y: Int, private val z: Int, var a: Int) {
+  *     def w: Int = x * z
+  *     override def toString: String = "Test(" + x + ", " + y + ", " + z + ", " + a + ")"
+  *   }
+  * }}}
+  *
   *
   * @author Alex DiCarlo
-  * @version 1.0.2
+  * @version 1.1.0
   * @since 0.1.0
   */
 object ScalaEquals {
@@ -146,4 +163,13 @@ object ScalaEquals {
    * @return true if other.isInstanceOf[Class]
    */
   def canEquals: Boolean = macro CanEqualImpl.canEquals
+
+  /**
+   * Generates a string representation of the class using the constructor's arguments.
+   * Output is similar to case classes, for example, "ClassName(arg1, arg2, arg3)" would
+   * be the string returned for `class ClassName(arg1: Int, arg2: Int, arg3: Int)`
+   *
+   * @return string representation of calling class with constructor arguments
+   */
+  def genString: String = macro GenStringImpl.genString
 }

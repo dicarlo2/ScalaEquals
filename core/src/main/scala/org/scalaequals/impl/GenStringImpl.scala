@@ -22,29 +22,41 @@
 
 package org.scalaequals.impl
 
-import reflect.macros.Context
+import scala.reflect.macros.Context
 
-/** Implementation of `ScalaEquals.canEquals` macro
+/** Implementation of `ScalaEquals.genString` macro
   *
   * @author Alex DiCarlo
   * @version 1.1.0
-  * @since 0.2.0
+  * @since 1.1.0
   */
-private[scalaequals] object CanEqualImpl {
-  def canEquals(c: Context): c.Expr[Boolean] = {
+private[scalaequals] object GenStringImpl {
+  def genString(c: Context): c.Expr[String] = {
     import c.universe._
+
     val locator = new Locator[c.type](c)
-    if (!locator.isCanEqual(c.enclosingMethod.symbol))
-      c.abort(c.enclosingMethod.pos, Errors.badCanEqualsCallSite)
-    val arg = locator.findArgument(c.enclosingMethod)
+    if (!locator.isToString(c.enclosingMethod.symbol))
+      c.abort(c.enclosingMethod.pos, Errors.badToStringCallSite)
+
+    val args = locator.constructorArgs(c.enclosingClass, c.enclosingClass.symbol.asType.toType)
+    def createNestedAdd(terms: List[TermName]): Tree = terms match {
+      case Nil => Literal(Constant(")"))
+      case x :: Nil =>
+        Apply(Select(Ident(x), newTermName("$plus")), List(Literal(Constant(")"))))
+      case x :: xs =>
+        val first = Apply(Select(Ident(x), newTermName("$plus")), List(Literal(Constant(", "))))
+        Apply(Select(first, newTermName("$plus")), List(createNestedAdd(xs)))
+    }
+    val nestedAdd = createNestedAdd(args)
+
     val tree =
-      TypeApply(
+      Apply(
         Select(
-          Ident(
-            arg),
-          newTermName("isInstanceOf")),
-        List(
-          TypeTree(c.enclosingClass.symbol.asType.toType)))
-    c.Expr[Boolean](tree)
+          Literal(
+            Constant(
+              c.enclosingClass.symbol.name.toString + "(")),
+          newTermName("$plus")),
+        List(nestedAdd))
+    c.Expr[String](tree)
   }
 }

@@ -31,6 +31,10 @@ class FourDColoredPointTest extends PointFixture[FourDColoredPoint] {
   /* Creates a T from B */
   def create(arg: PointArg): FourDColoredPoint = FourDColoredPointTest.create(arg)
 
+  /* Creates a String to test toString = A(arg) */
+  def createToString(arg: PointArg): String =
+    s"FourDColoredPoint(${arg.w}, ${arg.x}, ${arg.y}, ${arg.z}, ${arg.color})"
+
   /* Swaps one random pair of constructor arguments that are part of equals */
   def changeRandom(arg: PointArg, arg2: PointArg): PointArg = {
     val swapped = swap(IndexedSeq(arg.w, arg.x, arg.y, arg.z, arg.color),

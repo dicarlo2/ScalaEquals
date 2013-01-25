@@ -26,7 +26,10 @@ import org.scalacheck.Gen
 import org.scalacheck.Arbitrary._
 import scala.Some
 
-case class DummyArg(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int, g: Int, x: Int, y: Int, t: Int, _h: Int, _q: Int)
+case class DummyArg(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int, g: Int, x: Int, y: Int, t: Int, _h: Int, _q: Int) {
+  def classArgString: String = s"($a, $b, $c, $d, $e, $f, $g, $t, ${_h}, ${_q})"
+  def subArgString: String = s"($a, $b, $c, $d, $e, $f, $g, $x, $y, $t, ${_h}, ${_q})"
+}
 
 object DummyArg {
   def gen: Gen[DummyArg] = for {
@@ -47,6 +50,11 @@ object DummyArg {
 
 trait DummyFixture[T] extends EqualsFixture[T, DummyArg] {
   def gen: Gen[DummyArg] = DummyArg.gen
+
+  def sub: Boolean
+
+  def createToString(arg: DummyArg): String =
+    if (sub) s"${name}${arg.subArgString}" else s"${name}${arg.classArgString}"
 }
 
 trait DummySubFixture[T] {
@@ -62,6 +70,8 @@ trait DummySubFixture[T] {
 // Not on constructor: a, f, g, t
 class DummyTest extends DummyFixture[Dummy] {
   def name: String = "Dummy"
+
+  def sub: Boolean = false
 
   def create(arg: DummyArg): Dummy = new Dummy(arg.a, arg.b, arg.c, arg.d, arg.e, arg.f, arg.g, arg.t, arg._h, arg._q)
 
@@ -99,6 +109,8 @@ object DummySubTest extends DummySubFixture[DummySub] {
 class DummySubTest extends DummyFixture[DummySub] {
   def name: String = DummySubTest.dummySubName
 
+  def sub: Boolean = true
+
   def create(arg: DummyArg): DummySub = DummySubTest.create(arg)
 
   def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg =
@@ -126,6 +138,8 @@ class DummySubTest extends DummyFixture[DummySub] {
 // Not on constructor: a, e, f, g, t, _h, _q
 class DummyCTest extends DummyFixture[DummyC] {
   def name: String = "DummyC"
+
+  def sub: Boolean = false
 
   def create(arg: DummyArg): DummyC =
     new DummyC(arg.a, arg.b, arg.c, arg.d, arg.e, arg.f, arg.g, arg.t, arg._h, arg._q)
@@ -165,6 +179,8 @@ object DummyCSubTest extends DummySubFixture[DummyCSub] {
 class DummyCSubTest extends DummyFixture[DummyCSub] {
   def name: String = DummyCSubTest.dummySubName
 
+  def sub: Boolean = true
+
   def create(arg: DummyArg): DummyCSub = DummyCSubTest.create(arg)
 
   def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg =
@@ -191,6 +207,8 @@ class DummyCSubTest extends DummyFixture[DummyCSub] {
 // Not on constructor: d, t
 class DummyParamsTest extends DummyFixture[DummyParams] {
   def name: String = "DummyParams"
+
+  def sub: Boolean = false
 
   def create(arg: DummyArg): DummyParams =
     new DummyParams(arg.a, arg.b, arg.c, arg.d, arg.e, arg.f, arg.g, arg.t, arg._h, arg._q)
@@ -231,6 +249,8 @@ object DummyParamsSubTest extends DummySubFixture[DummyParamsSub] {
 
 class DummyParamsSubTest extends DummyFixture[DummyParamsSub] {
   def name: String = DummyParamsSubTest.dummySubName
+
+  def sub: Boolean = true
 
   def create(arg: DummyArg): DummyParamsSub = DummyParamsSubTest.create(arg)
 

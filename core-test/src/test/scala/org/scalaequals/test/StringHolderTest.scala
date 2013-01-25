@@ -32,6 +32,9 @@ class StringHolderTest extends EqualsFixture[StringHolder, String] {
   /* Creates a T from B */
   def create(arg: String): StringHolder = new StringHolder(arg)
 
+  /* Creates a String to test toString = A(arg) */
+  def createToString(arg: String): String = s"StringHolder($arg)"
+
   /* Swaps all constructor arguments that are not part of equals from arg to arg2's values */
   def changeDiff(arg: String, arg2: String): String = arg
 

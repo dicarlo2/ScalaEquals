@@ -68,6 +68,9 @@ trait EqualsFixture[A, B] extends FeatureSpec with
   /* Creates a T from B */
   def create(arg: B): A
 
+  /* Creates a String to test toString = A(arg) */
+  def createToString(arg: B): String
+
   /* Swaps all constructor arguments that are not part of equals from arg to arg2's values */
   def changeDiff(arg: B, arg2: B): B
 
@@ -235,6 +238,18 @@ trait EqualsFixture[A, B] extends FeatureSpec with
       Then("x.hashCode == y.hashCode")
       forAll(equal2ClassGen) {case (x, y) =>
         x.hashCode() should equal(y.hashCode())
+      }
+    }
+  }
+
+  feature("ScalaEquals generates strings from constructor arguments") {
+    scenario(s"$name.toString") {
+      Given(s"a $name")
+      When("toString is called")
+      Then(s"the result is $name(args)")
+      forAll(gen) {arg =>
+        val a = create(arg)
+        a.toString should equal(createToString(arg))
       }
     }
   }

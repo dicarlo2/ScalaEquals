@@ -23,12 +23,12 @@
 package org.scalaequals
 
 /** @author Alex DiCarlo
-  * @version 1.0.2
+  * @version 1.1.0
   * @since 1.0.1
   */
 package object impl {
   /** @author Alex DiCarlo
-    * @version 1.0.2
+    * @version 1.1.0
     * @since 0.3.0
     */
   private[impl] object Errors {
@@ -62,5 +62,12 @@ package object impl {
      */
     val missingEquals: String =
       "No equals method found! Ensure you are overriding equals and that it has the correct signature."
+    /**
+     *  ScalaEquals.toString must be called from within a toString method. Check that your method signature matches
+     *  override def toString: String"
+     */
+    val badToStringCallSite: String =
+      "ScalaEquals.toString must be called from within a toString method.\n" +
+        "Check that your method signature matches \"override def toString: String\""
   }
 }

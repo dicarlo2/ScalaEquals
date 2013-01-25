@@ -30,6 +30,9 @@ class ColoredPointTest extends PointFixture[ColoredPoint] {
   /* Creates a T from B */
   def create(arg: PointArg): ColoredPoint = ColoredPointTest.create(arg)
 
+  /* Creates a String to test toString = A(arg) */
+  def createToString(arg: PointArg): String = s"ColoredPoint(${arg.x}, ${arg.y}, ${arg.z}, ${arg.color})"
+
   /* Changes one random argument that is part of equals to arg2's value */
   def changeRandom(arg: PointArg, arg2: PointArg): PointArg = {
     val swapped = swap(IndexedSeq(arg.x, arg.y, arg.z, arg.color), IndexedSeq(arg2.x, arg2.y, arg2.z, arg2.color))

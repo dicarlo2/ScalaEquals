@@ -17,6 +17,9 @@ class ParameterizedClassTest extends EqualsFixture[ParameterizedClass[String, In
   def create(arg: ParameterizedClassArg): ParameterizedClass[String, Int] =
     new ParameterizedClass[String, Int](arg.string, arg.num)
 
+  /* Creates a String to test toString = A(arg) */
+  def createToString(arg: ParameterizedClassArg): String = s"ParameterizedClass(${arg.string}, ${arg.num})"
+
   /* Swaps all constructor arguments that are not part of equals from arg to arg2's values */
   def changeDiff(arg: ParameterizedClassArg, arg2: ParameterizedClassArg): ParameterizedClassArg = arg
 

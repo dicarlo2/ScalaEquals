@@ -40,6 +40,9 @@ class PointTest extends PointFixture[Point] {
   /* Creates a T from B */
   def create(arg: PointArg): Point = new Point(arg.x, arg.y, arg.z)
 
+  /* Creates a String to test toString = A(arg) */
+  def createToString(arg: PointArg): String = s"Point(${arg.x}, ${arg.y}, ${arg.z})"
+
   /* Changes one random argument that is part of equals to arg2's value */
   def changeRandom(arg: PointArg, arg2: PointArg): PointArg = {
     val swapped = swap(IndexedSeq(arg.x, arg.y, arg.z), IndexedSeq(arg2.x, arg2.y, arg2.z))

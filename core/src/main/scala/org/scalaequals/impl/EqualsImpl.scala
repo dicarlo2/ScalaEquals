@@ -27,7 +27,7 @@ import reflect.macros.Context
 /** Implementation of `ScalaEquals.equal` and `ScalaEquals.equalAllVals` macro
   *
   * @author Alex DiCarlo
-  * @version 1.0.2
+  * @version 1.1.0
   * @since 0.1.0
   */
 private[scalaequals] object EqualsImpl {

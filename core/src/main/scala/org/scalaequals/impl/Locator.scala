@@ -27,7 +27,7 @@ import reflect.macros.Context
 /** Locator used to find elements of a type
   *
   * @author Alex DiCarlo
-  * @version 1.0.2
+  * @version 1.1.0
   * @since 1.0.1
   */
 private[impl] class Locator[C <: Context](val c: C) {
@@ -36,15 +36,18 @@ private[impl] class Locator[C <: Context](val c: C) {
   private val equalsName: TermName = "equals"
   private val hashCodeName: TermName = "hashCode"
   private val canEqualName: TermName = "canEqual"
+  private val toStringName: TermName = "toString"
 
   private val anyEquals = typeOf[Any].member(equalsName)
   private val anyHashCode = typeOf[Any].member(hashCodeName)
+  private val anyToString = typeOf[Any].member(toStringName)
   private val equalsCanEqual = typeOf[Equals].member(canEqualName)
 
   def isEquals(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyEquals)
   def isHashCode(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyHashCode)
   def isCanEqual(symbol: Symbol): Boolean =
     symbol.typeSignature =:= equalsCanEqual.typeSignature && symbol.name == canEqualName
+  def isToString(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyToString)
 
   def hasCanEqual(tpe: Type): Boolean = isCanEqual(tpe.member(canEqualName))
 
@@ -66,6 +69,16 @@ private[impl] class Locator[C <: Context](val c: C) {
 
   def findArgument(tree: Tree): TermName = (tree collect {
     case DefDef(_, _, _, List(List(ValDef(_, termName, _, _))), _, _) => termName
+  }).head
+
+  def constructorArgs(tree: Tree, tpe: Type): List[TermName] = (tree collect {
+    case ClassDef(_, name, _, Template(_, _, body)) if name == tpe.typeSymbol.name.toTypeName =>
+      body takeWhile {
+        case x: ValDef => true
+        case _ => false
+      } map {
+        case ValDef(_, termName, _, _) => termName
+      }
   }).head
 
   private def isEqualsOverride(term: Symbol): Boolean = term match {

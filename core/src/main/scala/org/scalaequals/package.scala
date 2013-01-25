@@ -51,6 +51,7 @@ package org
   *     override def equals(other: Any): Boolean = ScalaEquals.equal
   *     override def hashCode(): Int = ScalaEquals.hash
   *     def canEquals(other: Any): Boolean = ScalaEquals.canEquals
+  *     override def toString: String = ScalaEquals.genString
   * }
   *
   * // After macro expansion, the above is converted to:
@@ -62,6 +63,7 @@ package org
   *      }
   *      override def hashCode(): Int = Objects.hash(Seq(x, y))
   *      def canEquals(other: Any): Boolean = other.isInstanceOf[Point]
+  *      override def toString: String = "Point(" + x + ", " + y + ")"
   * }
   * }}}
   *
@@ -91,7 +93,7 @@ package org
   * Chapter 30 (Object equality)
   *
   * @author Alex DiCarlo
-  * @version 1.0.2
+  * @version 1.1.0
   * @since 0.3.0
   */
 package object scalaequals {}

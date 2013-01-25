@@ -55,8 +55,7 @@ class Dummy(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String =
-    "Dummy(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d)".format(a, b, c, d, e, f, g, t, _h, _q)
+  override def toString: String = ScalaEquals.genString
 }
 
 // Equals on super, a, x
@@ -83,8 +82,7 @@ class DummySub(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String =
-    "DummySub(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)".format(a, b, c, d, e, f, g, x, y, t, _h, _q)
+  override def toString: String = ScalaEquals.genString
 }
 
 // Equals on b, c, d
@@ -118,8 +116,7 @@ class DummyC(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String =
-    "DummyC(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d)".format(a, b, c, d, e, f, g, t, _h, _q)
+  override def toString: String = ScalaEquals.genString
 }
 
 // Equals on super, a, x
@@ -146,8 +143,7 @@ class DummyCSub(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String =
-    "DummyCSub(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)".format(a, b, c, d, e, f, g, x, y, t, _h, _q)
+  override def toString: String = ScalaEquals.genString
 }
 
 // Equals on b, c, e, f, k, n, o, p, q, r, s
@@ -181,8 +177,7 @@ class DummyParams(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String =
-    "DummyParams(%d, %d, %d, %d, %d, %d, %d, %s, %d, %d)".format(a, b, c, d, e, f, g, t, _h, _q)
+  override def toString: String = ScalaEquals.genString
 }
 
 // Equals on super, a, b, h, y, o
@@ -209,6 +204,5 @@ class DummyParamsSub(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String =
-    "DummyParamsSub(%d, %d, %d, %d, %d, %d, %d, %d, %d, %s, %d, %d)".format(a, b, c, d, e, f, g, x, y, t, _h, _q)
+  override def toString: String = ScalaEquals.genString
 }
