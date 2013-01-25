@@ -25,8 +25,8 @@ package org.scalaequals.test
 import org.scalaequals.ScalaEquals
 
 class Point(val x: Int, val y: Int, val z: Int) {
-  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
   override def hashCode: Int = ScalaEquals.hash
+  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
   def canEqual(other: Any): Boolean = ScalaEquals.canEquals
   override def toString: String = s"Point($x, $y, $z)"
 }

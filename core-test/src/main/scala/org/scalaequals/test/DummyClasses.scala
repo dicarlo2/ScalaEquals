@@ -51,9 +51,9 @@ class Dummy(
 
   override def equals(any: Any): Boolean = ScalaEquals.equalAllVals
 
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
-
   override def hashCode: Int = ScalaEquals.hash
+
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
 
   override def toString: String =
     "Dummy(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d)".format(a, b, c, d, e, f, g, t, _h, _q)
@@ -77,11 +77,11 @@ class DummySub(
   override def o: Int = a
   override lazy val q: Int = _h
 
+  override def hashCode: Int = ScalaEquals.hash
+
   override def equals(test: Any): Boolean = ScalaEquals.equalAllVals
 
   override def canEqual(test: Any): Boolean = ScalaEquals.canEquals
-
-  override def hashCode: Int = ScalaEquals.hash
 
   override def toString: String =
     "DummySub(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)".format(a, b, c, d, e, f, g, x, y, t, _h, _q)
@@ -140,11 +140,11 @@ class DummyCSub(
   override def o: Int = a
   override lazy val q: Int = _h
 
-  override def equals(a: Any): Boolean = ScalaEquals.equal
-
   override def canEqual(c: Any): Boolean = ScalaEquals.canEquals
 
   override def hashCode: Int = ScalaEquals.hash
+
+  override def equals(a: Any): Boolean = ScalaEquals.equal
 
   override def toString: String =
     "DummyCSub(%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)".format(a, b, c, d, e, f, g, x, y, t, _h, _q)
@@ -175,9 +175,9 @@ class DummyParams(
   protected lazy val r: Int = e
   private lazy val s: Int = e
 
-  override def equals(other: Any): Boolean = ScalaEquals.equal(b, c, e, f, k, n, o, p, q, r, s)
-
   def canEqual(other: Any): Boolean = ScalaEquals.canEquals
+
+  override def equals(other: Any): Boolean = ScalaEquals.equal(b, c, e, f, k, n, o, p, q, r, s)
 
   override def hashCode: Int = ScalaEquals.hash
 
@@ -203,11 +203,11 @@ class DummyParamsSub(
   override def o: Int = a
   override lazy val q: Int = _h
 
-  override def equals(other: Any): Boolean = ScalaEquals.equal(a, b, h, y, o)
-
   override def canEqual(other: Any): Boolean = ScalaEquals.canEquals
 
   override def hashCode: Int = ScalaEquals.hash
+
+  override def equals(other: Any): Boolean = ScalaEquals.equal(a, b, h, y, o)
 
   override def toString: String =
     "DummyParamsSub(%d, %d, %d, %d, %d, %d, %d, %d, %d, %s, %d, %d)".format(a, b, c, d, e, f, g, x, y, t, _h, _q)

@@ -77,7 +77,10 @@ private[scalaequals] object HashCodeImpl {
       locator.findEquals(c.enclosingClass) match {
         case Some(method) => method.attachments.get[EqualsImpl.EqualsPayload] match {
           case Some(payload) => payload
-          case None => c.abort(c.enclosingPosition, Errors.badHashOrdering)
+          case None => c.typeCheck(method).attachments.get[EqualsImpl.EqualsPayload] match {
+            case Some(payload) => payload
+            case None => c.abort(c.enclosingPosition, Errors.missingEqual)
+          }
         }
         case None => c.abort(c.enclosingPosition, Errors.missingEquals)
       }

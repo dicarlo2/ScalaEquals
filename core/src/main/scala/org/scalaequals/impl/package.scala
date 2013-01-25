@@ -23,12 +23,12 @@
 package org.scalaequals
 
 /** @author Alex DiCarlo
-  * @version 1.0.2
+  * @version 1.0.3
   * @since 1.0.1
   */
 package object impl {
   /** @author Alex DiCarlo
-    * @version 1.0.2
+    * @version 1.0.3
     * @since 0.3.0
     */
   private[impl] object Errors {
@@ -52,11 +52,11 @@ package object impl {
       "ScalaEquals.hash must be called from within a hashCode method.\n" +
         "Check that your method signature matches \"override def hashCode(): Int\""
     /**
-     * No attachments found on equals. Ensure that the definition of #equals comes before #hashCode() and that you
-     * are using ScalaEquals.equal or ScalaEquals.equalAllVals"
+     * No attachments found on equals. Ensure that you are using one of ScalaEquals.equal or
+     * ScalaEquals.equalAllVals in your #equals method
      */
-    val badHashOrdering: String = "No attachments found on equals. Ensure that the definition of #equals " +
-      "comes before #hashCode() and that you are using ScalaEquals.equal or ScalaEquals.equalAllVals"
+    val missingEqual: String = "No attachments found on equals. Ensure that you are using one of " +
+      "ScalaEquals.equal or ScalaEquals.equalAllVals in your #equals method"
     /**
      * No equals method found! Ensure you are overriding equals and that it has the correct signature.
      */
