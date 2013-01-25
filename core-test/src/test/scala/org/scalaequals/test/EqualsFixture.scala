@@ -26,7 +26,7 @@ import org.scalatest.{GivenWhenThen, FeatureSpec}
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalacheck.Gen
-import annotation.tailrec
+import scala.annotation.tailrec
 
 /**
  * There are 5 generators used to test equals/canEqual/hashCode:

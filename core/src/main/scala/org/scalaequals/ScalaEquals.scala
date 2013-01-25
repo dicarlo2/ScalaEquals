@@ -22,7 +22,7 @@
 
 package org.scalaequals
 
-import impl.{HashCodeImpl, EqualsImpl, CanEqualImpl}
+import org.scalaequals.impl.{HashCodeImpl, EqualsImpl, CanEqualImpl}
 import scala.language.experimental.macros
 
 /** Entry point for ScalaEquals

@@ -22,7 +22,7 @@
 
 package org.scalaequals.impl
 
-import reflect.macros.Context
+import scala.reflect.macros.Context
 
 /** Locator used to find elements of a type
   *
