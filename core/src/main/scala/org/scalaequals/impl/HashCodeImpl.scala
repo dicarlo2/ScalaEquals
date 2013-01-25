@@ -28,7 +28,7 @@ import org.scalaequals.impl.EqualsImpl.EqualsPayload
 /** Implementation of `ScalaEquals.hash` macro
   *
   * @author Alex DiCarlo
-  * @version 1.0.2
+  * @version 1.0.3
   * @since 0.2.0
   */
 private[scalaequals] object HashCodeImpl {
@@ -41,6 +41,31 @@ private[scalaequals] object HashCodeImpl {
 
     val selfTpe: Type = c.enclosingClass.symbol.asType.toType
     val locator: Locator[c.type] = new Locator[c.type](c)
+
+    def make(): c.Expr[Int] = {
+      if (!locator.isHashCode(c.enclosingMethod.symbol))
+        c.abort(c.enclosingMethod.pos, Errors.badHashCallSite)
+
+      val payload = extractPayload()
+      val values = selfTpe.members filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
+      val terms = (values map {t => Select(This(tpnme.EMPTY), t)}).toList
+      val hash = if (payload.superHashCode) createHash(createSuperHashCode() :: terms) else createHash(terms)
+
+      c.Expr[Int](hash)
+    }
+
+    private def extractPayload(): EqualsPayload = {
+      locator.findEquals(c.enclosingClass) match {
+        case Some(method) => method.attachments.get[EqualsImpl.EqualsPayload] match {
+          case Some(payload) => payload
+          case None => c.typeCheck(method).attachments.get[EqualsImpl.EqualsPayload] match {
+            case Some(payload) => payload
+            case None => c.abort(c.enclosingPosition, Errors.missingEqual)
+          }
+        }
+        case None => c.abort(c.enclosingPosition, Errors.missingEquals)
+      }
+    }
 
     private def createSuperHashCode(): Apply =
       Apply(
@@ -71,29 +96,6 @@ private[scalaequals] object HashCodeImpl {
                 newTermName("Seq")),
               newTermName("apply")),
             terms)))
-    }
-
-    private def extractPayload(): EqualsPayload = {
-      locator.findEquals(c.enclosingClass) match {
-        case Some(method) => method.attachments.get[EqualsImpl.EqualsPayload] match {
-          case Some(payload) => payload
-          case None => c.typeCheck(method).attachments.get[EqualsImpl.EqualsPayload] match {
-            case Some(payload) => payload
-            case None => c.abort(c.enclosingPosition, Errors.missingEqual)
-          }
-        }
-        case None => c.abort(c.enclosingPosition, Errors.missingEquals)
-      }
-    }
-
-    def make(): c.Expr[Int] = {
-      if (!locator.isHashCode(c.enclosingMethod.symbol))
-        c.abort(c.enclosingMethod.pos, Errors.badHashCallSite)
-      val payload = extractPayload()
-      val values = selfTpe.members filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
-      val terms = (values map {t => Select(This(tpnme.EMPTY), t)}).toList
-      val hash = if (payload.superHashCode) createHash(createSuperHashCode() :: terms) else createHash(terms)
-      c.Expr[Int](hash)
     }
   }
 }
