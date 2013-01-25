@@ -82,18 +82,22 @@ private[scalaequals] object HashCodeImpl {
         Select(
           Select(
             Select(
-              Ident(newTermName("java")),
-              newTermName("util")),
-            newTermName("Objects")),
-          newTermName("hash")),
+              Select(
+                Ident(newTermName("scala")),
+                newTermName("util")),
+              newTermName("hashing")),
+            newTermName("MurmurHash3")),
+          newTermName("seqHash")),
         List(
           Apply(
             Select(
               Select(
                 Select(
-                  Ident(newTermName("scala")),
-                  newTermName("collection")),
-                newTermName("Seq")),
+                  Select(
+                    Ident(newTermName("scala")),
+                    newTermName("collection")),
+                  newTermName("immutable")),
+                newTermName("List")),
               newTermName("apply")),
             terms)))
     }
