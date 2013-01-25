@@ -67,12 +67,6 @@ package org
   *
   * Things to note:
   *
-  *  - If you define `hashCode()` and wish to use `ScalaEquals.hash` along with `ScalaEquals.equal`
-  * (recommended), '''`hashCode()` MUST come after `equals` in the class definition.''' It is a
-  * compile time error otherwise. (The 2 macros interact so that exactly the fields/methods used
-  * in equals are used in `hashCode()`, and the current implementation requires `equals` come
-  * before so that the macro can be expanded prior to `hash`'s expansion)
-  *
   *  - The macros will intelligently pick other methods to call. Specifically, if the class extends
   * a class that also override equals, `super.equals(that)` will be called. If `canEquals` is not
   * defined, it will not be added to the `equals` call. `Scala.equals.hash` will call `super.hashCode()`
@@ -91,7 +85,7 @@ package org
   * Chapter 30 (Object equality)
   *
   * @author Alex DiCarlo
-  * @version 1.0.2
+  * @version 1.0.3
   * @since 0.3.0
   */
 package object scalaequals {}

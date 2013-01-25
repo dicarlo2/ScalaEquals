@@ -89,7 +89,7 @@ import scala.language.experimental.macros
   *
   *
   * @author Alex DiCarlo
-  * @version 1.0.2
+  * @version 1.0.3
   * @since 0.1.0
   */
 object ScalaEquals {
@@ -129,9 +129,6 @@ object ScalaEquals {
    * in `java.util.Objects.hash(elements)`. Works with all 3 forms of `equal`. Does not
    * work with custom `equals` implementations, one of `ScalaEquals.equal`,
    * `ScalaEquals.equal(params)`, or `ScalaEquals.equalAllVals` must be used
-   *
-   *
-   * '''MUST BE CALLED AFTER ScalaEquals.equal IN THE CLASS DEFINITION.'''
    *
    * @return hashCode generated from fields used in `equals`
    */
