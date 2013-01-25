@@ -60,7 +60,7 @@ package org
   *        case that: Point => (that canEquals this) && that.x == this.x && that.y == this.y
   *        case _ => false
   *      }
-  *      override def hashCode(): Int = Objects.hash(Seq(x, y))
+  *      override def hashCode(): Int = MurmurHash3.seqHash(List(x, y))
   *      def canEquals(other: Any): Boolean = other.isInstanceOf[Point]
   * }
   * }}}

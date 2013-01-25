@@ -94,7 +94,7 @@ in `equals`.
 with abstract type members). As always, be careful about initialization order when using 
 traits and abstract classes.
 
- - Requires Scala 2.10.0 and Java 1.7. Contact me if this is an issue.
+ - Requires Scala 2.10.0.
 
 ## Feedback
 
@@ -136,7 +136,7 @@ class Point(val x: Int, val y: Int) {
     case that: Point => (that canEqual this) && that.x == this.x && that.y == this.y
     case _ => false
   }
-  override def hashCode(): Int = Objects.hash(Seq(x, y))
+  override def hashCode(): Int = MurmurHash3.seqHash(List(x, y))
   def canEqual(other: Any): Boolean = other.isInstanceOf[Point]
 }
 ````
