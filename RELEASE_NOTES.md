@@ -1,3 +1,8 @@
+Version 1.1.0:
+
+- Add `ScalaEquals.genString` and `ScalaEquals.genString(params)` for generating `toString` similar to  a
+case class.
+
 Version 1.0.3:
 
 - `ScalaEquals.hash` no longer needs to be called after `equals`. Any ordering of the methods in the class will work.
