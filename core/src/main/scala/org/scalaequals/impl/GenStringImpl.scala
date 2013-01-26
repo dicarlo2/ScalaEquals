@@ -45,6 +45,8 @@ private[scalaequals] object GenStringImpl {
     val locator = new Locator[c.type](c)
 
     def make(): c.Expr[String] = {
+      if(c.enclosingClass.symbol.asClass.isTrait)
+        c.warning(c.enclosingClass.pos, Warnings.genStringWithTrait)
       makeString(locator.constructorArgs(c.enclosingClass, c.enclosingClass.symbol.asType.toType))
     }
 

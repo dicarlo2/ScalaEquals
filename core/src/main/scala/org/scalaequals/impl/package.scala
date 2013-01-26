@@ -79,5 +79,11 @@ package object impl {
      */
     val equalWithTrait: String =
       "ScalaEquals.equal on traits will only expand to a super.equals(that) call."
+
+    /**
+     * `ScalaEquals.genString` will only expand to `"ClassName()"` for traits
+     */
+    val genStringWithTrait: String =
+      "ScalaEquals.genString on traits will only expand to \"ClassName()\""
   }
 }
