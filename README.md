@@ -12,6 +12,15 @@ In the documentation and in this README, anywhere `ScalaEquals.equal` is seen it
 argument names are assumed to be `other`, but this is not a requirement, you may name the parameters
 however you would like, the macros will find the name of the parameter and use it in the expansion.
 
+## Downloading
+
+You can download ScalaEquals directly from [Sonatype][sona], or to use with [sbt][], add the
+following to your project file:
+
+```
+libraryDependencies += "org.scalaequals" %% "scalaequals-core" % "1.1.0"
+```
+
 ## How To Use
 
 ### Equals Using All `val`s In Constructor
@@ -45,15 +54,6 @@ class Point(_x: Int, var y: Int) {
   override def toString: String = genString(x, y)                    // returns "Point(x, y)"
 }
 ````
-
-## Downloading
-
-You may download ScalaEquals directly from [Sonatype][sona], or to use with [sbt][], add the
-following to your project file:
-
-```
-libraryDependencies += "org.scalaequals" %% "scalaequals-core" % "1.1.0"
-```
 
 ## Details
 
