@@ -22,7 +22,7 @@
 
 package org.scalaequals.impl
 
-import reflect.macros.Context
+import scala.reflect.macros.Context
 import org.scalaequals.impl.EqualsImpl.EqualsPayload
 
 /** Implementation of `ScalaEquals.hash` macro
@@ -42,6 +42,31 @@ private[scalaequals] object HashCodeImpl {
     val selfTpe: Type = c.enclosingClass.symbol.asType.toType
     val locator: Locator[c.type] = new Locator[c.type](c)
 
+    def make(): c.Expr[Int] = {
+      if (!locator.isHashCode(c.enclosingMethod.symbol))
+        c.abort(c.enclosingMethod.pos, Errors.badHashCallSite)
+
+      val payload = extractPayload()
+      val values = selfTpe.members filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
+      val terms = (values map {t => Select(This(tpnme.EMPTY), t)}).toList
+      val hash = if (payload.superHashCode) createHash(createSuperHashCode() :: terms) else createHash(terms)
+
+      c.Expr[Int](hash)
+    }
+
+    private def extractPayload(): EqualsPayload = {
+      locator.findEquals(c.enclosingClass) match {
+        case Some(method) => method.attachments.get[EqualsImpl.EqualsPayload] match {
+          case Some(payload) => payload
+          case None => c.typeCheck(method).attachments.get[EqualsImpl.EqualsPayload] match {
+            case Some(payload) => payload
+            case None => c.abort(c.enclosingPosition, Errors.missingEqual)
+          }
+        }
+        case None => c.abort(c.enclosingPosition, Errors.missingEquals)
+      }
+    }
+
     private def createSuperHashCode(): Apply =
       Apply(
         Select(
@@ -57,40 +82,24 @@ private[scalaequals] object HashCodeImpl {
         Select(
           Select(
             Select(
-              Ident(newTermName("java")),
-              newTermName("util")),
-            newTermName("Objects")),
-          newTermName("hash")),
+              Select(
+                Ident(newTermName("scala")),
+                newTermName("util")),
+              newTermName("hashing")),
+            newTermName("MurmurHash3")),
+          newTermName("seqHash")),
         List(
           Apply(
             Select(
               Select(
                 Select(
-                  Ident(newTermName("scala")),
-                  newTermName("collection")),
-                newTermName("Seq")),
+                  Select(
+                    Ident(newTermName("scala")),
+                    newTermName("collection")),
+                  newTermName("immutable")),
+                newTermName("List")),
               newTermName("apply")),
             terms)))
-    }
-
-    private def extractPayload(): EqualsPayload = {
-      locator.findEquals(c.enclosingClass) match {
-        case Some(method) => method.attachments.get[EqualsImpl.EqualsPayload] match {
-          case Some(payload) => payload
-          case None => c.abort(c.enclosingPosition, Errors.badHashOrdering)
-        }
-        case None => c.abort(c.enclosingPosition, Errors.missingEquals)
-      }
-    }
-
-    def make(): c.Expr[Int] = {
-      if (!locator.isHashCode(c.enclosingMethod.symbol))
-        c.abort(c.enclosingMethod.pos, Errors.badHashCallSite)
-      val payload = extractPayload()
-      val values = selfTpe.members filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
-      val terms = (values map {t => Select(This(tpnme.EMPTY), t)}).toList
-      val hash = if (payload.superHashCode) createHash(createSuperHashCode() :: terms) else createHash(terms)
-      c.Expr[Int](hash)
     }
   }
 }

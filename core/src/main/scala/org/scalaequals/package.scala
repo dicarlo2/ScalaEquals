@@ -61,7 +61,7 @@ package org
   *        case that: Point => (that canEquals this) && that.x == this.x && that.y == this.y
   *        case _ => false
   *      }
-  *      override def hashCode(): Int = Objects.hash(Seq(x, y))
+  *      override def hashCode(): Int = MurmurHash3.seqHash(List(x, y))
   *      def canEquals(other: Any): Boolean = other.isInstanceOf[Point]
   *      override def toString: String = "Point(" + x + ", " + y + ")"
   * }
@@ -69,20 +69,14 @@ package org
   *
   * Things to note:
   *
-  *  - If you define `hashCode()` and wish to use `ScalaEquals.hash` along with `ScalaEquals.equal`
-  * (recommended), '''`hashCode()` MUST come after `equals` in the class definition.''' It is a
-  * compile time error otherwise. (The 2 macros interact so that exactly the fields/methods used
-  * in equals are used in `hashCode()`, and the current implementation requires `equals` come
-  * before so that the macro can be expanded prior to `hash`'s expansion)
-  *
   *  - The macros will intelligently pick other methods to call. Specifically, if the class extends
   * a class that also override equals, `super.equals(that)` will be called. If `canEquals` is not
-  * defined, it will not be added to the `equals` call. `Scala.equals.hash` will call `super.hashCode()`
+  * defined, it will not be added to the `equals` call. `ScalaEquals.hash` will call `super.hashCode()`
   * if and only if `super.equals(that)` is called.
   *
   *  - The macros may only be called from their respectively named methods, `ScalaEquals.equal` can
-  * only be called in a method named `equals` `ScalaEquals.hash` can only be called in a method named
-  * `hashCode()` `ScalaEquals.canEquals` can only be called in a method name `canEquals` This serves
+  * only be called in a method named `equals`. `ScalaEquals.hash` can only be called in a method named
+  * `hashCode()`. `ScalaEquals.canEquals` can only be called in a method name `canEquals`. This serves
   * as a safety net to ensure these methods are never called somewhere they are not supposed to be.
   *
   * See [[https://github.com/dicarlo2/ScalaEquals the github readme]] for more information.

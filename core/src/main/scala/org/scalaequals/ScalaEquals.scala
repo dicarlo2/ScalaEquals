@@ -79,7 +79,7 @@ import scala.language.experimental.macros
   *       case that: Test => (that canEqual this) && that.w == this.w && that.a == this.a
   *       case _ => false
   *     }
-  *     override def hashCode() = Objects.hash(Seq(w, z))
+  *     override def hashCode() = MurmurHash3.seqHash(List(w, z))
   *     def canEqual(other: Any) = other.isInstanceOf[Test]
   *   }
   *
@@ -143,12 +143,9 @@ object ScalaEquals {
 
   /**
    * Looks up the elements tested in `equals` (including `super.equals`) and uses them
-   * in `java.util.Objects.hash(elements)`. Works with all 3 forms of `equal`. Does not
+   * in `MurmurHash3.seqHash(List(elements))`. Works with all 3 forms of `equal`. Does not
    * work with custom `equals` implementations, one of `ScalaEquals.equal`,
    * `ScalaEquals.equal(params)`, or `ScalaEquals.equalAllVals` must be used
-   *
-   *
-   * '''MUST BE CALLED AFTER ScalaEquals.equal IN THE CLASS DEFINITION.'''
    *
    * @return hashCode generated from fields used in `equals`
    */

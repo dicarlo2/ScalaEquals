@@ -62,7 +62,7 @@ You may download ScalaEquals directly from [Sonatype][sona], or to use with sbt,
 following to your project file:
 
 ```
-libraryDependencies += "org.scalaequals" %% "scalaequals-core" % "1.0.2"
+libraryDependencies += "org.scalaequals" %% "scalaequals-core" % "1.0.3"
 ```
 
 ## Details
@@ -85,9 +85,6 @@ and `def` that take no arguments. Any access modifier is allowed, and unlike `eq
 and `equalAllVals`, arguments inherited from a super class and/or qualified with `override` 
 may also be used.
 
- - `ScalaEquals.hash`, if it is used, *MUST* be used in conjunction with a `ScalaEquals.equal` 
-method and the definition of `hashCode()` *MUST* come after the definition of `equals` in the file.
-
  - `ScalaEquals.hash` will use `super.hashCode()` if and only if `super.equals(that)` is called 
 in `equals`.
 
@@ -96,8 +93,6 @@ in `equals`.
  - Works with classes, traits, abstract classes and generic variants (parameterized and
 with abstract type members). As always, be careful about initialization order when using 
 traits and abstract classes.
-
- - Requires Scala 2.10.0 and Java 1.7. Contact me if this is an issue.
 
 ## Feedback
 
@@ -139,7 +134,7 @@ class Point(val x: Int, val y: Int) {
     case that: Point => (that canEqual this) && that.x == this.x && that.y == this.y
     case _ => false
   }
-  override def hashCode(): Int = Objects.hash(Seq(x, y))
+  override def hashCode(): Int = MurmurHash3.seqHash(List(x, y))
   def canEqual(other: Any): Boolean = other.isInstanceOf[Point]
 }
 ````

@@ -33,32 +33,31 @@ package object impl {
     */
   private[impl] object Errors {
     /**
-     * ScalaEquals.canEquals must be called from within a canEqual method
+     * `ScalaEquals.canEquals` must be called from within a `canEqual` method
      */
     val badCanEqualsCallSite: String =
       "ScalaEquals.canEquals must be called from within a canEqual method.\n" +
         "Check that your method signature matches one of \"def canEqual(other: Any): Boolean\" or " +
         "\"override def canEqual(other: Any): Boolean\"."
     /**
-     * ScalaEquals.equal must be called from within an equals method
+     * `ScalaEquals.equal` must be called from within an `equals` method
      */
     val badEqualCallSite: String =
       "ScalaEquals.equal must be called from within an equals method.\n" +
         "Check that your method signature matches \"override def equals(other: Any): Boolean\""
     /**
-     * ScalaEquals.hash must be called from within a hashCode method
+     * `ScalaEquals.hash` must be called from within a `hashCode` method
      */
     val badHashCallSite: String =
       "ScalaEquals.hash must be called from within a hashCode method.\n" +
         "Check that your method signature matches \"override def hashCode(): Int\""
     /**
-     * No attachments found on equals. Ensure that the definition of #equals comes before #hashCode() and that you
-     * are using ScalaEquals.equal or ScalaEquals.equalAllVals"
+     * `ScalaEquals.hash` must be called in a class that also uses `ScalaEquals.equal` or `ScalaEquals.equalAllVals`
      */
-    val badHashOrdering: String = "No attachments found on equals. Ensure that the definition of #equals " +
-      "comes before #hashCode() and that you are using ScalaEquals.equal or ScalaEquals.equalAllVals"
+    val missingEqual: String = "No attachments found on equals. Ensure that you are using one of " +
+      "ScalaEquals.equal or ScalaEquals.equalAllVals in your #equals method"
     /**
-     * No equals method found! Ensure you are overriding equals and that it has the correct signature.
+     * `ScalaEquals.hash` must be called in a class that defines equals
      */
     val missingEquals: String =
       "No equals method found! Ensure you are overriding equals and that it has the correct signature."
@@ -69,5 +68,16 @@ package object impl {
     val badToStringCallSite: String =
       "ScalaEquals.toString must be called from within a toString method.\n" +
         "Check that your method signature matches \"override def toString: String\""
+  }
+  /** @author Alex DiCarlo
+    * @version 1.1.0
+    * @since 1.0.3
+    */
+  private[impl] object Warnings {
+    /**
+     * `ScalaEquals.equal` will only expand to a `super.equals(that)` call for traits.
+     */
+    val equalWithTrait: String =
+      "ScalaEquals.equal on traits will only expand to a super.equals(that) call."
   }
 }

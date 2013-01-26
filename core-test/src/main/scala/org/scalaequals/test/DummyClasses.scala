@@ -51,11 +51,11 @@ class Dummy(
 
   override def equals(any: Any): Boolean = ScalaEquals.equalAllVals
 
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
-
   override def hashCode: Int = ScalaEquals.hash
 
   override def toString: String = ScalaEquals.genString
+
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
 }
 
 // Equals on super, a, x
@@ -76,11 +76,11 @@ class DummySub(
   override def o: Int = a
   override lazy val q: Int = _h
 
+  override def hashCode: Int = ScalaEquals.hash
+
   override def equals(test: Any): Boolean = ScalaEquals.equalAllVals
 
   override def canEqual(test: Any): Boolean = ScalaEquals.canEquals
-
-  override def hashCode: Int = ScalaEquals.hash
 
   override def toString: String = ScalaEquals.genString
 }
@@ -137,13 +137,13 @@ class DummyCSub(
   override def o: Int = a
   override lazy val q: Int = _h
 
-  override def equals(a: Any): Boolean = ScalaEquals.equal
-
   override def canEqual(c: Any): Boolean = ScalaEquals.canEquals
 
   override def hashCode: Int = ScalaEquals.hash
 
   override def toString: String = ScalaEquals.genString
+
+  override def equals(a: Any): Boolean = ScalaEquals.equal
 }
 
 // Equals on b, c, e, f, k, n, o, p, q, r, s
@@ -171,9 +171,9 @@ class DummyParams(
   protected lazy val r: Int = e
   private lazy val s: Int = e
 
-  override def equals(other: Any): Boolean = ScalaEquals.equal(b, c, e, f, k, n, o, p, q, r, s)
-
   def canEqual(other: Any): Boolean = ScalaEquals.canEquals
+
+  override def equals(other: Any): Boolean = ScalaEquals.equal(b, c, e, f, k, n, o, p, q, r, s)
 
   override def hashCode: Int = ScalaEquals.hash
 
@@ -198,11 +198,11 @@ class DummyParamsSub(
   override def o: Int = a
   override lazy val q: Int = _h
 
-  override def equals(other: Any): Boolean = ScalaEquals.equal(a, b, h, y, o)
-
   override def canEqual(other: Any): Boolean = ScalaEquals.canEquals
 
   override def hashCode: Int = ScalaEquals.hash
 
   override def toString: String = ScalaEquals.genString
+
+  override def equals(other: Any): Boolean = ScalaEquals.equal(a, b, h, y, o)
 }
