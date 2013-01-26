@@ -1,8 +1,8 @@
 # ScalaEquals
 
-ScalaEquals provides easy to use macros for generating correct equals/hashCode/canEqual implementations, 
-never look up an equals/hashCode recipe again! The methods generated from ScalaEquals are taken directly 
-from [Programming in Scala][pis] and strictly obey the [contract][] of equals and hashCode, and unlike
+ScalaEquals provides easy to use macros for generating correct `equals`/`hashCode`/`canEqual` implementations,
+never look up an `equals`/`hashCode` recipe again! The methods generated from ScalaEquals are taken directly
+from [Programming in Scala][pis] and strictly obey the [contract][] of `equals` and `hashCode`, and unlike
 case classes, the generated methods work as expected with sub-classing. As a bonus, the macros also check that
 `equals`/`hashCode`/`canEqual`/`toString` are defined correctly; they will catch misspellings, incorrect
 types, etc.
@@ -121,7 +121,7 @@ Want to tell me how awesome (or horrible) ScalaEquals is? Send me an [email][asd
 
 ### Found a Bug? Want a New Feature?
 
-Add issues or feature requests here on github at the [issue][] tracker, or better yet, 
+Add issues or feature requests here on github at the [issue][] tracker, alternatively
 fork the project and submit a pull request.
 
 ## Release Notes
