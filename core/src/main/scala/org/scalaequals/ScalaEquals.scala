@@ -104,6 +104,23 @@ import scala.language.experimental.macros
   *   }
   * }}}
   *
+  * Generating toString with params:
+  * {{{
+  *   class Test(x: Int, val y: Int, private val z: Int, var a: Int) {
+  *     def w: Int = x * z
+  *     override def toString: String = ScalaEquals.genString(x, w)
+  *   }
+  * }}}
+  *
+  * Which will expand to:
+  *
+  * {{{
+  *   class Test(x: Int, val y: Int, private val z: Int, var a: Int) {
+  *     def w: Int = x * z
+  *     override def toString: String = "Test(" + x + ", " + w + ")"
+  *   }
+  * }}}
+  *
   *
   * @author Alex DiCarlo
   * @version 1.1.0
@@ -168,5 +185,17 @@ object ScalaEquals {
    *
    * @return string representation of calling class with constructor arguments
    */
-  def genString: String = macro GenStringImpl.genString
+  def genString: String = macro GenStringImpl.genStringImpl
+
+  /**
+   * Generates a string using only the passed in parameters
+   *
+   * Acceptable arguments include private/protected/public vals, vars, lazy vals,
+   * and defs with no arguments.
+   *
+   * @param param first param to test with
+   * @param params rest of the params
+   * @return "ClassName(param1, param2, ...)"
+   */
+  def genString(param: Any, params: Any*): String = macro GenStringImpl.genStringParamsImpl
 }

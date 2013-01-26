@@ -50,11 +50,6 @@ object DummyArg {
 
 trait DummyFixture[T] extends EqualsFixture[T, DummyArg] {
   def gen: Gen[DummyArg] = DummyArg.gen
-
-  def sub: Boolean
-
-  def createToString(arg: DummyArg): String =
-    if (sub) s"${name}${arg.subArgString}" else s"${name}${arg.classArgString}"
 }
 
 trait DummySubFixture[T] {
@@ -74,6 +69,10 @@ class DummyTest extends DummyFixture[Dummy] {
   def sub: Boolean = false
 
   def create(arg: DummyArg): Dummy = new Dummy(arg.a, arg.b, arg.c, arg.d, arg.e, arg.f, arg.g, arg.t, arg._h, arg._q)
+
+  /* Creates a String to test toString = A(arg) */
+  def createToString(arg: DummyArg): String =
+    s"Dummy(${arg.b}, ${arg.c}, ${arg.d}, ${arg.e}, ${arg._h}, ${arg._q})"
 
   def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg = arg.copy(a = arg2.a, f = arg2.f, g = arg2.g, t = arg2.t)
 
@@ -113,6 +112,10 @@ class DummySubTest extends DummyFixture[DummySub] {
 
   def create(arg: DummyArg): DummySub = DummySubTest.create(arg)
 
+  /* Creates a String to test toString = A(arg) */
+  def createToString(arg: DummyArg): String =
+    s"DummySub(${arg.a}, ${arg.b}, ${arg.c}, ${arg.d}, ${arg.e}, ${arg.x}, ${arg._h}, ${arg._q})"
+
   def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg =
     arg.copy(f = arg2.f, g = arg2.g, y = arg2.y, t = arg2.t)
 
@@ -143,6 +146,10 @@ class DummyCTest extends DummyFixture[DummyC] {
 
   def create(arg: DummyArg): DummyC =
     new DummyC(arg.a, arg.b, arg.c, arg.d, arg.e, arg.f, arg.g, arg.t, arg._h, arg._q)
+
+  /* Creates a String to test toString = A(arg) */
+  def createToString(arg: DummyArg): String =
+    s"DummyC(${arg.b}, ${arg.c}, ${arg.d})"
 
   def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg =
     arg.copy(a = arg2.a, e = arg2.e, f = arg2.f, g = arg2.g, t = arg2.t, _h = arg2._h, _q = arg2._q)
@@ -183,6 +190,10 @@ class DummyCSubTest extends DummyFixture[DummyCSub] {
 
   def create(arg: DummyArg): DummyCSub = DummyCSubTest.create(arg)
 
+  /* Creates a String to test toString = A(arg) */
+  def createToString(arg: DummyArg): String =
+    s"DummyCSub(${arg.a}, ${arg.b}, ${arg.c}, ${arg.d}, ${arg.x})"
+
   def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg =
     arg.copy(e = arg2.e, f = arg2.f, g = arg2.g, y = arg2.y, t = arg2.t, _h = arg2._h, _q = arg2._q)
 
@@ -212,6 +223,10 @@ class DummyParamsTest extends DummyFixture[DummyParams] {
 
   def create(arg: DummyArg): DummyParams =
     new DummyParams(arg.a, arg.b, arg.c, arg.d, arg.e, arg.f, arg.g, arg.t, arg._h, arg._q)
+
+  /* Creates a String to test toString = A(arg) */
+  def createToString(arg: DummyArg): String =
+    s"DummyParams(${arg.a}, ${arg.b}, ${arg.c}, ${arg.e}, ${arg.f}, ${arg.g}, ${arg._h}, ${arg._q})"
 
   def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg =
     arg.copy(d = arg2.d, t = arg2.t)
@@ -253,6 +268,10 @@ class DummyParamsSubTest extends DummyFixture[DummyParamsSub] {
   def sub: Boolean = true
 
   def create(arg: DummyArg): DummyParamsSub = DummyParamsSubTest.create(arg)
+
+  /* Creates a String to test toString = A(arg) */
+  def createToString(arg: DummyArg): String =
+    s"DummyParamsSub(${arg.a}, ${arg.b}, ${arg.c}, ${arg.e}, ${arg.f}, ${arg.g}, ${arg.y}, ${arg._h}, ${arg._q})"
 
   def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg =
     arg.copy(d = arg2.d, x = arg2.x, t = arg.t)

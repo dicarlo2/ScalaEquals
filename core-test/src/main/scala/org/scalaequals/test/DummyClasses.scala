@@ -53,7 +53,7 @@ class Dummy(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String = ScalaEquals.genString
+  override def toString: String = ScalaEquals.genString(b, c, d, e, _h, _q)
 
   def canEqual(other: Any): Boolean = ScalaEquals.canEquals
 }
@@ -82,7 +82,7 @@ class DummySub(
 
   override def canEqual(test: Any): Boolean = ScalaEquals.canEquals
 
-  override def toString: String = ScalaEquals.genString
+  override def toString: String = ScalaEquals.genString(a, b, c, d, e, x, _h, _q)
 }
 
 // Equals on b, c, d
@@ -116,7 +116,7 @@ class DummyC(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String = ScalaEquals.genString
+  override def toString: String = ScalaEquals.genString(b, c, d)
 }
 
 // Equals on super, a, x
@@ -141,7 +141,7 @@ class DummyCSub(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String = ScalaEquals.genString
+  override def toString: String = ScalaEquals.genString(a, b, c, d, x)
 
   override def equals(a: Any): Boolean = ScalaEquals.equal
 }
@@ -177,7 +177,7 @@ class DummyParams(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String = ScalaEquals.genString
+  override def toString: String = ScalaEquals.genString(a, b, c, e, f, g, _h, _q)
 }
 
 // Equals on super, a, b, h, y, o
@@ -202,7 +202,7 @@ class DummyParamsSub(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String = ScalaEquals.genString
+  override def toString: String = ScalaEquals.genString(a, b, c, e, f, g, y, _h, _q)
 
   override def equals(other: Any): Boolean = ScalaEquals.equal(a, b, h, y, o)
 }

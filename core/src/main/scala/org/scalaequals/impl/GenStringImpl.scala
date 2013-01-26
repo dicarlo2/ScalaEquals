@@ -31,32 +31,50 @@ import scala.reflect.macros.Context
   * @since 1.1.0
   */
 private[scalaequals] object GenStringImpl {
-  def genString(c: Context): c.Expr[String] = {
+  def genStringImpl(c: Context): c.Expr[String] = {
+    new GenStringMaker[c.type](c).make()
+  }
+
+  def genStringParamsImpl(c: Context)(param: c.Expr[Any], params: c.Expr[Any]*): c.Expr[String] = {
+    new GenStringMaker[c.type](c).make((param +: params).to[List])
+  }
+
+  private[GenStringImpl] class GenStringMaker[C <: Context](val c: C) {
     import c.universe._
 
     val locator = new Locator[c.type](c)
-    if (!locator.isToString(c.enclosingMethod.symbol))
-      c.abort(c.enclosingMethod.pos, Errors.badToStringCallSite)
 
-    val args = locator.constructorArgs(c.enclosingClass, c.enclosingClass.symbol.asType.toType)
-    def createNestedAdd(terms: List[TermName]): Tree = terms match {
-      case Nil => Literal(Constant(")"))
-      case x :: Nil =>
-        Apply(Select(Ident(x), newTermName("$plus")), List(Literal(Constant(")"))))
-      case x :: xs =>
-        val first = Apply(Select(Ident(x), newTermName("$plus")), List(Literal(Constant(", "))))
-        Apply(Select(first, newTermName("$plus")), List(createNestedAdd(xs)))
+    def make(): c.Expr[String] = {
+      makeString(locator.constructorArgs(c.enclosingClass, c.enclosingClass.symbol.asType.toType))
     }
-    val nestedAdd = createNestedAdd(args)
 
-    val tree =
+    def make(params: Seq[c.Expr[Any]]): c.Expr[String] = {
+      val args = (params map {_.tree.symbol.name.toTermName}).to[List]
+      makeString(args)
+    }
+
+    def makeString(args: List[TermName]): c.Expr[String] = {
+      if (!locator.isToString(c.enclosingMethod.symbol))
+        c.abort(c.enclosingMethod.pos, Errors.badToStringCallSite)
+
+      val stringArgs = nestedAdd(args)
+      val className = Literal(Constant(c.enclosingClass.symbol.name.toString + "("))
+      val tree = stringAdd(className, stringArgs)
+      c.Expr[String](tree)
+    }
+
+    def nestedAdd(terms: List[TermName]): Tree = terms match {
+      case Nil => Literal(Constant(")"))
+      case x :: Nil => stringAdd(Ident(x), Literal(Constant(")")))
+      case x :: xs => stringAdd(stringAdd(Ident(x), Literal(Constant(", "))), nestedAdd(xs))
+    }
+
+    def stringAdd(left: Tree, right: Tree): Tree =
       Apply(
         Select(
-          Literal(
-            Constant(
-              c.enclosingClass.symbol.name.toString + "(")),
+          left,
           newTermName("$plus")),
-        List(nestedAdd))
-    c.Expr[String](tree)
+        List(
+          right))
   }
 }

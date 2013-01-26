@@ -29,7 +29,7 @@ class TypeMemberTraitTest extends EqualsFixture[TypeMemberTrait {type A = String
   }
 
   /* Creates a String to test toString = A(arg) */
-  def createToString(arg: TypeMemberArg): String = s"TypeMemberTrait()"
+  def createToString(arg: TypeMemberArg): String = s"TypeMemberTrait(${arg.a}, ${arg.b}, ${arg.g})"
 
   /* Swaps all constructor arguments that are not part of equals from arg to arg2's values */
   def changeDiff(arg: TypeMemberArg, arg2: TypeMemberArg): TypeMemberArg =
