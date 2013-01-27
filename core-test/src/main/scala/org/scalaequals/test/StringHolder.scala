@@ -22,11 +22,9 @@
 
 package org.scalaequals.test
 
+import org.scalaequals.ScalaEquals.Equal
 import org.scalaequals.ScalaEquals
 
-// Tests that canEquals is not called if it is not available
-final class StringHolder(val string: String) {
-  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
-  override def hashCode: Int = ScalaEquals.hash
+final class StringHolder(val string: String) extends Equal {
   override def toString: String = ScalaEquals.genString
 }

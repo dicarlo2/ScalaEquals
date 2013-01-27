@@ -27,7 +27,7 @@ import scala.reflect.macros.Context
 /** Locator used to find elements of a type
   *
   * @author Alex DiCarlo
-  * @version 1.1.0
+  * @version 2.0.0
   * @since 1.0.1
   */
 private[impl] class Locator[C <: Context](val c: C) {
@@ -56,6 +56,9 @@ private[impl] class Locator[C <: Context](val c: C) {
     val overriding = tpe.baseClasses map {_.asType.toType} filter isOverridingEquals
     overriding exists {oTpe => !(oTpe =:= typeOf[Object]) && !(oTpe =:= tpe)}
   }
+
+  def hasSuperWithCanEqual(parents: List[Tree]): Boolean =
+    parents filter {_.symbol.isType} exists {t => hasCanEqual(t.symbol.asType.toType)}
 
   def findEquals(tree: Tree): Option[Tree] = tree filter {_.isDef} find {t => isEqualsOverride(t.symbol)}
 

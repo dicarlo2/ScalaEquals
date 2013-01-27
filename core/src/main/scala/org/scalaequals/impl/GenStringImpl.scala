@@ -27,7 +27,7 @@ import scala.reflect.macros.Context
 /** Implementation of `ScalaEquals.genString` macro
   *
   * @author Alex DiCarlo
-  * @version 1.1.0
+  * @version 2.0.0
   * @since 1.1.0
   */
 private[scalaequals] object GenStringImpl {

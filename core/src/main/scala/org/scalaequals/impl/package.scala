@@ -23,12 +23,12 @@
 package org.scalaequals
 
 /** @author Alex DiCarlo
-  * @version 1.1.0
+  * @version 2.0.0
   * @since 1.0.1
   */
 package object impl {
   /** @author Alex DiCarlo
-    * @version 1.1.0
+    * @version 2.0.0
     * @since 0.3.0
     */
   private[impl] object Errors {
@@ -70,7 +70,7 @@ package object impl {
         "Check that your method signature matches \"override def toString: String\""
   }
   /** @author Alex DiCarlo
-    * @version 1.1.0
+    * @version 2.0.0
     * @since 1.0.3
     */
   private[impl] object Warnings {

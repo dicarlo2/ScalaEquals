@@ -1,10 +1,8 @@
 package org.scalaequals.test
 
+import org.scalaequals.ScalaEquals.Equal
 import org.scalaequals.ScalaEquals
 
-class ParameterizedClass[A, B](val x: A, val y: B) {
-  override def equals(other: Any): Boolean = ScalaEquals.equal
-  override def hashCode(): Int = ScalaEquals.hash
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
+class ParameterizedClass[A, B](val x: A, val y: B) extends Equal {
   override def toString: String = ScalaEquals.genString
 }

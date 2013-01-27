@@ -23,6 +23,7 @@
 package org.scalaequals.test
 
 import org.scalaequals.ScalaEquals
+import org.scalaequals.ScalaEquals.Equal
 
 // Equals on b, c, d, h, i, j, q, r, and s
 class Dummy(
@@ -97,7 +98,7 @@ class DummyC(
     protected var g: Int,
     t: => Int,
     _h: Int,
-    _q: Int) {
+    _q: Int) extends Equal {
   val h: Int = _h
   protected val i: Int = b
   private val j: Int = c
@@ -110,12 +111,6 @@ class DummyC(
   lazy val q: Int = _q
   protected lazy val r: Int = e
   private lazy val s: Int = e
-
-  override def equals(any: Any): Boolean = ScalaEquals.equal
-
-  def canEqual(b: Any): Boolean = ScalaEquals.canEquals
-
-  override def hashCode: Int = ScalaEquals.hash
 
   override def toString: String = ScalaEquals.genString(b, c, d)
 }
@@ -133,19 +128,13 @@ class DummyCSub(
     var y: Int,
     t: => Int,
     _h: Int,
-    _q: Int) extends DummyC(a, b, c, d, e, f, g, t, _h, _q) {
+    _q: Int) extends DummyC(a, b, c, d, e, f, g, t, _h, _q) with Equal {
   override val h: Int = _q
   override def o: Int = a
   override lazy val q: Int = _h
 
-  override def canEqual(c: Any): Boolean = ScalaEquals.canEquals
-
-  override def hashCode: Int = ScalaEquals.hash
-
-  // TODO: Add `d` back in once SI-7028 is fixed
+//  TODO: Add `d` back in once SI-7028 is fixed
   override def toString: String = ScalaEquals.genString(a, b, c, x)
-
-  override def equals(a: Any): Boolean = ScalaEquals.equal
 }
 
 // Equals on b, c, e, f, k, n, o, p, q, r, s

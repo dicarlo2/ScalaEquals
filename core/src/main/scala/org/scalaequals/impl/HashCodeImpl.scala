@@ -28,7 +28,7 @@ import org.scalaequals.impl.EqualsImpl.EqualsPayload
 /** Implementation of `ScalaEquals.hash` macro
   *
   * @author Alex DiCarlo
-  * @version 1.1.0
+  * @version 2.0.0
   * @since 0.2.0
   */
 private[scalaequals] object HashCodeImpl {
@@ -55,7 +55,7 @@ private[scalaequals] object HashCodeImpl {
     }
 
     private def extractPayload(): EqualsPayload = {
-      locator.findEquals(c.enclosingImpl) match {
+      locator.findEquals(c.enclosingTemplate) match {
         case Some(method) => method.attachments.get[EqualsImpl.EqualsPayload] match {
           case Some(payload) => payload
           case None => c.typeCheck(method).attachments.get[EqualsImpl.EqualsPayload] match {

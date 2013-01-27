@@ -23,11 +23,9 @@
 package org.scalaequals.test
 
 import org.scalaequals.ScalaEquals
+import org.scalaequals.ScalaEquals.Equal
 
-class Point(val x: Int, val y: Int, val z: Int) {
-  override def hashCode: Int = ScalaEquals.hash
-  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
+class Point(val x: Int, val y: Int, val z: Int) extends Equal {
   override def toString: String = ScalaEquals.genString
 }
 
@@ -35,16 +33,10 @@ object Color extends Enumeration {
   val Red, Orange, Yellow, Green, Blue, Indigo, Violet = Value
 }
 
-class ColoredPoint(x: Int, y: Int, z: Int, val color: Color.Value) extends Point(x, y, z) {
-  override def equals(other: Any): Boolean = ScalaEquals.equal
-  override def hashCode: Int = ScalaEquals.hash
-  override def canEqual(othr: Any): Boolean = ScalaEquals.canEquals
+class ColoredPoint(x: Int, y: Int, z: Int, val color: Color.Value) extends Point(x, y, z) with Equal {
   override def toString: String = ScalaEquals.genString
 }
 
-class FourDColoredPoint(val w: Int, x: Int, y: Int, z: Int, color: Color.Value) extends ColoredPoint(x, y, z, color) {
-  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
-  override def hashCode: Int = ScalaEquals.hash
-  override def canEqual(a: Any): Boolean = ScalaEquals.canEquals
+class FourDColoredPoint(val w: Int, x: Int, y: Int, z: Int, color: Color.Value) extends ColoredPoint(x, y, z, color) with Equal {
   override def toString: String = ScalaEquals.genString
 }

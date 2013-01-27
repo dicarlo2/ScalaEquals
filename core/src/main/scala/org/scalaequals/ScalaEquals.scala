@@ -22,7 +22,7 @@
 
 package org.scalaequals
 
-import org.scalaequals.impl.{GenStringImpl, HashCodeImpl, EqualsImpl, CanEqualImpl}
+import org.scalaequals.impl._
 import scala.language.experimental.macros
 
 /** Entry point for ScalaEquals
@@ -123,7 +123,7 @@ import scala.language.experimental.macros
   *
   *
   * @author Alex DiCarlo
-  * @version 1.1.0
+  * @version 2.0.0
   * @since 0.1.0
   */
 object ScalaEquals {
@@ -198,4 +198,6 @@ object ScalaEquals {
    * @return "ClassName(param1, param2, ...)"
    */
   def genString(param: Any, params: Any*): String = macro GenStringImpl.genStringParamsImpl
+
+  type Equal = macro EqualTypeImpl.make
 }
