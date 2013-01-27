@@ -202,4 +202,6 @@ object ScalaEquals {
   type Equal = macro EqualTypeImpl.make
 
   type EqualAllVals = macro EqualTypeImpl.makeAll
+
+  type GenString = macro GenStringTypeImpl.make
 }

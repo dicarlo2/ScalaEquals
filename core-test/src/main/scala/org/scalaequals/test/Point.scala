@@ -22,21 +22,14 @@
 
 package org.scalaequals.test
 
-import org.scalaequals.ScalaEquals
-import org.scalaequals.ScalaEquals.Equal
+import org.scalaequals.ScalaEquals.{Equal, GenString}
 
-class Point(val x: Int, val y: Int, val z: Int) extends Equal {
-  override def toString: String = ScalaEquals.genString
-}
+class Point(val x: Int, val y: Int, val z: Int) extends Equal with GenString
 
 object Color extends Enumeration {
   val Red, Orange, Yellow, Green, Blue, Indigo, Violet = Value
 }
 
-class ColoredPoint(x: Int, y: Int, z: Int, val color: Color.Value) extends Point(x, y, z) with Equal {
-  override def toString: String = ScalaEquals.genString
-}
+class ColoredPoint(x: Int, y: Int, z: Int, val color: Color.Value) extends Point(x, y, z) with Equal with GenString
 
-class FourDColoredPoint(val w: Int, x: Int, y: Int, z: Int, color: Color.Value) extends ColoredPoint(x, y, z, color) with Equal {
-  override def toString: String = ScalaEquals.genString
-}
+class FourDColoredPoint(val w: Int, x: Int, y: Int, z: Int, color: Color.Value) extends ColoredPoint(x, y, z, color) with Equal with GenString

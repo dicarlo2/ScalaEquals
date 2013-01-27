@@ -76,6 +76,18 @@ private[impl] class Locator[C <: Context](val c: C) {
       }
   }).head
 
+  def hasScalaEqualsType(name: String, parents: List[Tree]): Boolean =
+    parents exists {_ exists {t => isScalaEqualsType(name, t)}}
+
+  def filterScalaEqualsType(name: String, parents: List[Tree]): List[Tree] =
+    parents filterNot {_ exists {t => isScalaEqualsType(name, t)}}
+
+  private def isScalaEqualsType(name: String, tree: Tree): Boolean = tree match {
+    case Ident(TypeName(`name`)) => true
+    case Select(Ident(TermName("ScalaEquals")), TypeName(`name`)) => true
+    case _ => false
+  }
+
   private def isEqualsOverride(term: Symbol): Boolean = term match {
     case equalsTerm: TermSymbol =>
       equalsTerm.alternatives map {_.asTerm} exists {_.allOverriddenSymbols.contains(anyEquals)}

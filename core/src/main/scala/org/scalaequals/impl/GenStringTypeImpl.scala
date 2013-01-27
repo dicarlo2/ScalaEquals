@@ -20,8 +20,36 @@
  * THE SOFTWARE.
  */
 
-package org.scalaequals.test
+package org.scalaequals.impl
 
-import org.scalaequals.ScalaEquals.{Equal, GenString}
+import scala.reflect.macros.Macro
 
-final class StringHolder(val string: String) extends Equal with GenString
+/** Implementation of `ScalaEquals.GenString` type macro
+  *
+  * @author Alex DiCarlo
+  * @version 2.0.0
+  * @since 2.0.0
+  */
+trait GenStringTypeImpl extends Macro {
+  import c.universe._
+
+  private lazy val locator = new Locator[c.type](c)
+  private lazy val equalTypeImpl = new EqualTypeImpl {
+    val c: GenStringTypeImpl.this.c.type = GenStringTypeImpl.this.c
+  }
+
+  def make: Template = addGenString(c.enclosingTemplate)
+
+  def addToTemplate(template: Template): Template =
+    if (locator.hasScalaEqualsType("GenString", template.parents)) addGenString(template) else template
+
+  private def addGenString(template: Template): Template = {
+    val Template(parents, self, body) = template
+    val filteredParents = locator.filterScalaEqualsType("GenString", parents)
+    val newTemplate = Template(filteredParents, self, body ++ Seq(genString()))
+    equalTypeImpl.addToTemplate(newTemplate)
+  }
+
+  private def genString(): Tree =
+    q"override def toString: String = org.scalaequals.ScalaEquals.genString".asInstanceOf[DefDef]
+}

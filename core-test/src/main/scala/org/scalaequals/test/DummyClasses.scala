@@ -66,16 +66,10 @@ class DummySub(
     var y: Int,
     t: => Int,
     _h: Int,
-    _q: Int) extends Dummy(a, b, c, d, e, f, g, t, _h, _q) {
+    _q: Int) extends Dummy(a, b, c, d, e, f, g, t, _h, _q) with EqualAllVals {
   override val h: Int = _q
   override def o: Int = a
   override lazy val q: Int = _h
-
-  override def hashCode: Int = ScalaEquals.hash
-
-  override def equals(test: Any): Boolean = ScalaEquals.equalAllVals
-
-  override def canEqual(test: Any): Boolean = ScalaEquals.canEquals
 
   // TODO: Add `d` back in once SI-7028 is fixed
   override def toString: String = ScalaEquals.genString(a, b, c, e, x, _h, _q)
