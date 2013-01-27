@@ -22,8 +22,7 @@
 
 package org.scalaequals.impl
 
-import scala.reflect.macros.{Macro, Context}
-import org.scalaequals.ScalaEquals
+import scala.reflect.macros.Macro
 
 /** Implementation of `ScalaEquals.Equal` type macro
   *
@@ -38,27 +37,33 @@ trait EqualTypeImpl extends Macro {
 
   def make: c.Tree = {
     val Template(parents, self, existingCode) = c.enclosingTemplate
-    val filteredParents = filterScalaEquals(parents)
-    val newMethods = List(genEquals(), genHashCode(), genCanEqual(parents))
+    val filteredParents = parents filterNot {_ exists {t => isScalaEqualsType("Equal", t)}}
+    val newMethods = List(genEqual(), genHash(), genCanEquals(parents))
     Template(filteredParents, self, existingCode ++ newMethods)
   }
 
-  def genEquals(): Tree =
+  def makeAll: c.Tree = {
+    val Template(parents, self, existingCode) = c.enclosingTemplate
+    val filteredParents = parents filterNot {_ exists {t => isScalaEqualsType("EqualAllVals", t)}}
+    val newMethods = List(genEqualAllVals(), genHash(), genCanEquals(parents))
+    Template(filteredParents, self, existingCode ++ newMethods)
+  }
+
+  private def genEqual(): Tree =
     q"override def equals(other: Any): Boolean = org.scalaequals.ScalaEquals.equal".asInstanceOf[DefDef]
-  def genHashCode(): Tree =
+  private def genEqualAllVals(): Tree =
+    q"override def equals(other: Any): Boolean = org.scalaequals.ScalaEquals.equalAllVals".asInstanceOf[DefDef]
+  private def genHash(): Tree =
     q"override def hashCode(): Int = org.scalaequals.ScalaEquals.hash".asInstanceOf[DefDef]
-  def genCanEqual(parents: List[Tree]): Tree =
+  private def genCanEquals(parents: List[Tree]): Tree =
     if (locator.hasSuperWithCanEqual(parents))
       q"override def canEqual(other: Any): Boolean = org.scalaequals.ScalaEquals.canEquals".asInstanceOf[DefDef]
     else
       q"def canEqual(other: Any): Boolean = org.scalaequals.ScalaEquals.canEquals".asInstanceOf[DefDef]
 
-  private def filterScalaEquals(parents: List[Tree]): List[Tree] = {
-    def isScalaEquals(tree: Tree): Boolean = tree match {
-      case Ident(TypeName("Equal")) => true
-      case Select(Ident(TermName("ScalaEquals")), TypeName("Equal")) => true
-      case _ => false
-    }
-    parents filterNot {_ exists isScalaEquals}
+  private def isScalaEqualsType(name: String, tree: Tree): Boolean = tree match {
+    case Ident(TypeName(`name`)) => true
+    case Select(Ident(TermName("ScalaEquals")), TypeName(`name`)) => true
+    case _ => false
   }
 }

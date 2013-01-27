@@ -23,7 +23,7 @@
 package org.scalaequals.test
 
 import org.scalaequals.ScalaEquals
-import org.scalaequals.ScalaEquals.Equal
+import org.scalaequals.ScalaEquals.{Equal, EqualAllVals}
 
 // Equals on b, c, d, h, i, j, q, r, and s
 class Dummy(
@@ -36,7 +36,7 @@ class Dummy(
     protected var g: Int,
     t: => Int,
     _h: Int,
-    _q: Int) {
+    _q: Int) extends EqualAllVals {
   val h: Int = _h
   protected val i: Int = b
   private val j: Int = c
@@ -50,13 +50,7 @@ class Dummy(
   protected lazy val r: Int = e
   private lazy val s: Int = e
 
-  override def equals(any: Any): Boolean = ScalaEquals.equalAllVals
-
-  override def hashCode: Int = ScalaEquals.hash
-
   override def toString: String = ScalaEquals.genString(b, c, d, e, _h, _q)
-
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
 }
 
 // Equals on super, a, x

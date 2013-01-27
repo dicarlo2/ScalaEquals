@@ -200,4 +200,6 @@ object ScalaEquals {
   def genString(param: Any, params: Any*): String = macro GenStringImpl.genStringParamsImpl
 
   type Equal = macro EqualTypeImpl.make
+
+  type EqualAllVals = macro EqualTypeImpl.makeAll
 }
