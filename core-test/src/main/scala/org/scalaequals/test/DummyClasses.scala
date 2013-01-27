@@ -82,7 +82,8 @@ class DummySub(
 
   override def canEqual(test: Any): Boolean = ScalaEquals.canEquals
 
-  override def toString: String = ScalaEquals.genString(a, b, c, d, e, x, _h, _q)
+  // TODO: Add `d` back in once SI-7028 is fixed
+  override def toString: String = ScalaEquals.genString(a, b, c, e, x, _h, _q)
 }
 
 // Equals on b, c, d
@@ -141,7 +142,8 @@ class DummyCSub(
 
   override def hashCode: Int = ScalaEquals.hash
 
-  override def toString: String = ScalaEquals.genString(a, b, c, d, x)
+  // TODO: Add `d` back in once SI-7028 is fixed
+  override def toString: String = ScalaEquals.genString(a, b, c, x)
 
   override def equals(a: Any): Boolean = ScalaEquals.equal
 }

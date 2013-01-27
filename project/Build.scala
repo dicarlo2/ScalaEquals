@@ -24,13 +24,15 @@ import sbt._
 import Keys._
 
 object BuildSettings {
-  val buildVersion = "1.1.0"
-  val buildScalaVersion = "2.10.0"
+  val buildVersion = "1.0.0-SNAPSHOT"
+  val buildScalaVersion = "2.11.0-SNAPSHOT"
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "org.scalaequals",
     version := buildVersion,
     scalaVersion := buildScalaVersion,
+    scalaOrganization := "org.scala-lang.macro-paradise",
+    resolvers += Resolver.sonatypeRepo("snapshots"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature"),
 
     publishTo <<= version { (v: String) =>
@@ -66,8 +68,8 @@ object BuildSettings {
 }
 
 object Dependencies {
-  val scalatest =  "org.scalatest" %% "scalatest" % "2.0.M5b"
-  val scalacheck = "org.scalacheck" %% "scalacheck" % "1.10.0"
+  val scalatest =  "org.scalatest" % "scalatest_2.10" % "2.0.M5b"
+  val scalacheck = "org.scalacheck" % "scalacheck_2.10" % "1.10.0"
   val reflect = "org.scala-lang" % "scala-reflect" % BuildSettings.buildScalaVersion
 }
 
@@ -76,7 +78,7 @@ object ScalaEqualsBuild extends Build {
   import Dependencies._
 
   lazy val root = Project(
-    id = "ScalaEquals",
+    id = "ScalaEquals-Paradise",
     base = file("."),
     settings = buildSettings ++ Seq(
       publishArtifact in (Compile, packageBin) := false,
@@ -88,15 +90,15 @@ object ScalaEqualsBuild extends Build {
     id = "core",
     base = file("core"),
     settings = buildSettings ++ Seq(
-      name := "ScalaEquals Core",
-      libraryDependencies ++= Seq(reflect)
+      name := "ScalaEquals-Paradise Core",
+      libraryDependencies <+= (scalaVersion)("org.scala-lang.macro-paradise" % "scala-reflect" % _)
     ))
 
   lazy val core_test = Project(
     id = "core-test",
     base = file("core-test"),
     settings = buildSettings ++ Seq(
-      name := "ScalaEquals Core Tests",
+      name := "ScalaEquals-Paradise Core Tests",
       libraryDependencies ++= Seq(scalatest, scalacheck),
       publish := (),
       publishLocal := ()

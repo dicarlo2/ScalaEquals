@@ -114,7 +114,7 @@ class DummySubTest extends DummyFixture[DummySub] {
 
   /* Creates a String to test toString = A(arg) */
   def createToString(arg: DummyArg): String =
-    s"DummySub(${arg.a}, ${arg.b}, ${arg.c}, ${arg.d}, ${arg.e}, ${arg.x}, ${arg._h}, ${arg._q})"
+    s"DummySub(${arg.a}, ${arg.b}, ${arg.c}, ${arg.e}, ${arg.x}, ${arg._h}, ${arg._q})"
 
   def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg =
     arg.copy(f = arg2.f, g = arg2.g, y = arg2.y, t = arg2.t)
@@ -192,7 +192,7 @@ class DummyCSubTest extends DummyFixture[DummyCSub] {
 
   /* Creates a String to test toString = A(arg) */
   def createToString(arg: DummyArg): String =
-    s"DummyCSub(${arg.a}, ${arg.b}, ${arg.c}, ${arg.d}, ${arg.x})"
+    s"DummyCSub(${arg.a}, ${arg.b}, ${arg.c}, ${arg.x})"
 
   def changeDiff(arg: DummyArg, arg2: DummyArg): DummyArg =
     arg.copy(e = arg2.e, f = arg2.f, g = arg2.g, y = arg2.y, t = arg2.t, _h = arg2._h, _q = arg2._q)
