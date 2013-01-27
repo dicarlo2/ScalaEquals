@@ -35,16 +35,16 @@ private[scalaequals] object CanEqualImpl {
     import c.universe._
 
     val locator = new Locator[c.type](c)
-    if (!locator.isCanEqual(c.enclosingMethod.symbol))
-      c.abort(c.enclosingMethod.pos, Errors.badCanEqualsCallSite)
+    if (!locator.isCanEqual(c.enclosingDef.symbol))
+      c.abort(c.enclosingDef.pos, Errors.badCanEqualsCallSite)
 
-    val arg = locator.findArgument(c.enclosingMethod)
+    val arg = locator.findArgument(c.enclosingDef)
     val tree =
       TypeApply(
         Select(
           Ident(arg),
-          newTermName("isInstanceOf")),
-        List(TypeTree(c.enclosingClass.symbol.asType.toType)))
+          TermName("isInstanceOf")),
+        List(TypeTree(c.enclosingImpl.symbol.asType.toType)))
 
     c.Expr[Boolean](tree)
   }

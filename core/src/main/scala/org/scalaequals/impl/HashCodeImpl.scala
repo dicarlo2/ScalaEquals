@@ -39,12 +39,12 @@ private[scalaequals] object HashCodeImpl {
   private[HashCodeImpl] class HashMaker[C <: Context](val c: C) {
     import c.universe._
 
-    val selfTpe: Type = c.enclosingClass.symbol.asType.toType
+    val selfTpe: Type = c.enclosingImpl.symbol.asType.toType
     val locator: Locator[c.type] = new Locator[c.type](c)
 
     def make(): c.Expr[Int] = {
-      if (!locator.isHashCode(c.enclosingMethod.symbol))
-        c.abort(c.enclosingMethod.pos, Errors.badHashCallSite)
+      if (!locator.isHashCode(c.enclosingDef.symbol))
+        c.abort(c.enclosingDef.pos, Errors.badHashCallSite)
 
       val payload = extractPayload()
       val values = selfTpe.members filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
@@ -55,7 +55,7 @@ private[scalaequals] object HashCodeImpl {
     }
 
     private def extractPayload(): EqualsPayload = {
-      locator.findEquals(c.enclosingClass) match {
+      locator.findEquals(c.enclosingImpl) match {
         case Some(method) => method.attachments.get[EqualsImpl.EqualsPayload] match {
           case Some(payload) => payload
           case None => c.typeCheck(method).attachments.get[EqualsImpl.EqualsPayload] match {
@@ -73,7 +73,7 @@ private[scalaequals] object HashCodeImpl {
           Super(
             This(tpnme.EMPTY),
             tpnme.EMPTY),
-          newTermName("hashCode")),
+          TermName("hashCode")),
         List()
       )
 
@@ -83,22 +83,22 @@ private[scalaequals] object HashCodeImpl {
           Select(
             Select(
               Select(
-                Ident(newTermName("scala")),
-                newTermName("util")),
-              newTermName("hashing")),
-            newTermName("MurmurHash3")),
-          newTermName("seqHash")),
+                Ident(TermName("scala")),
+                TermName("util")),
+              TermName("hashing")),
+            TermName("MurmurHash3")),
+          TermName("seqHash")),
         List(
           Apply(
             Select(
               Select(
                 Select(
                   Select(
-                    Ident(newTermName("scala")),
-                    newTermName("collection")),
-                  newTermName("immutable")),
-                newTermName("List")),
-              newTermName("apply")),
+                    Ident(TermName("scala")),
+                    TermName("collection")),
+                  TermName("immutable")),
+                TermName("List")),
+              TermName("apply")),
             terms)))
     }
   }

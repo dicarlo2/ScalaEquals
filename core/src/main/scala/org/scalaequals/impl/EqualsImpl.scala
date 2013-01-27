@@ -46,14 +46,14 @@ private[scalaequals] object EqualsImpl {
   private[EqualsImpl] class EqualsMaker[C <: Context](val c: C) {
     import c.universe._
 
-    val selfTpe: Type = c.enclosingClass.symbol.asType.toType
+    val selfTpe: Type = c.enclosingImpl.symbol.asType.toType
     val locator: Locator[c.type] = new Locator[c.type](c)
     val hasCanEqual: Boolean = locator.hasCanEqual(selfTpe)
     val hasSuperOverridingEquals: Boolean = locator.hasSuperOverridingEquals(selfTpe)
 
     def make(): c.Expr[Boolean] = {
-      if(c.enclosingClass.symbol.asClass.isTrait)
-        c.warning(c.enclosingClass.pos, Warnings.equalWithTrait)
+      if(c.enclosingImpl.symbol.asClass.isTrait)
+        c.warning(c.enclosingImpl.pos, Warnings.equalWithTrait)
       createCondition(constructorValsNotInherited())
     }
 
@@ -75,11 +75,11 @@ private[scalaequals] object EqualsImpl {
     }
 
     def createCondition(values: List[TermSymbol]): c.Expr[Boolean] = {
-      if (!locator.isEquals(c.enclosingMethod.symbol))
-        c.abort(c.enclosingMethod.pos, Errors.badEqualCallSite)
+      if (!locator.isEquals(c.enclosingDef.symbol))
+        c.abort(c.enclosingDef.pos, Errors.badEqualCallSite)
 
       val payload = EqualsPayload(values map {_.name.encoded}, hasSuperOverridingEquals || values.isEmpty)
-      c.enclosingMethod.updateAttachment(payload)
+      c.enclosingDef.updateAttachment(payload)
 
       val termEquals = values map createTermEquals
       val and = (hasCanEqual, hasSuperOverridingEquals) match {
@@ -91,7 +91,7 @@ private[scalaequals] object EqualsImpl {
         case (false, false) => createNestedAnd(termEquals)
       }
 
-      val arg = locator.findArgument(c.enclosingMethod)
+      val arg = locator.findArgument(c.enclosingDef)
 
       c.Expr[Boolean](createMatch(arg, and))
     }
@@ -99,8 +99,8 @@ private[scalaequals] object EqualsImpl {
     def createCanEqual(): Apply =
       Apply(
         Select(
-          Ident(newTermName("that")),
-          newTermName("canEqual")),
+          Ident(TermName("that")),
+          TermName("canEqual")),
         List(
           This(tpnme.EMPTY)))
 
@@ -109,9 +109,9 @@ private[scalaequals] object EqualsImpl {
         Apply(
           Select(
             Select(
-              Ident(newTermName("that")),
+              Ident(TermName("that")),
               term),
-            newTermName("$eq$eq")),
+            TermName("$eq$eq")),
           List(
             Select(
               This(tpnme.EMPTY),
@@ -120,7 +120,7 @@ private[scalaequals] object EqualsImpl {
       if (term.isMethod) createEquals(term) else createEquals(term.getter)
     }
 
-    def createAnd(left: Apply): Select = Select(left, newTermName("$amp$amp"))
+    def createAnd(left: Apply): Select = Select(left, TermName("$amp$amp"))
 
     def createNestedAnd(terms: List[Apply]): Apply = terms match {
       case left :: x :: xs => createNestedAnd(Apply(createAnd(left), List(x)) :: xs)
@@ -131,9 +131,9 @@ private[scalaequals] object EqualsImpl {
       Apply(
         Select(
           Super(This(tpnme.EMPTY), tpnme.EMPTY),
-          newTermName("equals")),
+          TermName("equals")),
         List(
-          Ident(newTermName("that"))))
+          Ident(TermName("that"))))
 
     def createMatch(other: TermName, condition: Apply): Match = {
       Match(
@@ -141,10 +141,11 @@ private[scalaequals] object EqualsImpl {
         List(
           CaseDef(
             Bind(
-              newTermName("that"),
+              TermName("that"),
               Typed(
                 Ident(nme.WILDCARD),
                 TypeTree(selfTpe))),
+            EmptyTree,
             condition),
           CaseDef(
             Ident(nme.WILDCARD),

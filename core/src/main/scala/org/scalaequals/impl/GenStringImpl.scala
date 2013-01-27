@@ -45,9 +45,9 @@ private[scalaequals] object GenStringImpl {
     val locator = new Locator[c.type](c)
 
     def make(): c.Expr[String] = {
-      if(c.enclosingClass.symbol.asClass.isTrait)
-        c.warning(c.enclosingClass.pos, Warnings.genStringWithTrait)
-      makeString(locator.constructorArgs(c.enclosingClass, c.enclosingClass.symbol.asType.toType))
+      if(c.enclosingImpl.symbol.asClass.isTrait)
+        c.warning(c.enclosingImpl.pos, Warnings.genStringWithTrait)
+      makeString(locator.constructorArgs(c.enclosingImpl, c.enclosingImpl.symbol.asType.toType))
     }
 
     def make(params: Seq[c.Expr[Any]]): c.Expr[String] = {
@@ -56,11 +56,11 @@ private[scalaequals] object GenStringImpl {
     }
 
     def makeString(args: List[TermName]): c.Expr[String] = {
-      if (!locator.isToString(c.enclosingMethod.symbol))
-        c.abort(c.enclosingMethod.pos, Errors.badToStringCallSite)
+      if (!locator.isToString(c.enclosingDef.symbol))
+        c.abort(c.enclosingDef.pos, Errors.badToStringCallSite)
 
       val stringArgs = nestedAdd(args)
-      val className = Literal(Constant(c.enclosingClass.symbol.name.toString + "("))
+      val className = Literal(Constant(c.enclosingImpl.symbol.name.toString + "("))
       val tree = stringAdd(className, stringArgs)
       c.Expr[String](tree)
     }
@@ -75,7 +75,7 @@ private[scalaequals] object GenStringImpl {
       Apply(
         Select(
           left,
-          newTermName("$plus")),
+          TermName("$plus")),
         List(
           right))
   }
