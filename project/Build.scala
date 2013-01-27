@@ -33,7 +33,7 @@ object BuildSettings {
     scalaVersion := buildScalaVersion,
     scalaOrganization := "org.scala-lang.macro-paradise",
     resolvers += Resolver.sonatypeRepo("snapshots"),
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature"),
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Ymacro-debug-lite"),
 
     publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/"

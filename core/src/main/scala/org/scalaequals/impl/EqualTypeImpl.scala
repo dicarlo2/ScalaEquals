@@ -57,8 +57,9 @@ trait EqualTypeImpl extends Macro {
   private def createTemplate(template: Template, equalMethod: Tree, equalName: String): Template = {
     val Template(parents, self, existingCode) = c.enclosingTemplate
     val filteredParents = locator.filterScalaEqualsType(equalName, parents)
+    val parentsWithEquals = filteredParents :+ Ident(typeOf[Equals].typeSymbol)
     val newMethods = List(equalMethod, genHash(), genCanEquals(parents))
-    val newTemplate = Template(filteredParents, self, existingCode ++ newMethods)
+    val newTemplate = Template(parentsWithEquals, self, existingCode ++ newMethods)
     genStringTypeImpl.addToTemplate(newTemplate)
   }
 
