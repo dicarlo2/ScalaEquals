@@ -36,20 +36,20 @@ package object impl {
      * `ScalaEquals.canEquals` must be called from within a `canEqual` method
      */
     val badCanEqualsCallSite: String =
-      "ScalaEquals.canEquals must be called from within a canEqual method.\n" +
+      "ScalaEquals.canEquals must be called from within a canEqual method. " +
         "Check that your method signature matches one of \"def canEqual(other: Any): Boolean\" or " +
         "\"override def canEqual(other: Any): Boolean\"."
     /**
      * `ScalaEquals.equal` must be called from within an `equals` method
      */
     val badEqualCallSite: String =
-      "ScalaEquals.equal must be called from within an equals method.\n" +
+      "ScalaEquals.equal must be called from within an equals method. " +
         "Check that your method signature matches \"override def equals(other: Any): Boolean\""
     /**
      * `ScalaEquals.hash` must be called from within a `hashCode` method
      */
     val badHashCallSite: String =
-      "ScalaEquals.hash must be called from within a hashCode method.\n" +
+      "ScalaEquals.hash must be called from within a hashCode method. " +
         "Check that your method signature matches \"override def hashCode(): Int\""
     /**
      * `ScalaEquals.hash` must be called in a class that also uses `ScalaEquals.equal` or `ScalaEquals.equalAllVals`
@@ -66,7 +66,7 @@ package object impl {
      *  override def toString: String"
      */
     val badToStringCallSite: String =
-      "ScalaEquals.toString must be called from within a toString method.\n" +
+      "ScalaEquals.toString must be called from within a toString method. " +
         "Check that your method signature matches \"override def toString: String\""
   }
   /** @author Alex DiCarlo
@@ -85,5 +85,15 @@ package object impl {
      */
     val genStringWithTrait: String =
       "ScalaEquals.genString on traits will only expand to \"ClassName()\""
+
+    /**
+     * This equals method is not guaranteed to be consistent with the equals contract if this class is subclassed.
+     * One of the following must be true: `canEqual` is defined correctly, this class is `final`, `equals` is `final`
+     * If this class has a superclass that redefines `equals`, only by defining `canEqual` will this method be safe
+     */
+    val notSafeToSubclass: String =
+      "This class's equals method is not necessarily safe when subclassed, consider making this class final, " +
+        "the equals method final, or creating a canEqual method. If this class has a super class that has redefined " +
+        "equals, it is definitely unsafe, and can only be fixed by defining canEqual"
   }
 }

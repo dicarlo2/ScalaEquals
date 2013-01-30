@@ -49,7 +49,10 @@ private[impl] class Locator[C <: Context](val c: C) {
     symbol.typeSignature =:= equalsCanEqual.typeSignature && symbol.name == canEqualName
   def isToString(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyToString)
 
-  def hasCanEqual(tpe: Type): Boolean = isCanEqual(tpe.member(canEqualName))
+  def getCanEqual(tpe: Type): Option[Symbol] = {
+    val tpeCanEqual = tpe.member(canEqualName)
+    if (isCanEqual(tpeCanEqual)) Some(tpeCanEqual) else None
+  }
 
   def hasSuperOverridingEquals(tpe: Type): Boolean = {
     def isOverridingEquals(tpe: Type) = isEqualsOverride(tpe.member(equalsName))

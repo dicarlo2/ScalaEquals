@@ -24,7 +24,6 @@ package org.scalaequals.test
 
 import org.scalacheck.Gen
 import org.scalacheck.Arbitrary._
-import scala.Some
 
 case class DummyArg(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int, g: Int, x: Int, y: Int, t: Int, _h: Int, _q: Int) {
   def classArgString: String = s"($a, $b, $c, $d, $e, $f, $g, $t, ${_h}, ${_q})"
@@ -48,22 +47,20 @@ object DummyArg {
   } yield DummyArg(a, b, c, d, e, f, g, x, y, t, _h, _q)
 }
 
-trait DummyFixture[T] extends EqualsFixture[T, DummyArg] {
+trait DummyFixture[A] extends EqualsFixture[A, DummyArg] {
   def gen: Gen[DummyArg] = DummyArg.gen
 }
 
-trait DummySubFixture[T] {
-  def create(arg: DummyArg): T
+trait DummySubbedFixture[A, B <: A] extends DummyFixture[A] with SubClassedEqualsFixture[A, DummyArg, B]
 
-  def dummySubGen: Option[Gen[T]] = Some(for {
-    arg <- DummyArg.gen
-  } yield create(arg))
+trait DummySubFixture[A] {
+  def create(arg: DummyArg): A
 }
 
 // Equals on b, c, d, h, i, j, q, r, and s
 // On constructor: b, c, d, e, _h, _q
 // Not on constructor: a, f, g, t
-class DummyTest extends DummyFixture[Dummy] {
+class DummyTest extends DummySubbedFixture[Dummy, DummySub] {
   def name: String = "Dummy"
 
   def sub: Boolean = false
@@ -90,9 +87,10 @@ class DummyTest extends DummyFixture[Dummy] {
   def unequal(arg: DummyArg, arg2: DummyArg): Boolean =
     arg.b != arg2.b || arg.c != arg2.c || arg.d != arg2.d || arg.e != arg2.e || arg._h != arg2._h || arg._q != arg2._q
 
-  override def subClassName: String = DummySubTest.dummySubName
+  def subClassName: String = DummySubTest.dummySubName
 
-  override def subClassGen: Option[Gen[DummySub]] = DummySubTest.dummySubGen
+  /* Creates a C, a subclass of A, from B */
+  def createSubClass(arg: DummyArg): DummySub = DummySubTest.create(arg)
 }
 
 // DummySub - equals on super, a, x (all = DummySub.a, b, c, d, x, h, i, j, q, r, s)
@@ -139,7 +137,7 @@ class DummySubTest extends DummyFixture[DummySub] {
 // Equals on b, c, d
 // On constructor: b, c, d
 // Not on constructor: a, e, f, g, t, _h, _q
-class DummyCTest extends DummyFixture[DummyC] {
+class DummyCTest extends DummySubbedFixture[DummyC, DummyCSub] {
   def name: String = "DummyC"
 
   def sub: Boolean = false
@@ -168,9 +166,10 @@ class DummyCTest extends DummyFixture[DummyC] {
   def unequal(arg: DummyArg, arg2: DummyArg): Boolean =
     arg.b != arg2.b || arg.c != arg2.c || arg.d != arg2.d
 
-  override def subClassName: String = DummyCSubTest.dummySubName
+  def subClassName: String = DummyCSubTest.dummySubName
 
-  override def subClassGen: Option[Gen[DummyCSub]] = DummyCSubTest.dummySubGen
+  /* Creates a C, a subclass of A, from B */
+  def createSubClass(arg: DummyArg): DummyCSub = DummyCSubTest.create(arg)
 }
 
 // Equals on super, a, x (all = DummySub.a, b, c, d, x)
@@ -216,7 +215,7 @@ class DummyCSubTest extends DummyFixture[DummyCSub] {
 // Equals on       b, c, e, f, k, n, o , p, q , r, s
 // On constructor: b, c, e, f, a, g, _h, b, _q, e, e (Set(a, b, c, e, f, g, _h, _q))
 // Not on constructor: d, t
-class DummyParamsTest extends DummyFixture[DummyParams] {
+class DummyParamsTest extends DummySubbedFixture[DummyParams, DummyParamsSub] {
   def name: String = "DummyParams"
 
   def sub: Boolean = false
@@ -247,9 +246,10 @@ class DummyParamsTest extends DummyFixture[DummyParams] {
     arg.a != arg2.a || arg.b != arg2.b || arg.c != arg2.c || arg.e != arg2.e || arg.f != arg2.f || arg.g != arg2.g ||
       arg._h != arg2._h || arg._q != arg2._q
 
-  override def subClassName: String = DummyParamsSubTest.dummySubName
+  def subClassName: String = DummyParamsSubTest.dummySubName
 
-  override def subClassGen: Option[Gen[DummyParamsSub]] = DummyParamsSubTest.dummySubGen
+  /* Creates a C, a subclass of A, from B */
+  def createSubClass(arg: DummyArg): DummyParamsSub = DummyParamsSubTest.create(arg)
 }
 
 // Equals on super, super, a, b, h , y, o

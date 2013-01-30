@@ -23,7 +23,6 @@
 package org.scalaequals.test
 
 import org.scalacheck.Gen
-import scala.Some
 
 case class PointArg(w: Int, x: Int, y: Int, z: Int, color: Color.Value)
 
@@ -32,13 +31,20 @@ trait PointFixture[A] extends EqualsFixture[A, PointArg] {
   def changeDiff(arg: PointArg, arg2: PointArg): PointArg = arg
 
   def gen: Gen[PointArg] = FourDColoredPointTest.argGen
+
+  /* true if arg and arg2 differ in a field not checked by equality or there are no fields that can differ */
+  def diff(arg: PointArg, arg2: PointArg): Boolean = true
 }
 
-class PointTest extends PointFixture[Point] {
+class PointTest extends PointFixture[Point] with SubClassedEqualsFixture[Point, PointArg, ColoredPoint] {
   def name: String = "Point"
+
+  override def subClassName: String = ColoredPointTest.name
 
   /* Creates a T from B */
   def create(arg: PointArg): Point = new Point(arg.x, arg.y, arg.z)
+
+  def createSubClass(arg: PointArg): ColoredPoint = ColoredPointTest.create(arg)
 
   /* Creates a String to test toString = A(arg) */
   def createToString(arg: PointArg): String = s"Point(${arg.x}, ${arg.y}, ${arg.z})"
@@ -49,12 +55,6 @@ class PointTest extends PointFixture[Point] {
     arg.copy(x = swapped(0), y = swapped(1), z = swapped(2))
   }
 
-  /* true if arg and arg2 differ in a field not checked by equality or there are no fields that can differ */
-  def diff(arg: PointArg, arg2: PointArg): Boolean = true
-
   /* true if arg and arg2 differ in a field checked by equality */
   def unequal(arg: PointArg, arg2: PointArg): Boolean = arg.x != arg2.x || arg.y != arg2.y || arg.z != arg2.z
-
-  override def subClassName: String = ColoredPointTest.name
-  override def subClassGen: Option[Gen[ColoredPoint]] = Some(ColoredPointTest.gen)
 }

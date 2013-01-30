@@ -43,9 +43,6 @@ class FourDColoredPointTest extends PointFixture[FourDColoredPoint] {
     z = swapped(3).asInstanceOf[Int], color = swapped(4).asInstanceOf[Color.Value])
   }
 
-  /* true if arg and arg2 differ in a field not checked by equality or there are no fields that can differ */
-  def diff(arg: PointArg, arg2: PointArg): Boolean = true
-
   /* true if arg and arg2 differ in a field checked by equality */
   def unequal(arg: PointArg, arg2: PointArg): Boolean =
     arg.w != arg2.w || arg.x != arg2.x || arg.y != arg2.y || arg.z != arg2.z || arg.color != arg2.color

@@ -24,11 +24,16 @@ package org.scalaequals.test
 
 import org.scalacheck.Gen
 
-class ColoredPointTest extends PointFixture[ColoredPoint] {
+class ColoredPointTest
+  extends PointFixture[ColoredPoint] with SubClassedEqualsFixture[ColoredPoint, PointArg, FourDColoredPoint] {
   def name: String = ColoredPointTest.name
+
+  def subClassName: String = FourDColoredPointTest.name
 
   /* Creates a T from B */
   def create(arg: PointArg): ColoredPoint = ColoredPointTest.create(arg)
+
+  def createSubClass(arg: PointArg): FourDColoredPoint = FourDColoredPointTest.create(arg)
 
   /* Creates a String to test toString = A(arg) */
   def createToString(arg: PointArg): String = s"ColoredPoint(${arg.x}, ${arg.y}, ${arg.z}, ${arg.color})"
@@ -40,16 +45,9 @@ class ColoredPointTest extends PointFixture[ColoredPoint] {
       z = swapped(2).asInstanceOf[Int], color = swapped(3).asInstanceOf[Color.Value])
   }
 
-  /* true if arg and arg2 differ in a field not checked by equality or there are no fields that can differ */
-  def diff(arg: PointArg, arg2: PointArg): Boolean = true
-
   /* true if arg and arg2 differ in a field checked by equality */
   def unequal(arg: PointArg, arg2: PointArg): Boolean =
     arg.x != arg2.x || arg.y != arg2.y || arg.z != arg2.z || arg.color != arg2.color
-
-  override def subClassName: String = FourDColoredPointTest.name
-
-  override def subClassGen: Option[Gen[FourDColoredPoint]] = Some(FourDColoredPointTest.gen)
 }
 
 object ColoredPointTest {

@@ -65,7 +65,7 @@ trait EqualsFixture[A, B] extends FeatureSpec with
 
   def gen: Gen[B]
 
-  /* Creates a T from B */
+  /* Creates a A from B */
   def create(arg: B): A
 
   /* Creates a String to test toString = A(arg) */
@@ -118,10 +118,6 @@ trait EqualsFixture[A, B] extends FeatureSpec with
     diffArg = changeDiff(unequalArg, arg3)
   } yield (create(arg), create(unequalArg), create(diffArg))
 
-  def subClassName: String = ""
-
-  def subClassGen: Option[Gen[_ <: A]] = None
-
   feature("ScalaEquals is Reflexive") {
     scenario(s"$name") {
       Given("any non-null value x")
@@ -134,68 +130,61 @@ trait EqualsFixture[A, B] extends FeatureSpec with
   }
 
   feature("ScalaEquals is Symmetric") {
-    def checkSymmetric(name: String, gen: Gen[List[A]]) {
-      scenario(s"$name") {
-        Given("any non-null values x and y")
-        When("x.equals(y) returns true (returns false)")
-        Then("y.equals(x) returns true (returns false)")
-        forAll(gen suchThat {_.size >= 2}) {xs =>
-          val x = xs(0)
-          val y = xs(1)
-          x.equals(y) should equal(y.equals(x))
-        }
+    scenario(s"$name") {
+      Given("any non-null values x and y")
+      When("x.equals(y) returns true (returns false)")
+      Then("y.equals(x) returns true (returns false)")
+      forAll(Gen.containerOfN[List, A](2, classGen)) {xs =>
+        val x = xs(0)
+        val y = xs(1)
+        x.equals(y) should equal(y.equals(x))
       }
     }
 
-    checkSymmetric(name, Gen.containerOfN[List, A](2, classGen))
     scenario(s"Equal pairs of $name") {
       Given("2 equal non-null values x and y")
       Then("x.equals(y) and y.equals(x) is true")
-      forAll(equal2ClassGen) {case (x, y) =>
-        x.equals(y) should be(true)
-        y.equals(x) should be(true)
+      forAll(equal2ClassGen) {
+        case (x, y) =>
+          x.equals(y) should be(true)
+          y.equals(x) should be(true)
       }
     }
 
     scenario(s"Unequal pairs of $name") {
       Given("2 unequal non-null values x and y")
       Then("x.equals(y) and y.equals(x) is false")
-      forAll(unequal2ClassGen) {case (x, y) =>
-        x.equals(y) should be(false)
-        y.equals(x) should be(false)
+      forAll(unequal2ClassGen) {
+        case (x, y) =>
+          x.equals(y) should be(false)
+          y.equals(x) should be(false)
       }
     }
-
-    if (subClassGen.isDefined)
-      checkSymmetric(s"$name and $subClassName", Gen.sequence[List, A](Seq(classGen, subClassGen.get)))
   }
 
   feature("ScalaEquals is Transitive") {
-    def checkTransProp(x: A, y: A, z: A) {
-      if (x.equals(y) && y.equals(z))
-        x.equals(z) should be(true)
-    }
-    def checkTransitive(name: String, gen: Gen[List[A]]) {
-      scenario(s"$name") {
-        Given("any non-null values x, y, and z")
-        When("x.equals(y) is true and y.equals(z) is true ")
-        Then("x.equals(z) is true")
-        forAll(gen suchThat {_.size == 3}) {cps =>
-          checkTransProp(cps(0), cps(1), cps(2))
-        }
+    scenario(s"$name") {
+      Given("any non-null values x, y, and z")
+      When("x.equals(y) is true and y.equals(z) is true ")
+      Then("x.equals(z) is true")
+      forAll(Gen.containerOfN[List, A](3, classGen)) {cps =>
+        val x = cps(0)
+        val y = cps(1)
+        val z = cps(2)
+        if (x.equals(y) && y.equals(z))
+          x.equals(z) should be(true)
       }
     }
-
-    checkTransitive(name, Gen.containerOfN[List, A](3, classGen))
 
     scenario(s"Equal triples of $name") {
       Given("any non-null values x, y, and z")
       When("x.equals(y) is true and y.equals(z) is true ")
       Then("x.equals(z) is true")
-      forAll(equal3ClassGen) {case (x, y, z) =>
-        x.equals(y) should be(true)
-        y.equals(z) should be(true)
-        x.equals(z) should be(true)
+      forAll(equal3ClassGen) {
+        case (x, y, z) =>
+          x.equals(y) should be(true)
+          y.equals(z) should be(true)
+          x.equals(z) should be(true)
       }
     }
 
@@ -210,14 +199,12 @@ trait EqualsFixture[A, B] extends FeatureSpec with
       def testSecond(x: A, z: A) {
         x.equals(z) should be(false)
       }
-      forAll(unequal3ClassGen) {case (x, y, z) =>
-        testFirst(x, y, z)
-        testSecond(x, z)
+      forAll(unequal3ClassGen) {
+        case (x, y, z) =>
+          testFirst(x, y, z)
+          testSecond(x, z)
       }
     }
-
-    if (subClassGen.isDefined)
-      checkTransitive(s"$name and $subClassName", Gen.containerOfN[List, A](3, Gen.oneOf[A](classGen, subClassGen.get)))
   }
 
   feature("ScalaEquals with null") {
@@ -225,8 +212,9 @@ trait EqualsFixture[A, B] extends FeatureSpec with
       Given("any non-null value x")
       When("x.equals(null)")
       Then("the result is false")
-      forAll(classGen) {x =>
-        x.equals(null) should be(false)
+      forAll(classGen) {
+        x =>
+          x.equals(null) should be(false)
       }
     }
   }
@@ -236,8 +224,9 @@ trait EqualsFixture[A, B] extends FeatureSpec with
       Given("any non-null values x and y")
       When("x.equals(y) returns true")
       Then("x.hashCode == y.hashCode")
-      forAll(equal2ClassGen) {case (x, y) =>
-        x.hashCode() should equal(y.hashCode())
+      forAll(equal2ClassGen) {
+        case (x, y) =>
+          x.hashCode() should equal(y.hashCode())
       }
     }
   }
@@ -247,9 +236,60 @@ trait EqualsFixture[A, B] extends FeatureSpec with
       Given(s"a $name")
       When("toString is called")
       Then(s"the result is $name(args)")
-      forAll(gen) {arg =>
-        val a = create(arg)
-        a.toString should equal(createToString(arg))
+      forAll(gen) {
+        arg =>
+          val a = create(arg)
+          a.toString should equal(createToString(arg))
+      }
+    }
+  }
+}
+
+trait SubClassedEqualsFixture[A, B, C <: A] {self: EqualsFixture[A, B] =>
+  def subClassName: String
+
+  /* Creates a C, a subclass of A, from B */
+  def createSubClass(arg: B): C
+
+  def subClassGen: Gen[C] = for {
+    arg <- gen
+  } yield createSubClass(arg)
+
+  def equal2SubClassGen: Gen[(A, C)] = for {
+    arg <- gen
+  } yield (create(arg), createSubClass(arg))
+
+  feature("ScalaEquals is consistent with subclassing") {
+    scenario(s"Same arg generated pairs of $name and $subClassName") {
+      Given(s"any non-null values x of $name and y of $subClassName created with the same arg")
+      When("x.equals(y) returns true (returns false)")
+      Then("y.equals(x) returns true (returns false)")
+      forAll(equal2SubClassGen) {case (x, y) =>
+        x.equals(y) should equal(y.equals(x))
+      }
+    }
+
+    scenario(s"$name and $subClassName are symmetric") {
+      Given("any non-null values x and y")
+      When("x.equals(y) returns true (returns false)")
+      Then("y.equals(x) returns true (returns false)")
+      forAll(Gen.sequence[List, A](Seq(classGen, subClassGen))) {xs =>
+        val x = xs(0)
+        val y = xs(1)
+        x.equals(y) should equal(y.equals(x))
+      }
+    }
+
+    scenario(s"$name and $subClassName are transitive") {
+      Given("any non-null values x and y")
+      When("x.equals(y) and y.equals(z) returns true")
+      Then("x.equals(z) returns true")
+      forAll(Gen.containerOfN[List, A](3, Gen.oneOf[A](classGen, subClassGen))) {xs =>
+        val x = xs(0)
+        val y = xs(1)
+        val z = xs(2)
+        if (x.equals(y) && y.equals(z))
+          x.equals(z) should be(true)
       }
     }
   }

@@ -46,13 +46,15 @@ private[scalaequals] object EqualsImpl {
   private[EqualsImpl] class EqualsMaker[C <: Context](val c: C) {
     import c.universe._
 
-    val selfTpe: Type = c.enclosingClass.symbol.asType.toType
-    val locator: Locator[c.type] = new Locator[c.type](c)
-    val hasCanEqual: Boolean = locator.hasCanEqual(selfTpe)
-    val hasSuperOverridingEquals: Boolean = locator.hasSuperOverridingEquals(selfTpe)
+    val selfTpe = c.enclosingClass.symbol.asType.toType
+    val locator = new Locator[c.type](c)
+    val selfTpeCanEqual = locator.getCanEqual(selfTpe)
+    val hasSuperOverridingEquals = locator.hasSuperOverridingEquals(selfTpe)
+    val isFinalOrCanEqualDefined = (selfTpeCanEqual map {_.owner == selfTpe.typeSymbol} getOrElse false) ||
+      ((c.enclosingMethod.symbol.isFinal || c.enclosingClass.symbol.isFinal) && !hasSuperOverridingEquals)
 
     def make(): c.Expr[Boolean] = {
-      if(c.enclosingClass.symbol.asClass.isTrait)
+      if (c.enclosingClass.symbol.asClass.isTrait)
         c.warning(c.enclosingClass.pos, Warnings.equalWithTrait)
       createCondition(constructorValsNotInherited())
     }
@@ -78,22 +80,22 @@ private[scalaequals] object EqualsImpl {
       if (!locator.isEquals(c.enclosingMethod.symbol))
         c.abort(c.enclosingMethod.pos, Errors.badEqualCallSite)
 
+      if (!isFinalOrCanEqualDefined)
+        c.warning(c.enclosingMethod.pos, Warnings.notSafeToSubclass)
+
       val payload = EqualsPayload(values map {_.name.encoded}, hasSuperOverridingEquals || values.isEmpty)
       c.enclosingMethod.updateAttachment(payload)
 
       val termEquals = values map createTermEquals
-      val and = (hasCanEqual, hasSuperOverridingEquals) match {
-        case (true, true) => createNestedAnd(createCanEqual() :: createSuperEquals() :: termEquals)
-        case (false, true) => createNestedAnd(createSuperEquals() :: termEquals)
-        case (true, false) if termEquals.size == 0 => createNestedAnd(List(createCanEqual(), createSuperEquals()))
-        case (true, false) => createNestedAnd(createCanEqual() :: termEquals)
-        case (false, false) if termEquals.size == 0 => createSuperEquals()
-        case (false, false) => createNestedAnd(termEquals)
-      }
+      val and =
+        if (hasSuperOverridingEquals) createNestedAnd(createSuperEquals() :: termEquals)
+        else if (termEquals.size == 0) createSuperEquals()
+        else createNestedAnd(termEquals)
+      val withCanEqual = selfTpeCanEqual map {canEqual => createNestedAnd(List(createCanEqual(), and))} getOrElse and
 
       val arg = locator.findArgument(c.enclosingMethod)
 
-      c.Expr[Boolean](createMatch(arg, and))
+      c.Expr[Boolean](createMatch(arg, withCanEqual))
     }
 
     def createCanEqual(): Apply =
