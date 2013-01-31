@@ -146,7 +146,22 @@ trait FloatPointArgGen {
   val ord: Ordering[Float] = implicitly[Ordering[Float]]
 }
 
-class FloatPointTest extends PointTest[FloatPoint, Float, ColoredFloatPoint] with FloatPointArgGen {
+trait FPointTest[A] extends FloatPointArgGen {self: EqualsFixture[A, PointArg[Float]] =>
+  feature("ScalaEquals.equal uses compareTo for Float comparisons") {
+    scenario(s"$name") {
+      Given(s"2 equal $name x and y with Float.NaN as a value")
+      val arg = new PointArg(Float.NaN, Float.NaN, Float.PositiveInfinity, Float.NegativeInfinity, Color.Blue)
+      val x = create(arg)
+      val y = create(arg)
+      When("they are compared")
+      Then("x.equals(y) is true and y.equals(x) is true")
+      x.equals(y) should be(true)
+      y.equals(x) should be(true)
+    }
+  }
+}
+
+class FloatPointTest extends PointTest[FloatPoint, Float, ColoredFloatPoint] with FPointTest[FloatPoint] {
   def name: String = "FloatPoint"
 
   override def subClassName: String = ColoredFloatPointTest.name
@@ -163,7 +178,7 @@ object ColoredFloatPointTest {
 }
 
 class ColoredFloatPointTest
-  extends ColoredPointTest[ColoredFloatPoint, Float, FourDColoredFloatPoint] with FloatPointArgGen {
+  extends ColoredPointTest[ColoredFloatPoint, Float, FourDColoredFloatPoint] with FPointTest[ColoredFloatPoint] {
   def name: String = ColoredFloatPointTest.name
 
   def subClassName: String = FourDColoredFloatPointTest.name
@@ -180,7 +195,8 @@ object FourDColoredFloatPointTest {
       FourDColoredFloatPoint(arg.w, arg.x, arg.y, arg.z, arg.color)
 }
 
-class FourDColoredFloatPointTest extends FourDColoredPointTest[FourDColoredFloatPoint, Float] with FloatPointArgGen {
+class FourDColoredFloatPointTest
+  extends FourDColoredPointTest[FourDColoredFloatPoint, Float] with FPointTest[FourDColoredFloatPoint] {
   def name: String = FourDColoredFloatPointTest.name
 
   def create(arg: PointArg[Float]): FourDColoredFloatPoint = FourDColoredFloatPointTest.create(arg)
@@ -201,7 +217,22 @@ trait DoublePointArgGen {
   val ord: Ordering[Double] = implicitly[Ordering[Double]]
 }
 
-class DoublePointTest extends PointTest[DoublePoint, Double, ColoredDoublePoint] with DoublePointArgGen {
+trait DPointTest[A] extends DoublePointArgGen {self: EqualsFixture[A, PointArg[Double]] =>
+  feature("ScalaEquals.equal uses compareTo for Double comparisons") {
+    scenario(s"$name") {
+      Given(s"2 equal $name x and y with Double.NaN as a value")
+      val arg = new PointArg(Double.NaN, Double.NaN, Double.PositiveInfinity, Double.NegativeInfinity, Color.Blue)
+      val x = create(arg)
+      val y = create(arg)
+      When("they are compared")
+      Then("x.equals(y) is true and y.equals(x) is true")
+      x.equals(y) should be(true)
+      y.equals(x) should be(true)
+    }
+  }
+}
+
+class DoublePointTest extends PointTest[DoublePoint, Double, ColoredDoublePoint] with DPointTest[DoublePoint] {
   def name: String = "DoublePoint"
 
   override def subClassName: String = ColoredDoublePointTest.name
@@ -218,7 +249,7 @@ object ColoredDoublePointTest {
 }
 
 class ColoredDoublePointTest
-  extends ColoredPointTest[ColoredDoublePoint, Double, FourDColoredDoublePoint] with DoublePointArgGen {
+  extends ColoredPointTest[ColoredDoublePoint, Double, FourDColoredDoublePoint] with DPointTest[ColoredDoublePoint] {
   def name: String = ColoredDoublePointTest.name
 
   def subClassName: String = FourDColoredDoublePointTest.name
@@ -236,7 +267,7 @@ object FourDColoredDoublePointTest {
 }
 
 class FourDColoredDoublePointTest
-  extends FourDColoredPointTest[FourDColoredDoublePoint, Double] with DoublePointArgGen {
+  extends FourDColoredPointTest[FourDColoredDoublePoint, Double] with DPointTest[FourDColoredDoublePoint] {
   def name: String = FourDColoredDoublePointTest.name
 
   def create(arg: PointArg[Double]): FourDColoredDoublePoint = FourDColoredDoublePointTest.create(arg)
