@@ -119,7 +119,30 @@ private[scalaequals] object EqualsImpl {
               This(tpnme.EMPTY),
               term)))
       }
-      if (term.isMethod) createEquals(term) else createEquals(term.getter)
+      def createFloatOrDoubleEquals(term: Symbol): Apply = {
+        Apply(
+          Select(
+            Apply(
+              Select(
+                Select(
+                  Ident(newTermName("that")),
+                  term),
+                newTermName("compareTo")),
+              List(
+                Select(
+                  This(tpnme.EMPTY),
+                  term))),
+            newTermName("$eq$eq")),
+          List(
+            Literal(Constant(0))))
+      }
+      if (isFloatOrDouble(term)) createFloatOrDoubleEquals(term) else createEquals(term)
+    }
+
+    def isFloatOrDouble(term: TermSymbol): Boolean = c.enclosingClass exists {
+      case valDef@ValDef(_, termName, _, _) if termName == term.name =>
+        valDef.symbol.typeSignature =:= typeOf[Double] || valDef.symbol.typeSignature =:= typeOf[Float]
+      case _ => false
     }
 
     def createAnd(left: Apply): Select = Select(left, newTermName("$amp$amp"))

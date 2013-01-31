@@ -90,6 +90,12 @@ trait EqualsFixture[A, B] extends FeatureSpec with
     if (swapped != original) swapped else swap(original, change)
   }
 
+  @tailrec
+  private final def ensuredChangeRandom(arg: B, arg2: B): B = {
+    val newArg = changeRandom(arg, arg2)
+    if (unequal(arg, newArg)) newArg else ensuredChangeRandom(arg, arg2)
+  }
+
   def classGen: Gen[A] = for {
     arg <- gen
   } yield create(arg)
@@ -102,7 +108,7 @@ trait EqualsFixture[A, B] extends FeatureSpec with
   def unequal2ClassGen: Gen[(A, A)] = for {
     arg <- gen
     arg2 <- gen suchThat {a => unequal(a, arg)}
-  } yield (create(arg), create(changeRandom(arg, arg2)))
+  } yield (create(arg), create(ensuredChangeRandom(arg, arg2)))
 
   def equal3ClassGen: Gen[(A, A, A)] = for {
     arg <- gen
@@ -114,7 +120,7 @@ trait EqualsFixture[A, B] extends FeatureSpec with
     arg <- gen
     arg2 <- gen suchThat {a => unequal(a, arg)}
     arg3 <- gen suchThat {a => unequal(a, arg) && unequal(a, arg2)}
-    unequalArg = changeRandom(arg, arg2)
+    unequalArg = ensuredChangeRandom(arg, arg2)
     diffArg = changeDiff(unequalArg, arg3)
   } yield (create(arg), create(unequalArg), create(diffArg))
 

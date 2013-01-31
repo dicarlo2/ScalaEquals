@@ -48,3 +48,46 @@ class FourDColoredPoint(val w: Int, x: Int, y: Int, z: Int, color: Color.Value) 
   override def canEqual(a: Any): Boolean = ScalaEquals.canEquals
   override def toString: String = ScalaEquals.genString
 }
+
+class FloatPoint(val x: Float, val y: Float, val z: Float) {
+  override def hashCode: Int = ScalaEquals.hash
+  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
+  override def toString: String = ScalaEquals.genString
+}
+
+class ColoredFloatPoint(x: Float, y: Float, z: Float, val color: Color.Value) extends FloatPoint(x, y, z) {
+  override def equals(other: Any): Boolean = ScalaEquals.equal
+  override def hashCode: Int = ScalaEquals.hash
+  override def canEqual(othr: Any): Boolean = ScalaEquals.canEquals
+  override def toString: String = ScalaEquals.genString
+}
+
+class FourDColoredFloatPoint(val w: Float, x: Float, y: Float, z: Float, color: Color.Value)
+  extends ColoredFloatPoint(x, y, z, color) {
+  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
+  override def hashCode: Int = ScalaEquals.hash
+  override def canEqual(a: Any): Boolean = ScalaEquals.canEquals
+  override def toString: String = ScalaEquals.genString
+}
+
+class DoublePoint(val x: Double, val y: Double, val z: Double) {
+  override def hashCode: Int = ScalaEquals.hash
+  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
+  override def toString: String = ScalaEquals.genString
+}
+
+class ColoredDoublePoint(x: Double, y: Double, z: Double, val color: Color.Value) extends DoublePoint(x, y, z) {
+  override def equals(other: Any): Boolean = ScalaEquals.equal
+  override def hashCode: Int = ScalaEquals.hash
+  override def canEqual(othr: Any): Boolean = ScalaEquals.canEquals
+  override def toString: String = ScalaEquals.genString
+}
+
+class FourDColoredDoublePoint(val w: Double, x: Double, y: Double, z: Double, color: Color.Value) extends ColoredDoublePoint(x, y, z, color) {
+  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
+  override def hashCode: Int = ScalaEquals.hash
+  override def canEqual(a: Any): Boolean = ScalaEquals.canEquals
+  override def toString: String = ScalaEquals.genString
+}
