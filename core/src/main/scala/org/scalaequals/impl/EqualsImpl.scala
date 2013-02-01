@@ -52,9 +52,10 @@ private[scalaequals] object EqualsImpl {
     val hasSuperOverridingEquals = locator.hasSuperOverridingEquals(selfTpe)
     val isFinalOrCanEqualDefined = (selfTpeCanEqual map {_.owner == selfTpe.typeSymbol} getOrElse false) ||
       ((c.enclosingMethod.symbol.isFinal || c.enclosingClass.symbol.isFinal) && !hasSuperOverridingEquals)
+    val warn = !(c.settings contains "scala-equals-no-warn")
 
     def make(): c.Expr[Boolean] = {
-      if (c.enclosingClass.symbol.asClass.isTrait)
+      if (c.enclosingClass.symbol.asClass.isTrait && warn)
         c.warning(c.enclosingClass.pos, Warnings.equalWithTrait)
       createCondition(constructorValsNotInherited())
     }
@@ -80,7 +81,7 @@ private[scalaequals] object EqualsImpl {
       if (!locator.isEquals(c.enclosingMethod.symbol))
         c.abort(c.enclosingMethod.pos, Errors.badEqualCallSite)
 
-      if (!isFinalOrCanEqualDefined)
+      if (!isFinalOrCanEqualDefined && warn)
         c.warning(c.enclosingMethod.pos, Warnings.notSafeToSubclass)
 
       val payload = EqualsPayload(values map {_.name.encoded}, hasSuperOverridingEquals || values.isEmpty)

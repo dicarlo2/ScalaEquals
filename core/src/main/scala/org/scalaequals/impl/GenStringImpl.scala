@@ -43,9 +43,10 @@ private[scalaequals] object GenStringImpl {
     import c.universe._
 
     val locator = new Locator[c.type](c)
+    val warn = !(c.settings contains "scala-equals-no-warn")
 
     def make(): c.Expr[String] = {
-      if(c.enclosingClass.symbol.asClass.isTrait)
+      if(c.enclosingClass.symbol.asClass.isTrait && warn)
         c.warning(c.enclosingClass.pos, Warnings.genStringWithTrait)
       makeString(locator.constructorArgs(c.enclosingClass, c.enclosingClass.symbol.asType.toType))
     }
