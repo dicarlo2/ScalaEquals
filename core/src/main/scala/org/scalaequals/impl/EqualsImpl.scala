@@ -93,7 +93,7 @@ private[scalaequals] object EqualsImpl {
         case None => createIt(values)
         case Some(lazyHash) =>
           if (!(values forall isVal))
-            c.abort(c.enclosingMethod.pos, "Should only call with vals")
+            c.abort(c.enclosingMethod.pos, Errors.badLazyHashVals)
           createIt(List(lazyHash.asTerm))
       }
     }
