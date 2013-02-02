@@ -46,18 +46,18 @@ private[scalaequals] object EqualsImpl {
   private[EqualsImpl] class EqualsMaker[C <: Context](val c: C) {
     import c.universe._
 
-    val selfTpe = c.enclosingClass.symbol.asType.toType
+    val selfTpe = c.enclosingImpl.symbol.asType.toType
     val locator = new Locator[c.type](c)
     val selfTpeCanEqual = locator.getCanEqual(selfTpe)
     val selfTpeLazyHash = locator.getLazyHash(selfTpe)
     val hasSuperOverridingEquals = locator.hasSuperOverridingEquals(selfTpe)
     val isFinalOrCanEqualDefined = (selfTpeCanEqual map {_.owner == selfTpe.typeSymbol} getOrElse false) ||
-      ((c.enclosingMethod.symbol.isFinal || c.enclosingClass.symbol.isFinal) && !hasSuperOverridingEquals)
+      ((c.enclosingDef.symbol.isFinal || c.enclosingImpl.symbol.isFinal) && !hasSuperOverridingEquals)
     val warn = !(c.settings contains "scala-equals-no-warn")
 
     def make(): c.Expr[Boolean] = {
-      if (c.enclosingClass.symbol.asClass.isTrait && warn)
-        c.warning(c.enclosingClass.pos, Warnings.equalWithTrait)
+      if (c.enclosingImpl.symbol.asClass.isTrait && warn)
+        c.warning(c.enclosingImpl.pos, Warnings.equalWithTrait)
       createCondition(constructorValsNotInherited())
     }
 
@@ -84,7 +84,7 @@ private[scalaequals] object EqualsImpl {
         c.abort(c.enclosingDef.pos, Errors.badEqualCallSite)
 
       if (!isFinalOrCanEqualDefined && warn)
-        c.warning(c.enclosingMethod.pos, Warnings.notSafeToSubclass)
+        c.warning(c.enclosingDef.pos, Warnings.notSafeToSubclass)
 
       val payload = EqualsPayload(values map {_.name.encoded}, hasSuperOverridingEquals || values.isEmpty)
       c.enclosingDef.updateAttachment(payload)
@@ -93,7 +93,7 @@ private[scalaequals] object EqualsImpl {
         case None => createIt(values)
         case Some(lazyHash) =>
           if (!(values forall isVal))
-            c.abort(c.enclosingMethod.pos, "Should only call with vals")
+            c.abort(c.enclosingDef.pos, "Should only call with vals")
           createIt(List(lazyHash.asTerm))
       }
     }
@@ -138,21 +138,21 @@ private[scalaequals] object EqualsImpl {
             Apply(
               Select(
                 Select(
-                  Ident(newTermName("that")),
+                  Ident(TermName("that")),
                   term),
-                newTermName("compareTo")),
+                TermName("compareTo")),
               List(
                 Select(
                   This(tpnme.EMPTY),
                   term))),
-            newTermName("$eq$eq")),
+            TermName("$eq$eq")),
           List(
             Literal(Constant(0))))
       }
       if (isFloatOrDouble(term)) createFloatOrDoubleEquals(term) else createEquals(term)
     }
 
-    def isFloatOrDouble(term: TermSymbol): Boolean = c.enclosingClass exists {
+    def isFloatOrDouble(term: TermSymbol): Boolean = c.enclosingImpl exists {
       case valDef@ValDef(_, termName, _, _) if termName == term.name =>
         valDef.symbol.typeSignature =:= typeOf[Double] || valDef.symbol.typeSignature =:= typeOf[Float]
       case _ => false

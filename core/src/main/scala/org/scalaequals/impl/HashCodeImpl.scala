@@ -33,7 +33,7 @@ import org.scalaequals.impl.EqualsImpl.EqualsPayload
   */
 private[scalaequals] object HashCodeImpl {
   def hash(c: Context): c.Expr[Int] = {
-    if (c.enclosingMethod != null)
+    if (c.enclosingDef != null)
       new HashMaker[c.type](c).make()
     else
       new HashMaker[c.type](c).makeLazy()
