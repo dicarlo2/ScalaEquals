@@ -28,12 +28,15 @@ import org.scalaequals.impl.EqualsImpl.EqualsPayload
 /** Implementation of `ScalaEquals.hash` macro
   *
   * @author Alex DiCarlo
-  * @version 1.1.0
+  * @version 1.2.0
   * @since 0.2.0
   */
 private[scalaequals] object HashCodeImpl {
   def hash(c: Context): c.Expr[Int] = {
-    new HashMaker[c.type](c).make()
+    if (c.enclosingMethod != null)
+      new HashMaker[c.type](c).make()
+    else
+      new HashMaker[c.type](c).makeLazy()
   }
 
   private[HashCodeImpl] class HashMaker[C <: Context](val c: C) {
@@ -45,7 +48,16 @@ private[scalaequals] object HashCodeImpl {
     def make(): c.Expr[Int] = {
       if (!locator.isHashCode(c.enclosingMethod.symbol))
         c.abort(c.enclosingMethod.pos, Errors.badHashCallSite)
+      makeIt()
+    }
 
+    def makeLazy(): c.Expr[Int] = {
+      if (!locator.hasLazyHashCode(selfTpe))
+        c.abort(c.enclosingPosition, Errors.badHashCallSite)
+      makeIt()
+    }
+
+    private def makeIt(): c.Expr[Int] = {
       val payload = extractPayload()
       val values = selfTpe.members filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
       val terms = (values map {t => Select(This(tpnme.EMPTY), t)}).toList

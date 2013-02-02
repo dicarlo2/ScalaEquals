@@ -27,7 +27,7 @@ import scala.reflect.macros.Context
 /** Locator used to find elements of a type
   *
   * @author Alex DiCarlo
-  * @version 1.1.0
+  * @version 1.2.0
   * @since 1.0.1
   */
 private[impl] class Locator[C <: Context](val c: C) {
@@ -40,11 +40,14 @@ private[impl] class Locator[C <: Context](val c: C) {
 
   private val anyEquals = typeOf[Any].member(equalsName)
   private val anyHashCode = typeOf[Any].member(hashCodeName)
+  private val lazyHashCode = typeOf[LazyHashCode].member(hashCodeName)
   private val anyToString = typeOf[Any].member(toStringName)
   private val equalsCanEqual = typeOf[Equals].member(canEqualName)
 
   def isEquals(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyEquals)
   def isHashCode(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyHashCode)
+  def isLazyHashCode(symbol: Symbol): Boolean =
+    symbol.typeSignature =:= lazyHashCode.typeSignature && symbol.allOverriddenSymbols.contains(anyHashCode)
   def isCanEqual(symbol: Symbol): Boolean =
     symbol.typeSignature =:= equalsCanEqual.typeSignature && symbol.name == canEqualName
   def isToString(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyToString)
@@ -76,9 +79,15 @@ private[impl] class Locator[C <: Context](val c: C) {
       }
   }).head
 
+  def hasLazyHashCode(tpe: Type): Boolean = isLazyHashCode(tpe.member(hashCodeName))
+
   private def isEqualsOverride(term: Symbol): Boolean = term match {
     case equalsTerm: TermSymbol =>
       equalsTerm.alternatives map {_.asTerm} exists {_.allOverriddenSymbols.contains(anyEquals)}
     case _ => false
+  }
+
+  private[Locator] trait LazyHashCode {
+    override lazy val hashCode: Int = 10
   }
 }
