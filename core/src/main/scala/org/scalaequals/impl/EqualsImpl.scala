@@ -46,14 +46,18 @@ private[scalaequals] object EqualsImpl {
   private[EqualsImpl] class EqualsMaker[C <: Context](val c: C) {
     import c.universe._
 
-    val selfTpe: Type = c.enclosingImpl.symbol.asType.toType
-    val locator: Locator[c.type] = new Locator[c.type](c)
-    val hasCanEqual: Boolean = locator.hasCanEqual(selfTpe)
-    val hasSuperOverridingEquals: Boolean = locator.hasSuperOverridingEquals(selfTpe)
+    val selfTpe = c.enclosingClass.symbol.asType.toType
+    val locator = new Locator[c.type](c)
+    val selfTpeCanEqual = locator.getCanEqual(selfTpe)
+    val selfTpeLazyHash = locator.getLazyHash(selfTpe)
+    val hasSuperOverridingEquals = locator.hasSuperOverridingEquals(selfTpe)
+    val isFinalOrCanEqualDefined = (selfTpeCanEqual map {_.owner == selfTpe.typeSymbol} getOrElse false) ||
+      ((c.enclosingMethod.symbol.isFinal || c.enclosingClass.symbol.isFinal) && !hasSuperOverridingEquals)
+    val warn = !(c.settings contains "scala-equals-no-warn")
 
     def make(): c.Expr[Boolean] = {
-      if(c.enclosingImpl.symbol.asClass.isTrait)
-        c.warning(c.enclosingImpl.pos, Warnings.equalWithTrait)
+      if (c.enclosingClass.symbol.asClass.isTrait && warn)
+        c.warning(c.enclosingClass.pos, Warnings.equalWithTrait)
       createCondition(constructorValsNotInherited())
     }
 
@@ -69,31 +73,42 @@ private[scalaequals] object EqualsImpl {
     def constructorValsNotInherited(): List[TermSymbol] = valsNotInherited() filter {_.isParamAccessor}
 
     def valsNotInherited(): List[TermSymbol] = {
-      def isVal(term: TermSymbol): Boolean = term.isStable && term.isMethod
       def isInherited(term: TermSymbol): Boolean = term.owner != selfTpe.typeSymbol || term.isOverride
       (selfTpe.members filter {_.isTerm} map {_.asTerm} filter {t => isVal(t) && !isInherited(t)}).toList
     }
+
+    def isVal(term: TermSymbol): Boolean = term.isStable && term.isMethod
 
     def createCondition(values: List[TermSymbol]): c.Expr[Boolean] = {
       if (!locator.isEquals(c.enclosingDef.symbol))
         c.abort(c.enclosingDef.pos, Errors.badEqualCallSite)
 
+      if (!isFinalOrCanEqualDefined && warn)
+        c.warning(c.enclosingMethod.pos, Warnings.notSafeToSubclass)
+
       val payload = EqualsPayload(values map {_.name.encoded}, hasSuperOverridingEquals || values.isEmpty)
       c.enclosingDef.updateAttachment(payload)
 
-      val termEquals = values map createTermEquals
-      val and = (hasCanEqual, hasSuperOverridingEquals) match {
-        case (true, true) => createNestedAnd(createCanEqual() :: createSuperEquals() :: termEquals)
-        case (false, true) => createNestedAnd(createSuperEquals() :: termEquals)
-        case (true, false) if termEquals.size == 0 => createNestedAnd(List(createCanEqual(), createSuperEquals()))
-        case (true, false) => createNestedAnd(createCanEqual() :: termEquals)
-        case (false, false) if termEquals.size == 0 => createSuperEquals()
-        case (false, false) => createNestedAnd(termEquals)
+      selfTpeLazyHash match {
+        case None => createIt(values)
+        case Some(lazyHash) =>
+          if (!(values forall isVal))
+            c.abort(c.enclosingMethod.pos, "Should only call with vals")
+          createIt(List(lazyHash.asTerm))
       }
+    }
+
+    private def createIt(values: List[TermSymbol]): c.Expr[Boolean] = {
+      val termEquals = values map createTermEquals
+      val and =
+        if (hasSuperOverridingEquals) createNestedAnd(createSuperEquals() :: termEquals)
+        else if (termEquals.size == 0) createSuperEquals()
+        else createNestedAnd(termEquals)
+      val withCanEqual = selfTpeCanEqual map {canEqual => createNestedAnd(List(createCanEqual(), and))} getOrElse and
 
       val arg = locator.findArgument(c.enclosingDef)
 
-      c.Expr[Boolean](createMatch(arg, and))
+      c.Expr[Boolean](createMatch(arg, withCanEqual))
     }
 
     def createCanEqual(): Apply =
@@ -117,7 +132,30 @@ private[scalaequals] object EqualsImpl {
               This(tpnme.EMPTY),
               term)))
       }
-      if (term.isMethod) createEquals(term) else createEquals(term.getter)
+      def createFloatOrDoubleEquals(term: Symbol): Apply = {
+        Apply(
+          Select(
+            Apply(
+              Select(
+                Select(
+                  Ident(newTermName("that")),
+                  term),
+                newTermName("compareTo")),
+              List(
+                Select(
+                  This(tpnme.EMPTY),
+                  term))),
+            newTermName("$eq$eq")),
+          List(
+            Literal(Constant(0))))
+      }
+      if (isFloatOrDouble(term)) createFloatOrDoubleEquals(term) else createEquals(term)
+    }
+
+    def isFloatOrDouble(term: TermSymbol): Boolean = c.enclosingClass exists {
+      case valDef@ValDef(_, termName, _, _) if termName == term.name =>
+        valDef.symbol.typeSignature =:= typeOf[Double] || valDef.symbol.typeSignature =:= typeOf[Float]
+      case _ => false
     }
 
     def createAnd(left: Apply): Select = Select(left, TermName("$amp$amp"))

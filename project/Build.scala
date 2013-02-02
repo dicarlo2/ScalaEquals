@@ -24,7 +24,7 @@ import sbt._
 import Keys._
 
 object BuildSettings {
-  val buildVersion = "1.0.0-SNAPSHOT"
+  val buildVersion = "2.0.0-SNAPSHOT"
   val buildScalaVersion = "2.11.0-SNAPSHOT"
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
@@ -33,7 +33,7 @@ object BuildSettings {
     scalaVersion := buildScalaVersion,
     scalaOrganization := "org.scala-lang.macro-paradise",
     resolvers += Resolver.sonatypeRepo("snapshots"),
-    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Ymacro-debug-lite"),
+    scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature"),
 
     publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/"

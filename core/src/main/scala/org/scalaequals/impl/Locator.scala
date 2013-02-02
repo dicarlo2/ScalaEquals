@@ -40,16 +40,27 @@ private[impl] class Locator[C <: Context](val c: C) {
 
   private val anyEquals = typeOf[Any].member(equalsName)
   private val anyHashCode = typeOf[Any].member(hashCodeName)
+  private val lazyHashCode = typeOf[LazyHashCode].member(hashCodeName)
   private val anyToString = typeOf[Any].member(toStringName)
   private val equalsCanEqual = typeOf[Equals].member(canEqualName)
 
   def isEquals(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyEquals)
   def isHashCode(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyHashCode)
+  def isLazyHashCode(symbol: Symbol): Boolean =
+    symbol.typeSignature =:= lazyHashCode.typeSignature && symbol.allOverriddenSymbols.contains(anyHashCode)
   def isCanEqual(symbol: Symbol): Boolean =
     symbol.typeSignature =:= equalsCanEqual.typeSignature && symbol.name == canEqualName
   def isToString(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyToString)
 
-  def hasCanEqual(tpe: Type): Boolean = isCanEqual(tpe.member(canEqualName))
+  def getCanEqual(tpe: Type): Option[Symbol] = {
+    val tpeCanEqual = tpe.member(canEqualName)
+    if (isCanEqual(tpeCanEqual)) Some(tpeCanEqual) else None
+  }
+
+  def getLazyHash(tpe: Type): Option[Symbol] = {
+    val tpeHashCode = tpe.member(hashCodeName)
+    if (isLazyHashCode(tpeHashCode)) Some(tpeHashCode) else None
+  }
 
   def hasSuperOverridingEquals(tpe: Type): Boolean = {
     def isOverridingEquals(tpe: Type) = isEqualsOverride(tpe.member(equalsName))
@@ -58,7 +69,7 @@ private[impl] class Locator[C <: Context](val c: C) {
   }
 
   def hasSuperWithCanEqual(parents: List[Tree]): Boolean =
-    parents filter {_.symbol.isType} exists {t => hasCanEqual(t.symbol.asType.toType)}
+    parents filter {_.symbol.isType} exists {t => getCanEqual(t.symbol.asType.toType).isDefined}
 
   def findEquals(tree: Tree): Option[Tree] = tree filter {_.isDef} find {t => isEqualsOverride(t.symbol)}
 
@@ -92,5 +103,9 @@ private[impl] class Locator[C <: Context](val c: C) {
     case equalsTerm: TermSymbol =>
       equalsTerm.alternatives map {_.asTerm} exists {_.allOverriddenSymbols.contains(anyEquals)}
     case _ => false
+  }
+
+  private[Locator] trait LazyHashCode {
+    override lazy val hashCode: Int = 10
   }
 }
