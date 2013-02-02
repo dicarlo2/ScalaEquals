@@ -23,12 +23,12 @@
 package org.scalaequals
 
 /** @author Alex DiCarlo
-  * @version 1.1.0
+  * @version 1.2.0
   * @since 1.0.1
   */
 package object impl {
   /** @author Alex DiCarlo
-    * @version 1.1.0
+    * @version 1.2.0
     * @since 0.3.0
     */
   private[impl] object Errors {
@@ -68,6 +68,12 @@ package object impl {
     val badToStringCallSite: String =
       "ScalaEquals.toString must be called from within a toString method. " +
         "Check that your method signature matches \"override def toString: String\""
+
+    /**
+     *  Lazy hashCode must use only vals otherwise hashCode could change, and equals would be defined incorrectly
+     */
+    val badLazyHashVals: String =
+      "Lazy hashCode must use only vals otherwise hashCode could change, and equals would be defined incorrectly."
   }
   /** @author Alex DiCarlo
     * @version 1.1.0

@@ -27,7 +27,7 @@ import scala.reflect.macros.Context
 /** Implementation of `ScalaEquals.equal` and `ScalaEquals.equalAllVals` macro
   *
   * @author Alex DiCarlo
-  * @version 1.1.0
+  * @version 1.2.0
   * @since 0.1.0
   */
 private[scalaequals] object EqualsImpl {
@@ -49,6 +49,7 @@ private[scalaequals] object EqualsImpl {
     val selfTpe = c.enclosingClass.symbol.asType.toType
     val locator = new Locator[c.type](c)
     val selfTpeCanEqual = locator.getCanEqual(selfTpe)
+    val selfTpeLazyHash = locator.getLazyHash(selfTpe)
     val hasSuperOverridingEquals = locator.hasSuperOverridingEquals(selfTpe)
     val isFinalOrCanEqualDefined = (selfTpeCanEqual map {_.owner == selfTpe.typeSymbol} getOrElse false) ||
       ((c.enclosingMethod.symbol.isFinal || c.enclosingClass.symbol.isFinal) && !hasSuperOverridingEquals)
@@ -72,10 +73,11 @@ private[scalaequals] object EqualsImpl {
     def constructorValsNotInherited(): List[TermSymbol] = valsNotInherited() filter {_.isParamAccessor}
 
     def valsNotInherited(): List[TermSymbol] = {
-      def isVal(term: TermSymbol): Boolean = term.isStable && term.isMethod
       def isInherited(term: TermSymbol): Boolean = term.owner != selfTpe.typeSymbol || term.isOverride
       (selfTpe.members filter {_.isTerm} map {_.asTerm} filter {t => isVal(t) && !isInherited(t)}).toList
     }
+
+    def isVal(term: TermSymbol): Boolean = term.isStable && term.isMethod
 
     def createCondition(values: List[TermSymbol]): c.Expr[Boolean] = {
       if (!locator.isEquals(c.enclosingMethod.symbol))
@@ -87,6 +89,16 @@ private[scalaequals] object EqualsImpl {
       val payload = EqualsPayload(values map {_.name.encoded}, hasSuperOverridingEquals || values.isEmpty)
       c.enclosingMethod.updateAttachment(payload)
 
+      selfTpeLazyHash match {
+        case None => createIt(values)
+        case Some(lazyHash) =>
+          if (!(values forall isVal))
+            c.abort(c.enclosingMethod.pos, "Should only call with vals")
+          createIt(List(lazyHash.asTerm))
+      }
+    }
+
+    private def createIt(values: List[TermSymbol]): c.Expr[Boolean] = {
       val termEquals = values map createTermEquals
       val and =
         if (hasSuperOverridingEquals) createNestedAnd(createSuperEquals() :: termEquals)

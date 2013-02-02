@@ -33,23 +33,25 @@ class LazyHashEqualTest extends EqualsFixture[LazyHashEqual, LazyHashEqualArg] {
     b <- arbitrary[Int]
     c <- arbitrary[Int]
     d <- arbitrary[Int]
-  } yield LazyHashEqualArg(a, b, c, d)
+    e <- arbitrary[Int]
+  } yield LazyHashEqualArg(a, b, c, d, e)
 
-  def create(arg: LazyHashEqualArg): LazyHashEqual = new LazyHashEqual(arg.a, arg.b, arg.c, arg.d)
+  def create(arg: LazyHashEqualArg): LazyHashEqual = new LazyHashEqual(arg.a, arg.b, arg.c, arg.d, arg.e)
 
-  def createToString(arg: LazyHashEqualArg): String = s"LazyHashEqual(${arg.a}, ${arg.b}, ${arg.c}, ${arg.d})"
+  def createToString(arg: LazyHashEqualArg): String =
+    s"LazyHashEqual(${arg.a}, ${arg.b}, ${arg.c}, ${arg.d}, ${arg.e})"
 
   def changeDiff(arg: LazyHashEqualArg, arg2: LazyHashEqualArg): LazyHashEqualArg = arg.copy(b = arg2.b)
 
   def changeRandom(arg: LazyHashEqualArg, arg2: LazyHashEqualArg): LazyHashEqualArg = {
-    val swapped = swap(IndexedSeq(arg.a, arg.c, arg.d), IndexedSeq(arg2.a, arg2.c, arg2.d))
-    arg.copy(a = swapped(0), c = swapped(1), d = swapped(2))
+    val swapped = swap(IndexedSeq(arg.a, arg.c, arg.d, arg.e), IndexedSeq(arg2.a, arg2.c, arg2.d, arg2.e))
+    arg.copy(a = swapped(0), c = swapped(1), d = swapped(2), e = swapped(3))
   }
 
   def diff(arg: LazyHashEqualArg, arg2: LazyHashEqualArg): Boolean = arg.b != arg2.b
 
   def unequal(arg: LazyHashEqualArg, arg2: LazyHashEqualArg): Boolean =
-    arg.a != arg2.a || arg.c != arg2.c || arg.d != arg2.d
+    arg.a != arg2.a || arg.c != arg2.c || arg.d != arg2.d || arg.e != arg2.e
 }
 
-case class LazyHashEqualArg(a: Int, b: Int, c: Int, d: Int)
+case class LazyHashEqualArg(a: Int, b: Int, c: Int, d: Int, e: Int)

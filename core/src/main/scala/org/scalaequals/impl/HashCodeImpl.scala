@@ -52,7 +52,7 @@ private[scalaequals] object HashCodeImpl {
     }
 
     def makeLazy(): c.Expr[Int] = {
-      if (!locator.hasLazyHashCode(selfTpe))
+      if (locator.getLazyHash(selfTpe).isEmpty)
         c.abort(c.enclosingPosition, Errors.badHashCallSite)
       makeIt()
     }

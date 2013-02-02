@@ -57,6 +57,11 @@ private[impl] class Locator[C <: Context](val c: C) {
     if (isCanEqual(tpeCanEqual)) Some(tpeCanEqual) else None
   }
 
+  def getLazyHash(tpe: Type): Option[Symbol] = {
+    val tpeHashCode = tpe.member(hashCodeName)
+    if (isLazyHashCode(tpeHashCode)) Some(tpeHashCode) else None
+  }
+
   def hasSuperOverridingEquals(tpe: Type): Boolean = {
     def isOverridingEquals(tpe: Type) = isEqualsOverride(tpe.member(equalsName))
     val overriding = tpe.baseClasses map {_.asType.toType} filter isOverridingEquals
@@ -78,8 +83,6 @@ private[impl] class Locator[C <: Context](val c: C) {
         case ValDef(_, termName, _, _) => termName
       }
   }).head
-
-  def hasLazyHashCode(tpe: Type): Boolean = isLazyHashCode(tpe.member(hashCodeName))
 
   private def isEqualsOverride(term: Symbol): Boolean = term match {
     case equalsTerm: TermSymbol =>
