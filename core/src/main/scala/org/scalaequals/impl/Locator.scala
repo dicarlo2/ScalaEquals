@@ -41,12 +41,12 @@ private[impl] class Locator[C <: Context](val c: C) {
   private val anyEquals = typeOf[Any].member(equalsName)
   private val anyHashCode = typeOf[Any].member(hashCodeName)
   private val anyToString = typeOf[Any].member(toStringName)
-  private val equalsCanEqual = typeOf[Equals].member(canEqualName)
+  val Equals_canEqual = typeOf[Equals].member(canEqualName)
 
   def isEquals(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyEquals)
   def isHashCode(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyHashCode)
   def isCanEqual(symbol: Symbol): Boolean =
-    symbol.typeSignature =:= equalsCanEqual.typeSignature && symbol.name == canEqualName
+    symbol.typeSignature =:= Equals_canEqual.typeSignature && symbol.name == canEqualName
   def isToString(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyToString)
 
   def getCanEqual(tpe: Type): Option[Symbol] = {
