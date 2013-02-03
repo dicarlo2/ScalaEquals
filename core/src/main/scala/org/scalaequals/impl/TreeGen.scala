@@ -22,22 +22,23 @@
 
 package org.scalaequals.impl
 
-/** Locator used to find elements of a type
-  *
-  * @author Alex DiCarlo
-  * @version 1.1.1
-  * @since 1.1.1
-  */
-private[impl] trait Names {self: Locator =>
+trait TreeGen {self: Locator =>
   import c.universe._
+  val tpe: Type = c.enclosingClass.symbol.asType.toType
 
-  val _equals = newTermName("equals")
-  val _canEqual = newTermName("canEqual")
-  val _hashCode = newTermName("hashCode")
-  val _toString = newTermName("toString")
-  val _and = newTermName("$amp$amp")
-  val _plus = newTermName("$plus")
-  val _eqeq = newTermName("$eq$eq")
-  val _compareTo = newTermName("compareTo")
-  val _isInstanceOf = newTermName("isInstanceOf")
+  def mkSelect(term: Name, member: Symbol) = Select(Ident(term), member)
+  def mkSelect(fst: Name, snd: Name, rest: Name*) =
+    (rest foldLeft Select(Ident(fst), snd)){case (curr, name) => Select(curr, name)}
+  def mkThis = This(tpe.typeSymbol)
+  def mkSuper = Super(mkThis, tpnme.EMPTY)
+  def mkThisSelect(member: Symbol) = Select(mkThis, member)
+  def mkSuperSelect(member: Name) = Select(mkSuper, member)
+  def mkApply(left: Tree, right: Tree) = Apply(left, List(right))
+  def mkApply(left: Tree) = Apply(left, List())
+  def mkTpeApply(left: Tree, right: Tree) = TypeApply(left, List(right))
+
+  def mkAnd(left: Tree, right: Tree) = mkApply(Select(left, _and), right)
+  def mkAdd(left: Tree, right: Tree) = mkApply(Select(left, _plus), right)
+
+  def mkString(string: String) = Literal(Constant(string))
 }

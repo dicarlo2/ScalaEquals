@@ -30,7 +30,7 @@ import scala.reflect.macros.Context
   * @version 1.1.1
   * @since 1.0.1
   */
-private[impl] trait Locator extends Names with Signatures with Verifier {
+private[impl] trait Locator extends Names with Signatures with Verifier with TreeGen {
   type C <: Context
   val c: C
   import c.universe._

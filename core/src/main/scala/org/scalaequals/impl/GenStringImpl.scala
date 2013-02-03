@@ -45,39 +45,28 @@ private[scalaequals] object GenStringImpl {
 
     val warn = !(c.settings contains "scala-equals-no-warn")
 
-    def make(): c.Expr[String] = {
+    def make() = {
       if(c.enclosingClass.symbol.asClass.isTrait && warn)
         c.warning(c.enclosingClass.pos, Warnings.genStringWithTrait)
-      makeString(findCtorArguments(c.enclosingClass, c.enclosingClass.symbol.asType.toType))
+      makeString(findCtorArguments(c.enclosingClass, tpe))
     }
 
-    def make(params: Seq[c.Expr[Any]]): c.Expr[String] = {
-      val args = (params map {_.tree.symbol.name.toTermName}).to[List]
-      makeString(args)
-    }
+    def make(params: Seq[c.Expr[Any]]) = makeString((params map {_.tree.symbol.name.toTermName}).to[List])
 
-    def makeString(args: List[TermName]): c.Expr[String] = {
+    def makeString(args: List[TermName]) = {
       if (!isToString(c.enclosingMethod.symbol))
         c.abort(c.enclosingMethod.pos, Errors.badToStringCallSite)
 
-      val stringArgs = nestedAdd(args)
-      val className = Literal(Constant(c.enclosingClass.symbol.name.toString + "("))
-      val tree = stringAdd(className, stringArgs)
+      val stringArgs = mkNestedAdd(args)
+      val className = mkString(c.enclosingClass.symbol.name.toString + "(")
+      val tree = mkAdd(className, stringArgs)
       c.Expr[String](tree)
     }
 
-    def nestedAdd(terms: List[TermName]): Tree = terms match {
-      case Nil => Literal(Constant(")"))
-      case x :: Nil => stringAdd(Ident(x), Literal(Constant(")")))
-      case x :: xs => stringAdd(stringAdd(Ident(x), Literal(Constant(", "))), nestedAdd(xs))
+    def mkNestedAdd(terms: List[TermName]): Tree = terms match {
+      case Nil => mkString(")")
+      case x :: Nil => mkAdd(Ident(x), mkString(")"))
+      case x :: xs => mkAdd(mkAdd(Ident(x), mkString(", ")), mkNestedAdd(xs))
     }
-
-    def stringAdd(left: Tree, right: Tree): Tree =
-      Apply(
-        Select(
-          left,
-          newTermName("$plus")),
-        List(
-          right))
   }
 }

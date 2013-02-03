@@ -32,29 +32,24 @@ import org.scalaequals.impl.EqualsImpl.EqualsPayload
   * @since 0.2.0
   */
 private[scalaequals] object HashCodeImpl {
-  def hash(c: Context): c.Expr[Int] = {
-    new HashMaker[c.type](c).make()
-  }
+  def hash(c: Context): c.Expr[Int] = new HashMaker[c.type](c).make()
 
   private[HashCodeImpl] class HashMaker[A <: Context](val c: A) extends Locator {
     type C = A
     import c.universe._
 
-    val selfTpe: Type = c.enclosingClass.symbol.asType.toType
+    if (!isHashCode(c.enclosingMethod.symbol)) c.abort(c.enclosingMethod.pos, Errors.badHashCallSite)
 
-    def make(): c.Expr[Int] = {
-      if (!isHashCode(c.enclosingMethod.symbol))
-        c.abort(c.enclosingMethod.pos, Errors.badHashCallSite)
-
+    def make() = {
       val payload = extractPayload()
-      val values = selfTpe.members filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
+      val values = tpe.members filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
       val terms = (values map {t => Select(This(tpnme.EMPTY), t)}).toList
-      val hash = if (payload.superHashCode) createHash(createSuperHashCode() :: terms) else createHash(terms)
+      val hash = if (payload.superHashCode) createHash(mkSuperHashCode :: terms) else createHash(terms)
 
       c.Expr[Int](hash)
     }
 
-    private def extractPayload(): EqualsPayload = {
+    def extractPayload() = {
       findEquals(c.enclosingClass) match {
         case Some(method) => method.attachments.get[EqualsImpl.EqualsPayload] match {
           case Some(payload) => payload
@@ -67,39 +62,11 @@ private[scalaequals] object HashCodeImpl {
       }
     }
 
-    private def createSuperHashCode(): Apply =
-      Apply(
-        Select(
-          Super(
-            This(tpnme.EMPTY),
-            tpnme.EMPTY),
-          newTermName("hashCode")),
-        List()
-      )
-
-    private def createHash(terms: List[Tree]): Tree = {
-      Apply(
-        Select(
-          Select(
-            Select(
-              Select(
-                Ident(newTermName("scala")),
-                newTermName("util")),
-              newTermName("hashing")),
-            newTermName("MurmurHash3")),
-          newTermName("seqHash")),
-        List(
-          Apply(
-            Select(
-              Select(
-                Select(
-                  Select(
-                    Ident(newTermName("scala")),
-                    newTermName("collection")),
-                  newTermName("immutable")),
-                newTermName("List")),
-              newTermName("apply")),
-            terms)))
-    }
+    def mkSuperHashCode = mkApply(mkSuperSelect(_hashCode))
+    def mkSeqHash = mkSelect(newTermName("scala"), newTermName("util"), newTermName("hashing"),
+      newTermName("MurmurHash3"), newTermName("seqHash"))
+    def mkList = mkSelect(newTermName("scala"), newTermName("collection"), newTermName("immutable"),
+      newTermName("List"), newTermName("apply"))
+    def createHash(terms: List[Tree]) = mkApply(mkSeqHash, Apply(mkList, terms))
   }
 }

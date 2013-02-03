@@ -31,17 +31,12 @@ import scala.reflect.macros.Context
   * @since 0.1.0
   */
 private[scalaequals] object EqualsImpl {
-  def equalImpl(c: Context): c.Expr[Boolean] = {
-    new EqualsMaker[c.type](c).make()
-  }
+  def equalImpl(c: Context): c.Expr[Boolean] = new EqualsMaker[c.type](c).make()
 
-  def equalAllValsImpl(c: Context): c.Expr[Boolean] = {
-    new EqualsMaker[c.type](c).makeAll()
-  }
+  def equalAllValsImpl(c: Context): c.Expr[Boolean] = new EqualsMaker[c.type](c).makeAll()
 
-  def equalParamImpl(c: Context)(param: c.Expr[Any], params: c.Expr[Any]*): c.Expr[Boolean] = {
+  def equalParamImpl(c: Context)(param: c.Expr[Any], params: c.Expr[Any]*): c.Expr[Boolean] =
     new EqualsMaker[c.type](c).make(param +: params)
-  }
 
   private[EqualsImpl] class EqualsMaker[A <: Context](val c: A) extends Locator {
     type C = A
@@ -49,9 +44,8 @@ private[scalaequals] object EqualsImpl {
     import definitions._
 
     val that = c.fresh("that$": TermName)
-    val tpe = c.enclosingClass.symbol.asType.toType
     val eqMethod = c.enclosingMethod
-    val selfTpeCanEqual = findCanEqual(tpe)
+    val canEqMethod = findCanEqual(tpe)
     val superEquals = hasSuperOverridingEquals(tpe)
     val warn = !(c.settings contains "scala-equals-no-warn")
 
@@ -69,15 +63,14 @@ private[scalaequals] object EqualsImpl {
     def make(params: Seq[c.Expr[Any]]) = createCondition((params map {_.tree.symbol.asTerm}).toList)
 
     def createCondition(values: List[Symbol]) = {
-      val payload = EqualsPayload(values map {_.name.encoded}, superEquals || values.isEmpty)
-      eqMethod.updateAttachment(payload)
+      eqMethod.updateAttachment(EqualsPayload(values map {_.name.encoded}, superEquals || values.isEmpty))
 
       val termEquals = values map mkTermEquals
       val withSuper =
         if (superEquals) mkSuperEquals(that) :: termEquals
         else if (termEquals.size == 0) List(mkSuperEquals(that))
         else termEquals
-      val withCanEqual = selfTpeCanEqual map {_ => mkCanEqual(that) :: withSuper} getOrElse withSuper
+      val withCanEqual = canEqMethod map {_ => mkCanEqual(that) :: withSuper} getOrElse withSuper
       val and = withCanEqual reduce {(a, b) => mkAnd(a, b)}
 
       val arg = findArgument(eqMethod)
@@ -85,13 +78,6 @@ private[scalaequals] object EqualsImpl {
       c.Expr[Boolean](mkMatch(arg, and))
     }
 
-    def mkSelect(term: Name, member: Symbol) = Select(Ident(term), member)
-    def mkSelect(term: Name, member: Name) = Select(Ident(term), member)
-    def mkThis = This(tpe.typeSymbol)
-    def mkSuper = Super(mkThis, tpnme.EMPTY)
-    def mkThisSelect(member: Symbol) = Select(mkThis, member)
-    def mkApply(left: Tree, right: Tree) = Apply(left, List(right))
-    def mkAnd(left: Tree, right: Tree) = mkApply(Select(left, _and), right)
     def mkEquals(left: Tree, right: Tree) = mkApply(Select(left, _eqeq), right)
     def mkCompareTo(left: Tree, right: Tree) = mkApply(Select(left, _compareTo), right)
 
@@ -112,5 +98,5 @@ private[scalaequals] object EqualsImpl {
     def mkMatch(other: Name, condition: Tree) = Match(Ident(other), List(mkCase(condition), mkFalseCase))
   }
 
-  case class EqualsPayload(values: Seq[String], superHashCode: Boolean)
+  private[impl] case class EqualsPayload(values: Seq[String], superHashCode: Boolean)
 }

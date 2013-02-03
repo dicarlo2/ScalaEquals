@@ -36,19 +36,14 @@ private[scalaequals] object CanEqualImpl {
   private[CanEqualImpl] class StringMaker[A <: Context](val c: A) extends Locator {
     type C = A
     import c.universe._
+
+    val canEqMethod = c.enclosingMethod
+
+    if (!isCanEqual(canEqMethod.symbol)) c.abort(canEqMethod.pos, Errors.badCanEqualsCallSite)
     
-    def make(): c.Expr[Boolean] = {
-      if (!isCanEqual(c.enclosingMethod.symbol))
-        c.abort(c.enclosingMethod.pos, Errors.badCanEqualsCallSite)
-
-      val arg = findArgument(c.enclosingMethod)
-      val tree =
-        TypeApply(
-          Select(
-            Ident(arg),
-            newTermName("isInstanceOf")),
-          List(TypeTree(c.enclosingClass.symbol.asType.toType)))
-
+    def make() = {
+      val arg = findArgument(canEqMethod)
+      val tree = mkTpeApply(mkSelect(arg, _isInstanceOf), TypeTree(tpe))
       c.Expr[Boolean](tree)
     }
   }
