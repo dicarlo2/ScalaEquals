@@ -23,7 +23,6 @@
 package org.scalaequals.impl
 
 import scala.reflect.macros.Context
-import org.scalaequals.impl.EqualsImpl.EqualsPayload
 
 /** Implementation of `ScalaEquals.hash` macro
   *
