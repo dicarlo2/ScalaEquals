@@ -38,7 +38,7 @@ private[scalaequals] object HashCodeImpl {
     type C = A
     import c.universe._
 
-    if (!isHashCode(c.enclosingMethod.symbol)) c.abort(c.enclosingMethod.pos, Errors.badHashCallSite)
+    abortIf(!isHashCode(c.enclosingMethod.symbol), badHashCallSite)
 
     def make() = {
       val payload = extractPayload()
@@ -55,10 +55,10 @@ private[scalaequals] object HashCodeImpl {
           case Some(payload) => payload
           case None => c.typeCheck(method).attachments.get[EqualsImpl.EqualsPayload] match {
             case Some(payload) => payload
-            case None => c.abort(c.enclosingPosition, Errors.missingEqual)
+            case None => c.abort(c.enclosingPosition, missingEqual)
           }
         }
-        case None => c.abort(c.enclosingPosition, Errors.missingEquals)
+        case None => c.abort(c.enclosingPosition, missingEquals)
       }
     }
 

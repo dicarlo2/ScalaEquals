@@ -38,9 +38,8 @@ private[scalaequals] object CanEqualImpl {
     import c.universe._
 
     val canEqMethod = c.enclosingMethod
+    abortIf(!isCanEqual(canEqMethod.symbol), badCanEqualsCallSite)
 
-    if (!isCanEqual(canEqMethod.symbol)) c.abort(canEqMethod.pos, Errors.badCanEqualsCallSite)
-    
     def make() = {
       val arg = findArgument(canEqMethod)
       val tree = mkTpeApply(mkSelect(arg, _isInstanceOf), TypeTree(tpe))

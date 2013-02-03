@@ -43,20 +43,16 @@ private[scalaequals] object GenStringImpl {
     type C = A
     import c.universe._
 
-    val warn = !(c.settings contains "scala-equals-no-warn")
+    abortIf(!isToString(c.enclosingMethod.symbol), badGenStringCallSite)
 
     def make() = {
-      if(c.enclosingClass.symbol.asClass.isTrait && warn)
-        c.warning(c.enclosingClass.pos, Warnings.genStringWithTrait)
+      warnClassIf(c.enclosingClass.symbol.asClass.isTrait, warnings.genStringWithTrait)
       makeString(findCtorArguments(c.enclosingClass, tpe))
     }
 
     def make(params: Seq[c.Expr[Any]]) = makeString((params map {_.tree.symbol.name.toTermName}).to[List])
 
     def makeString(args: List[TermName]) = {
-      if (!isToString(c.enclosingMethod.symbol))
-        c.abort(c.enclosingMethod.pos, Errors.badToStringCallSite)
-
       val stringArgs = mkNestedAdd(args)
       val className = mkString(c.enclosingClass.symbol.name.toString + "(")
       val tree = mkAdd(className, stringArgs)

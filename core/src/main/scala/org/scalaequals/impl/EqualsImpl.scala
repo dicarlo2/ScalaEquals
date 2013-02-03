@@ -47,14 +47,12 @@ private[scalaequals] object EqualsImpl {
     val eqMethod = c.enclosingMethod
     val canEqMethod = findCanEqual(tpe)
     val superEquals = hasSuperOverridingEquals(tpe)
-    val warn = !(c.settings contains "scala-equals-no-warn")
 
-    if (!isEquals(eqMethod.symbol)) c.abort(c.enclosingMethod.pos, Errors.badEqualCallSite)
-    if (!isConsistentWithInheritance(tpe, eqMethod) && warn) c.warning(eqMethod.pos, Warnings.notSafeToSubclass)
+    abortIf(!isEquals(eqMethod.symbol), badEqualCallSite)
+    warnIf(!isConsistentWithInheritance(tpe, eqMethod), warnings.notSafeToSubclass)
 
     def make() = {
-      if (c.enclosingClass.symbol.asClass.isTrait && warn)
-        c.warning(c.enclosingClass.pos, Warnings.equalWithTrait)
+      warnClassIf(c.enclosingClass.symbol.asClass.isTrait, warnings.equalWithTrait)
       createCondition(constructorValsNotInherited(tpe))
     }
 

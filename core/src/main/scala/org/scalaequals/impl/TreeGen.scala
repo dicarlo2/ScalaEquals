@@ -26,13 +26,15 @@ trait TreeGen {self: Locator =>
   import c.universe._
   val tpe: Type = c.enclosingClass.symbol.asType.toType
 
+  def mkThis = This(tpe.typeSymbol)
+  def mkSuper = Super(mkThis, tpnme.EMPTY)
+
   def mkSelect(term: Name, member: Symbol) = Select(Ident(term), member)
   def mkSelect(fst: Name, snd: Name, rest: Name*) =
     (rest foldLeft Select(Ident(fst), snd)){case (curr, name) => Select(curr, name)}
-  def mkThis = This(tpe.typeSymbol)
-  def mkSuper = Super(mkThis, tpnme.EMPTY)
   def mkThisSelect(member: Symbol) = Select(mkThis, member)
   def mkSuperSelect(member: Name) = Select(mkSuper, member)
+  
   def mkApply(left: Tree, right: Tree) = Apply(left, List(right))
   def mkApply(left: Tree) = Apply(left, List())
   def mkTpeApply(left: Tree, right: Tree) = TypeApply(left, List(right))
