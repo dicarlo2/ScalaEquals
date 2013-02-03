@@ -27,46 +27,39 @@ import scala.reflect.macros.Context
 /** Locator used to find elements of a type
   *
   * @author Alex DiCarlo
-  * @version 1.1.0
+  * @version 1.1.1
   * @since 1.0.1
   */
-private[impl] class Locator[C <: Context](val c: C) {
+private[impl] trait Locator extends Names with Signatures with Verifier {
+  type C <: Context
+  val c: C
   import c.universe._
 
-  private val equalsName: TermName = "equals"
-  private val hashCodeName: TermName = "hashCode"
-  private val canEqualName: TermName = "canEqual"
-  private val toStringName: TermName = "toString"
+  def constructorValsNotInherited(tpe: Type) = valsNotInherited(tpe) filter {_.isParamAccessor}
 
-  private val anyEquals = typeOf[Any].member(equalsName)
-  private val anyHashCode = typeOf[Any].member(hashCodeName)
-  private val anyToString = typeOf[Any].member(toStringName)
-  val Equals_canEqual = typeOf[Equals].member(canEqualName)
+  def valsNotInherited(tpe: Type) = {
+    def isVal(term: TermSymbol) = term.isStable && term.isMethod
+    def isInherited(term: Symbol) = term.owner != tpe.typeSymbol || term.isOverride
+    (tpe.members filter {_.isTerm} map {_.asTerm} filter {t => isVal(t) && !isInherited(t)}).toList
+  }
 
-  def isEquals(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyEquals)
-  def isHashCode(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyHashCode)
-  def isCanEqual(symbol: Symbol): Boolean =
-    symbol.typeSignature =:= Equals_canEqual.typeSignature && symbol.name == canEqualName
-  def isToString(symbol: Symbol): Boolean = symbol.allOverriddenSymbols.contains(anyToString)
-
-  def getCanEqual(tpe: Type): Option[Symbol] = {
-    val tpeCanEqual = tpe.member(canEqualName)
+  def findCanEqual(tpe: Type) = {
+    val tpeCanEqual = tpe.member(_canEqual)
     if (isCanEqual(tpeCanEqual)) Some(tpeCanEqual) else None
   }
 
-  def hasSuperOverridingEquals(tpe: Type): Boolean = {
-    def isOverridingEquals(tpe: Type) = isEqualsOverride(tpe.member(equalsName))
-    val overriding = tpe.baseClasses map {_.asType.toType} filter isOverridingEquals
-    overriding exists {oTpe => !(oTpe =:= typeOf[Object]) && !(oTpe =:= tpe)}
+  def findEquals(tpe: Type) = {
+    val tpeEquals = tpe.member(_equals)
+    if (isEquals(tpeEquals)) Some(tpeEquals) else None
   }
 
-  def findEquals(tree: Tree): Option[Tree] = tree filter {_.isDef} find {t => isEqualsOverride(t.symbol)}
+  def findEquals(tree: Tree) = tree filter {_.isDef} find {t => isEqualsOverride(t.symbol)}
 
-  def findArgument(tree: Tree): TermName = (tree collect {
+  def findArgument(tree: Tree) = (tree collect {
     case DefDef(_, _, _, List(List(ValDef(_, termName, _, _))), _, _) => termName
   }).head
 
-  def constructorArgs(tree: Tree, tpe: Type): List[TermName] = (tree collect {
+  def findCtorArguments(tree: Tree, tpe: Type) = (tree collect {
     case ClassDef(_, name, _, Template(_, _, body)) if name == tpe.typeSymbol.name.toTypeName =>
       body takeWhile {
         case x: ValDef => true
@@ -75,10 +68,4 @@ private[impl] class Locator[C <: Context](val c: C) {
         case ValDef(_, termName, _, _) => termName
       }
   }).head
-
-  private def isEqualsOverride(term: Symbol): Boolean = term match {
-    case equalsTerm: TermSymbol =>
-      equalsTerm.alternatives map {_.asTerm} exists {_.allOverriddenSymbols.contains(anyEquals)}
-    case _ => false
-  }
 }

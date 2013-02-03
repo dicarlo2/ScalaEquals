@@ -28,7 +28,7 @@ import org.scalaequals.impl.EqualsImpl.EqualsPayload
 /** Implementation of `ScalaEquals.hash` macro
   *
   * @author Alex DiCarlo
-  * @version 1.1.0
+  * @version 1.1.1
   * @since 0.2.0
   */
 private[scalaequals] object HashCodeImpl {
@@ -36,14 +36,14 @@ private[scalaequals] object HashCodeImpl {
     new HashMaker[c.type](c).make()
   }
 
-  private[HashCodeImpl] class HashMaker[C <: Context](val c: C) {
+  private[HashCodeImpl] class HashMaker[A <: Context](val c: A) extends Locator {
+    type C = A
     import c.universe._
 
     val selfTpe: Type = c.enclosingClass.symbol.asType.toType
-    val locator: Locator[c.type] = new Locator[c.type](c)
 
     def make(): c.Expr[Int] = {
-      if (!locator.isHashCode(c.enclosingMethod.symbol))
+      if (!isHashCode(c.enclosingMethod.symbol))
         c.abort(c.enclosingMethod.pos, Errors.badHashCallSite)
 
       val payload = extractPayload()
@@ -55,7 +55,7 @@ private[scalaequals] object HashCodeImpl {
     }
 
     private def extractPayload(): EqualsPayload = {
-      locator.findEquals(c.enclosingClass) match {
+      findEquals(c.enclosingClass) match {
         case Some(method) => method.attachments.get[EqualsImpl.EqualsPayload] match {
           case Some(payload) => payload
           case None => c.typeCheck(method).attachments.get[EqualsImpl.EqualsPayload] match {

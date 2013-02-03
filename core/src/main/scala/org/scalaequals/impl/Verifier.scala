@@ -22,20 +22,35 @@
 
 package org.scalaequals.impl
 
+import scala.PartialFunction.cond
+
 /** Locator used to find elements of a type
   *
   * @author Alex DiCarlo
   * @version 1.1.1
   * @since 1.1.1
   */
-private[impl] trait Names {self: Locator =>
+trait Verifier {self: Locator =>
   import c.universe._
 
-  val _equals = newTermName("equals")
-  val _canEqual = newTermName("canEqual")
-  val _hashCode = newTermName("hashCode")
-  val _toString = newTermName("toString")
-  val _and = newTermName("$amp$amp")
-  val _eqeq = newTermName("$eq$eq")
-  val _compareTo = newTermName("compareTo")
+  def isEquals(symbol: Symbol) = symbol.allOverriddenSymbols.contains(Any_equals)
+  def isHashCode(symbol: Symbol) = symbol.allOverriddenSymbols.contains(Any_hashCode)
+  def isCanEqual(symbol: Symbol) = symbol.typeSignature =:= Equals_canEqual.typeSignature && symbol.name == _canEqual
+  def isToString(symbol: Symbol) = symbol.allOverriddenSymbols.contains(Any_toString)
+
+  def isEqualsOverride(term: Symbol) = term match {
+    case eq: TermSymbol => eq.alternatives map {_.asTerm} exists {_.allOverriddenSymbols.contains(Any_equals)}
+    case _ => false
+  }
+
+  def hasSuperOverridingEquals(tpe: Type) = {
+    def isOverridingEquals(tpe: Type) = isEqualsOverride(tpe.member(_equals))
+    val overriding = tpe.baseClasses map {_.asType.toType} filter isOverridingEquals
+    overriding exists {oTpe => !(oTpe =:= typeOf[Object]) && !(oTpe =:= tpe)}
+  }
+
+  def ownsCanEqual(tpe: Type) = cond(findCanEqual(tpe)) {case Some(x) => x.owner == tpe.typeSymbol}
+
+  def isConsistentWithInheritance(tpe: Type, eqMethod: Tree) =
+    ownsCanEqual(tpe) || ((eqMethod.symbol.isFinal || tpe.typeSymbol.isFinal) && !hasSuperOverridingEquals(tpe))
 }

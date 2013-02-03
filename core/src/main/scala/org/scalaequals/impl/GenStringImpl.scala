@@ -27,7 +27,7 @@ import scala.reflect.macros.Context
 /** Implementation of `ScalaEquals.genString` macro
   *
   * @author Alex DiCarlo
-  * @version 1.1.0
+  * @version 1.1.1
   * @since 1.1.0
   */
 private[scalaequals] object GenStringImpl {
@@ -39,16 +39,16 @@ private[scalaequals] object GenStringImpl {
     new GenStringMaker[c.type](c).make((param +: params).to[List])
   }
 
-  private[GenStringImpl] class GenStringMaker[C <: Context](val c: C) {
+  private[GenStringImpl] class GenStringMaker[A <: Context](val c: A) extends Locator {
+    type C = A
     import c.universe._
 
-    val locator = new Locator[c.type](c)
     val warn = !(c.settings contains "scala-equals-no-warn")
 
     def make(): c.Expr[String] = {
       if(c.enclosingClass.symbol.asClass.isTrait && warn)
         c.warning(c.enclosingClass.pos, Warnings.genStringWithTrait)
-      makeString(locator.constructorArgs(c.enclosingClass, c.enclosingClass.symbol.asType.toType))
+      makeString(findCtorArguments(c.enclosingClass, c.enclosingClass.symbol.asType.toType))
     }
 
     def make(params: Seq[c.Expr[Any]]): c.Expr[String] = {
@@ -57,7 +57,7 @@ private[scalaequals] object GenStringImpl {
     }
 
     def makeString(args: List[TermName]): c.Expr[String] = {
-      if (!locator.isToString(c.enclosingMethod.symbol))
+      if (!isToString(c.enclosingMethod.symbol))
         c.abort(c.enclosingMethod.pos, Errors.badToStringCallSite)
 
       val stringArgs = nestedAdd(args)

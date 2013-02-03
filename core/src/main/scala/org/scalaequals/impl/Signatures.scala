@@ -22,34 +22,18 @@
 
 package org.scalaequals.impl
 
-import scala.reflect.macros.Context
-
-/** Implementation of `ScalaEquals.canEquals` macro
+/** Locator used to find elements of a type
   *
   * @author Alex DiCarlo
   * @version 1.1.1
-  * @since 0.2.0
+  * @since 1.1.1
   */
-private[scalaequals] object CanEqualImpl {
-  def canEquals(c: Context): c.Expr[Boolean] = new StringMaker[c.type](c).make()
-  
-  private[CanEqualImpl] class StringMaker[A <: Context](val c: A) extends Locator {
-    type C = A
-    import c.universe._
-    
-    def make(): c.Expr[Boolean] = {
-      if (!isCanEqual(c.enclosingMethod.symbol))
-        c.abort(c.enclosingMethod.pos, Errors.badCanEqualsCallSite)
+private[impl] trait Signatures {self: Locator =>
+  import c.universe._
+  import definitions._
 
-      val arg = findArgument(c.enclosingMethod)
-      val tree =
-        TypeApply(
-          Select(
-            Ident(arg),
-            newTermName("isInstanceOf")),
-          List(TypeTree(c.enclosingClass.symbol.asType.toType)))
-
-      c.Expr[Boolean](tree)
-    }
-  }
+  val Any_equals = AnyTpe.member(_equals)
+  val Any_hashCode = AnyTpe.member(_hashCode)
+  val Any_toString = AnyTpe.member(_toString)
+  val Equals_canEqual = typeOf[Equals].member(_canEqual)
 }
