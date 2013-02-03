@@ -22,6 +22,12 @@
 
 package org.scalaequals.impl
 
+/** TreeGen contains methods for generating general trees
+  *
+  * @author Alex DiCarlo
+  * @version 1.1.1
+  * @since 1.1.1
+  */
 trait TreeGen {self: Locator =>
   import c.universe._
   val tpe: Type = c.enclosingClass.symbol.asType.toType
@@ -34,7 +40,7 @@ trait TreeGen {self: Locator =>
     (rest foldLeft Select(Ident(fst), snd)){case (curr, name) => Select(curr, name)}
   def mkThisSelect(member: Symbol) = Select(mkThis, member)
   def mkSuperSelect(member: Name) = Select(mkSuper, member)
-  
+
   def mkApply(left: Tree, right: Tree) = Apply(left, List(right))
   def mkApply(left: Tree) = Apply(left, List())
   def mkTpeApply(left: Tree, right: Tree) = TypeApply(left, List(right))

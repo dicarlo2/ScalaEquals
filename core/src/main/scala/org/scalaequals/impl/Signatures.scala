@@ -22,7 +22,7 @@
 
 package org.scalaequals.impl
 
-/** Locator used to find elements of a type
+/** Signatures contains symbols to be used for their type signatures and for other querying
   *
   * @author Alex DiCarlo
   * @version 1.1.1

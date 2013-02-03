@@ -22,7 +22,7 @@
 
 package org.scalaequals.impl
 
-/** Locator used to find elements of a type
+/** Errors contains all error strings and helper functions for aborting or warning
   *
   * @author Alex DiCarlo
   * @version 1.1.1

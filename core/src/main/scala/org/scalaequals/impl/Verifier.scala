@@ -24,7 +24,7 @@ package org.scalaequals.impl
 
 import scala.PartialFunction.cond
 
-/** Locator used to find elements of a type
+/** Verifier contains methods for querying symbols or type properties
   *
   * @author Alex DiCarlo
   * @version 1.1.1

@@ -22,7 +22,7 @@
 
 package org.scalaequals.impl
 
-/** Locator used to find elements of a type
+/** Names contains all `TermName`s used by ScalaEquals
   *
   * @author Alex DiCarlo
   * @version 1.1.1
