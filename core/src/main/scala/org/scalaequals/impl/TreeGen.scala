@@ -22,28 +22,31 @@
 
 package org.scalaequals.impl
 
-import scala.reflect.macros.Context
-
-/** Implementation of `ScalaEquals.canEquals` macro
+/** TreeGen contains methods for generating general trees
   *
   * @author Alex DiCarlo
   * @version 1.1.1
-  * @since 0.2.0
+  * @since 1.1.1
   */
-private[scalaequals] object CanEqualImpl {
-  def canEquals(c: Context): c.Expr[Boolean] = new StringMaker[c.type](c).make()
-  
-  private[CanEqualImpl] class StringMaker[A <: Context](val c: A) extends Locator {
-    type C = A
-    import c.universe._
+trait TreeGen {self: Locator =>
+  import c.universe._
+  val tpe: Type = c.enclosingClass.symbol.asType.toType
 
-    val canEqMethod = c.enclosingMethod
-    abortIf(!isCanEqual(canEqMethod.symbol), badCanEqualsCallSite)
+  def mkThis = This(tpe.typeSymbol)
+  def mkSuper = Super(mkThis, tpnme.EMPTY)
 
-    def make() = {
-      val arg = findArgument(canEqMethod)
-      val tree = mkTpeApply(mkSelect(arg, _isInstanceOf), TypeTree(tpe))
-      c.Expr[Boolean](tree)
-    }
-  }
+  def mkSelect(term: Name, member: Symbol) = Select(Ident(term), member)
+  def mkSelect(fst: Name, snd: Name, rest: Name*) =
+    (rest foldLeft Select(Ident(fst), snd)){case (curr, name) => Select(curr, name)}
+  def mkThisSelect(member: Symbol) = Select(mkThis, member)
+  def mkSuperSelect(member: Name) = Select(mkSuper, member)
+
+  def mkApply(left: Tree, right: Tree) = Apply(left, List(right))
+  def mkApply(left: Tree) = Apply(left, List())
+  def mkTpeApply(left: Tree, right: Tree) = TypeApply(left, List(right))
+
+  def mkAnd(left: Tree, right: Tree) = mkApply(Select(left, _and), right)
+  def mkAdd(left: Tree, right: Tree) = mkApply(Select(left, _plus), right)
+
+  def mkString(string: String) = Literal(Constant(string))
 }

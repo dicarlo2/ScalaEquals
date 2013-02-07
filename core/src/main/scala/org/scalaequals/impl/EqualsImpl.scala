@@ -31,165 +31,79 @@ import scala.reflect.macros.Context
   * @since 0.1.0
   */
 private[scalaequals] object EqualsImpl {
-  def equalImpl(c: Context): c.Expr[Boolean] = {
-    new EqualsMaker[c.type](c).make()
-  }
+  def equalImpl(c: Context): c.Expr[Boolean] = new EqualsMaker[c.type](c).make()
 
-  def equalAllValsImpl(c: Context): c.Expr[Boolean] = {
-    new EqualsMaker[c.type](c).makeAll()
-  }
+  def equalAllValsImpl(c: Context): c.Expr[Boolean] = new EqualsMaker[c.type](c).makeAll()
 
-  def equalParamImpl(c: Context)(param: c.Expr[Any], params: c.Expr[Any]*): c.Expr[Boolean] = {
+  def equalParamImpl(c: Context)(param: c.Expr[Any], params: c.Expr[Any]*): c.Expr[Boolean] =
     new EqualsMaker[c.type](c).make(param +: params)
-  }
 
-  private[EqualsImpl] class EqualsMaker[C <: Context](val c: C) {
+  private[EqualsImpl] class EqualsMaker[A <: Context](val c: A) extends Locator {
+    type C = A
     import c.universe._
+    import definitions._
 
-    val selfTpe = c.enclosingClass.symbol.asType.toType
-    val locator = new Locator[c.type](c)
-    val selfTpeCanEqual = locator.getCanEqual(selfTpe)
-    val selfTpeLazyHash = locator.getLazyHash(selfTpe)
-    val hasSuperOverridingEquals = locator.hasSuperOverridingEquals(selfTpe)
-    val isFinalOrCanEqualDefined = (selfTpeCanEqual map {_.owner == selfTpe.typeSymbol} getOrElse false) ||
-      ((c.enclosingMethod.symbol.isFinal || c.enclosingClass.symbol.isFinal) && !hasSuperOverridingEquals)
-    val warn = !(c.settings contains "scala-equals-no-warn")
+    val that = c.fresh("that$": TermName)
+    val eqMethod = c.enclosingMethod
+    val canEqMethod = findCanEqual(tpe)
+    val lazyHashMethod = findLazyHash(tpe)
+    val superEquals = hasSuperOverridingEquals(tpe)
 
-    def make(): c.Expr[Boolean] = {
-      if (c.enclosingClass.symbol.asClass.isTrait && warn)
-        c.warning(c.enclosingClass.pos, Warnings.equalWithTrait)
-      createCondition(constructorValsNotInherited())
+    abortIf(!isEquals(eqMethod.symbol), badEqualCallSite)
+    warnIf(!isConsistentWithInheritance(tpe, eqMethod), warnings.notSafeToSubclass)
+
+    def make() = {
+      warnClassIf(c.enclosingClass.symbol.asClass.isTrait, warnings.equalWithTrait)
+      makeIt(constructorValsNotInherited(tpe))
     }
 
-    def makeAll(): c.Expr[Boolean] = {
-      createCondition(valsNotInherited())
-    }
+    def makeAll() = makeIt(valsNotInherited(tpe))
 
-    def make(params: Seq[c.Expr[Any]]): c.Expr[Boolean] = {
-      val values = (params map {_.tree.symbol.asTerm}).toList
-      createCondition(values)
-    }
+    def make(params: Seq[c.Expr[Any]]) = makeIt((params map {_.tree.symbol.asTerm}).toList)
 
-    def constructorValsNotInherited(): List[TermSymbol] = valsNotInherited() filter {_.isParamAccessor}
-
-    def valsNotInherited(): List[TermSymbol] = {
-      def isInherited(term: TermSymbol): Boolean = term.owner != selfTpe.typeSymbol || term.isOverride
-      (selfTpe.members filter {_.isTerm} map {_.asTerm} filter {t => isVal(t) && !isInherited(t)}).toList
-    }
-
-    def isVal(term: TermSymbol): Boolean = term.isStable && term.isMethod
-
-    def createCondition(values: List[TermSymbol]): c.Expr[Boolean] = {
-      if (!locator.isEquals(c.enclosingMethod.symbol))
-        c.abort(c.enclosingMethod.pos, Errors.badEqualCallSite)
-
-      if (!isFinalOrCanEqualDefined && warn)
-        c.warning(c.enclosingMethod.pos, Warnings.notSafeToSubclass)
-
-      val payload = EqualsPayload(values map {_.name.encoded}, hasSuperOverridingEquals || values.isEmpty)
-      c.enclosingMethod.updateAttachment(payload)
-
-      selfTpeLazyHash match {
-        case None => createIt(values)
+    def makeIt(values: List[Symbol]) = {
+      eqMethod.updateAttachment(EqualsPayload(values map {_.name.encoded}, superEquals || values.isEmpty))
+      lazyHashMethod match {
         case Some(lazyHash) =>
-          if (!(values forall isVal))
-            c.abort(c.enclosingMethod.pos, Errors.badLazyHashVals)
-          createIt(List(lazyHash.asTerm))
+          abortIf(!(values forall isVal), badLazyHashVals)
+          createCondition(List(lazyHash))
+        case None => createCondition(values)
       }
     }
 
-    private def createIt(values: List[TermSymbol]): c.Expr[Boolean] = {
-      val termEquals = values map createTermEquals
-      val and =
-        if (hasSuperOverridingEquals) createNestedAnd(createSuperEquals() :: termEquals)
-        else if (termEquals.size == 0) createSuperEquals()
-        else createNestedAnd(termEquals)
-      val withCanEqual = selfTpeCanEqual map {canEqual => createNestedAnd(List(createCanEqual(), and))} getOrElse and
+    def createCondition(values: List[Symbol]) = {
+      val termEquals = values map mkTermEquals
+      val withSuper =
+        if (superEquals) mkSuperEquals(that) :: termEquals
+        else if (termEquals.size == 0) List(mkSuperEquals(that))
+        else termEquals
+      val withCanEqual = canEqMethod map {_ => mkCanEqual(that) :: withSuper} getOrElse withSuper
+      val and = withCanEqual reduce {(a, b) => mkAnd(a, b)}
 
-      val arg = locator.findArgument(c.enclosingMethod)
+      val arg = findArgument(eqMethod)
 
-      c.Expr[Boolean](createMatch(arg, withCanEqual))
+      c.Expr[Boolean](mkMatch(arg, and))
     }
 
-    def createCanEqual(): Apply =
-      Apply(
-        Select(
-          Ident(newTermName("that")),
-          newTermName("canEqual")),
-        List(
-          This(tpnme.EMPTY)))
+    def mkEquals(left: Tree, right: Tree) = mkApply(Select(left, _eqeq), right)
+    def mkCompareTo(left: Tree, right: Tree) = mkApply(Select(left, _compareTo), right)
 
-    def createTermEquals(term: TermSymbol): Apply = {
-      def createEquals(term: Symbol): Apply = {
-        Apply(
-          Select(
-            Select(
-              Ident(newTermName("that")),
-              term),
-            newTermName("$eq$eq")),
-          List(
-            Select(
-              This(tpnme.EMPTY),
-              term)))
-      }
-      def createFloatOrDoubleEquals(term: Symbol): Apply = {
-        Apply(
-          Select(
-            Apply(
-              Select(
-                Select(
-                  Ident(newTermName("that")),
-                  term),
-                newTermName("compareTo")),
-              List(
-                Select(
-                  This(tpnme.EMPTY),
-                  term))),
-            newTermName("$eq$eq")),
-          List(
-            Literal(Constant(0))))
-      }
-      if (isFloatOrDouble(term)) createFloatOrDoubleEquals(term) else createEquals(term)
+    def mkCanEqual(that: Name) = mkApply(mkSelect(that, _canEqual), mkThis)
+    def mkSuperEquals(that: Name) = mkApply(Select(mkSuper, _equals), Ident(that))
+    def mkTermEquals(term: Symbol) = {
+      def isFloatOrDouble(term: Symbol) =
+        term.asMethod.returnType =:= DoubleTpe || term.asMethod.returnType =:= FloatTpe
+      val thatTerm = mkSelect(that, term)
+      val thisTerm = mkThisSelect(term)
+      if (isFloatOrDouble(term)) mkEquals(mkCompareTo(thatTerm, thisTerm), Literal(Constant(0)))
+      else mkEquals(mkSelect(that, term), mkThisSelect(term))
     }
 
-    def isFloatOrDouble(term: TermSymbol): Boolean = c.enclosingClass exists {
-      case valDef@ValDef(_, termName, _, _) if termName == term.name =>
-        valDef.symbol.typeSignature =:= typeOf[Double] || valDef.symbol.typeSignature =:= typeOf[Float]
-      case _ => false
-    }
-
-    def createAnd(left: Apply): Select = Select(left, newTermName("$amp$amp"))
-
-    def createNestedAnd(terms: List[Apply]): Apply = terms match {
-      case left :: x :: xs => createNestedAnd(Apply(createAnd(left), List(x)) :: xs)
-      case left :: Nil => left
-    }
-
-    def createSuperEquals(): Apply =
-      Apply(
-        Select(
-          Super(This(tpnme.EMPTY), tpnme.EMPTY),
-          newTermName("equals")),
-        List(
-          Ident(newTermName("that"))))
-
-    def createMatch(other: TermName, condition: Apply): Match = {
-      Match(
-        Ident(other),
-        List(
-          CaseDef(
-            Bind(
-              newTermName("that"),
-              Typed(
-                Ident(nme.WILDCARD),
-                TypeTree(selfTpe))),
-            condition),
-          CaseDef(
-            Ident(nme.WILDCARD),
-            EmptyTree,
-            Literal(Constant(false)))))
-    }
+    def mkBind = Bind(that, Typed(Ident(nme.WILDCARD), TypeTree(tpe)))
+    def mkCase(condition: Tree) = CaseDef(mkBind, condition)
+    def mkFalseCase = CaseDef(Ident(nme.WILDCARD), EmptyTree, Literal(Constant(false)))
+    def mkMatch(other: Name, condition: Tree) = Match(Ident(other), List(mkCase(condition), mkFalseCase))
   }
 
-  case class EqualsPayload(values: Seq[String], superHashCode: Boolean)
+  private[impl] case class EqualsPayload(values: Seq[String], superHashCode: Boolean)
 }

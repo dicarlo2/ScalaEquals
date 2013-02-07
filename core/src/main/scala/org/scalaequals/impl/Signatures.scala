@@ -22,28 +22,18 @@
 
 package org.scalaequals.impl
 
-import scala.reflect.macros.Context
-
-/** Implementation of `ScalaEquals.canEquals` macro
+/** Signatures contains symbols to be used for their type signatures and for other querying
   *
   * @author Alex DiCarlo
   * @version 1.1.1
-  * @since 0.2.0
+  * @since 1.1.1
   */
-private[scalaequals] object CanEqualImpl {
-  def canEquals(c: Context): c.Expr[Boolean] = new StringMaker[c.type](c).make()
-  
-  private[CanEqualImpl] class StringMaker[A <: Context](val c: A) extends Locator {
-    type C = A
-    import c.universe._
+private[impl] trait Signatures {self: Locator =>
+  import c.universe._
+  import definitions._
 
-    val canEqMethod = c.enclosingMethod
-    abortIf(!isCanEqual(canEqMethod.symbol), badCanEqualsCallSite)
-
-    def make() = {
-      val arg = findArgument(canEqMethod)
-      val tree = mkTpeApply(mkSelect(arg, _isInstanceOf), TypeTree(tpe))
-      c.Expr[Boolean](tree)
-    }
-  }
+  val Any_equals = AnyTpe.member(_equals)
+  val Any_hashCode = AnyTpe.member(_hashCode)
+  val Any_toString = AnyTpe.member(_toString)
+  val Equals_canEqual = typeOf[Equals].member(_canEqual)
 }

@@ -23,7 +23,7 @@
 package org.scalaequals.impl
 
 import scala.reflect.macros.Context
-import org.scalaequals.impl.EqualsImpl.EqualsPayload
+import scala.language.existentials
 
 /** Implementation of `ScalaEquals.hash` macro
   *
@@ -32,86 +32,42 @@ import org.scalaequals.impl.EqualsImpl.EqualsPayload
   * @since 0.2.0
   */
 private[scalaequals] object HashCodeImpl {
-  def hash(c: Context): c.Expr[Int] = {
-    if (c.enclosingMethod != null)
-      new HashMaker[c.type](c).make()
-    else
-      new HashMaker[c.type](c).makeLazy()
-  }
+  def hash(c: Context) = new HashMaker[c.type](c, c.enclosingMethod == null).make()
 
-  private[HashCodeImpl] class HashMaker[C <: Context](val c: C) {
+  private[HashCodeImpl] class HashMaker[A <: Context](val c: A, isLazy: Boolean) extends Locator {
+    type C = A
     import c.universe._
 
-    val selfTpe: Type = c.enclosingClass.symbol.asType.toType
-    val locator: Locator[c.type] = new Locator[c.type](c)
+    abortIf(!isLazy && !isHashCode(c.enclosingMethod.symbol), badHashCallSite)
+    abortIf(isLazy && findLazyHash(tpe).isEmpty, badHashCallSite)
 
-    def make(): c.Expr[Int] = {
-      if (!locator.isHashCode(c.enclosingMethod.symbol))
-        c.abort(c.enclosingMethod.pos, Errors.badHashCallSite)
-      makeIt()
-    }
-
-    def makeLazy(): c.Expr[Int] = {
-      if (locator.getLazyHash(selfTpe).isEmpty)
-        c.abort(c.enclosingPosition, Errors.badHashCallSite)
-      makeIt()
-    }
-
-    private def makeIt(): c.Expr[Int] = {
+    def make() = {
       val payload = extractPayload()
-      val values = selfTpe.members filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
+      val values = tpe.members filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
       val terms = (values map {t => Select(This(tpnme.EMPTY), t)}).toList
-      val hash = if (payload.superHashCode) createHash(createSuperHashCode() :: terms) else createHash(terms)
+      val hash = if (payload.superHashCode) createHash(mkSuperHashCode :: terms) else createHash(terms)
 
       c.Expr[Int](hash)
     }
 
-    private def extractPayload(): EqualsPayload = {
-      locator.findEquals(c.enclosingClass) match {
+    def extractPayload() = {
+      findEquals(c.enclosingClass) match {
         case Some(method) => method.attachments.get[EqualsImpl.EqualsPayload] match {
           case Some(payload) => payload
           case None => c.typeCheck(method).attachments.get[EqualsImpl.EqualsPayload] match {
             case Some(payload) => payload
-            case None => c.abort(c.enclosingPosition, Errors.missingEqual)
+            case None => c.abort(c.enclosingPosition, missingEqual)
           }
         }
-        case None => c.abort(c.enclosingPosition, Errors.missingEquals)
+        case None => c.abort(c.enclosingPosition, missingEquals)
       }
     }
 
-    private def createSuperHashCode(): Apply =
-      Apply(
-        Select(
-          Super(
-            This(tpnme.EMPTY),
-            tpnme.EMPTY),
-          newTermName("hashCode")),
-        List()
-      )
-
-    private def createHash(terms: List[Tree]): Tree = {
-      Apply(
-        Select(
-          Select(
-            Select(
-              Select(
-                Ident(newTermName("scala")),
-                newTermName("util")),
-              newTermName("hashing")),
-            newTermName("MurmurHash3")),
-          newTermName("seqHash")),
-        List(
-          Apply(
-            Select(
-              Select(
-                Select(
-                  Select(
-                    Ident(newTermName("scala")),
-                    newTermName("collection")),
-                  newTermName("immutable")),
-                newTermName("List")),
-              newTermName("apply")),
-            terms)))
-    }
+    def mkSuperHashCode = mkApply(mkSuperSelect(_hashCode))
+    def mkSeqHash = mkSelect(newTermName("scala"), newTermName("util"), newTermName("hashing"),
+      newTermName("MurmurHash3"), newTermName("seqHash"))
+    def mkList = mkSelect(newTermName("scala"), newTermName("collection"), newTermName("immutable"),
+      newTermName("List"), newTermName("apply"))
+    def createHash(terms: List[Tree]) = mkApply(mkSeqHash, Apply(mkList, terms))
   }
 }
