@@ -123,7 +123,7 @@ import scala.language.experimental.macros
   *
   *
   * @author Alex DiCarlo
-  * @version 1.1.1
+  * @version 1.2.0
   * @since 0.1.0
   */
 object ScalaEquals {

@@ -25,7 +25,7 @@ package org.scalaequals.impl
 /** Names contains all `TermName`s used by ScalaEquals
   *
   * @author Alex DiCarlo
-  * @version 1.1.1
+  * @version 1.2.0
   * @since 1.1.1
   */
 private[impl] trait Names {self: Locator =>

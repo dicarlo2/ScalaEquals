@@ -25,7 +25,7 @@ package org.scalaequals.impl
 /** Errors contains all error strings and helper functions for aborting or warning
   *
   * @author Alex DiCarlo
-  * @version 1.1.1
+  * @version 1.2.0
   * @since 1.1.1
   */
 trait Errors {self: Locator =>
@@ -64,6 +64,10 @@ trait Errors {self: Locator =>
   val badGenStringCallSite =
     "ScalaEquals.genString must be called from within a toString method. " +
       "Check that your method signature matches \"override def toString: String\""
+
+  /* Lazy `hashCode` must use only `val`s otherwise `hashCode` could change and `equals` would be incorrect */
+  val badLazyHashVals: String =
+    "Lazy hashCode must use only vals otherwise hashCode could change, and equals would be defined incorrectly."
 
   object warnings {
     /* `ScalaEquals.equal` will only expand to a `super.equals(that)` call for traits. */

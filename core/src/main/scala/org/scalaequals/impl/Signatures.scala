@@ -25,7 +25,7 @@ package org.scalaequals.impl
 /** Signatures contains symbols to be used for their type signatures and for other querying
   *
   * @author Alex DiCarlo
-  * @version 1.1.1
+  * @version 1.2.0
   * @since 1.1.1
   */
 private[impl] trait Signatures {self: Locator =>
@@ -36,4 +36,9 @@ private[impl] trait Signatures {self: Locator =>
   val Any_hashCode = AnyTpe.member(_hashCode)
   val Any_toString = AnyTpe.member(_toString)
   val Equals_canEqual = typeOf[Equals].member(_canEqual)
+  val LazyHashCode_hashCode = typeOf[LazyHashCode].member(_hashCode)
+
+  private[Signatures] trait LazyHashCode {
+    override lazy val hashCode: Int = 10
+  }
 }

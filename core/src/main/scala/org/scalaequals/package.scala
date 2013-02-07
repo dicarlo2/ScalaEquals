@@ -87,7 +87,7 @@ package org
   * Chapter 30 (Object equality)
   *
   * @author Alex DiCarlo
-  * @version 1.1.1
+  * @version 1.2.0
   * @since 0.3.0
   */
 package object scalaequals {}

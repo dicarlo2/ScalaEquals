@@ -27,7 +27,7 @@ import scala.PartialFunction.cond
 /** Verifier contains methods for querying symbols or type properties
   *
   * @author Alex DiCarlo
-  * @version 1.1.1
+  * @version 1.2.0
   * @since 1.1.1
   */
 trait Verifier {self: Locator =>
@@ -35,6 +35,8 @@ trait Verifier {self: Locator =>
 
   def isEquals(symbol: Symbol) = symbol.allOverriddenSymbols.contains(Any_equals)
   def isHashCode(symbol: Symbol) = symbol.allOverriddenSymbols.contains(Any_hashCode)
+  def isLazyHashCode(symbol: Symbol): Boolean =
+    symbol.typeSignature =:= LazyHashCode_hashCode.typeSignature && symbol.allOverriddenSymbols.contains(Any_hashCode)
   def isCanEqual(symbol: Symbol) = symbol.typeSignature =:= Equals_canEqual.typeSignature && symbol.name == _canEqual
   def isToString(symbol: Symbol) = symbol.allOverriddenSymbols.contains(Any_toString)
 
@@ -53,4 +55,6 @@ trait Verifier {self: Locator =>
 
   def isConsistentWithInheritance(tpe: Type, eqMethod: Tree) =
     ownsCanEqual(tpe) || ((eqMethod.symbol.isFinal || tpe.typeSymbol.isFinal) && !hasSuperOverridingEquals(tpe))
+
+  def isVal(term: Symbol) = term.isTerm && term.asTerm.isStable && term.isMethod
 }

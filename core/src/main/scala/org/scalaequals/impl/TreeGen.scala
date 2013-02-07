@@ -25,7 +25,7 @@ package org.scalaequals.impl
 /** TreeGen contains methods for generating general trees
   *
   * @author Alex DiCarlo
-  * @version 1.1.1
+  * @version 1.2.0
   * @since 1.1.1
   */
 trait TreeGen {self: Locator =>

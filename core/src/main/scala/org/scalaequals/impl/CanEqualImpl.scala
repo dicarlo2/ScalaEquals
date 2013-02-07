@@ -27,7 +27,7 @@ import scala.reflect.macros.Context
 /** Implementation of `ScalaEquals.canEquals` macro
   *
   * @author Alex DiCarlo
-  * @version 1.1.1
+  * @version 1.2.0
   * @since 0.2.0
   */
 private[scalaequals] object CanEqualImpl {
