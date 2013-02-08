@@ -22,8 +22,9 @@
 
 package org.scalaequals.impl
 
-import scala.reflect.macros.Macro
+import scala.reflect.macros.{Context, Macro}
 import scala.language.existentials
+import org.scalaequals.impl.GenStringTypeImpl.GenStringTypeMaker
 
 /** Implementation of `ScalaEquals.Equal` type macro
   *
@@ -31,47 +32,53 @@ import scala.language.existentials
   * @version 2.0.0
   * @since 2.0.0
   */
-trait EqualTypeImpl extends Macro {
-  import c.universe._
 
-  private lazy val locator = new Locator[c.type](c)
-  private lazy val genStringTypeImpl = new GenStringTypeImpl {
-    val c: EqualTypeImpl.this.c.type = EqualTypeImpl.this.c
+object EqualTypeImpl {
+
+  def equalTypeImpl(c: Context): c.universe.Template = new EqualTypeMaker[c.type](c).make
+
+  def equalTypeImplAll(c: Context): c.universe.Template = new EqualTypeMaker[c.type](c).makeAll
+
+  private[impl] class EqualTypeMaker[A <: Context](val c: A) extends Locator {
+    type C = A
+    import c.universe._
+
+    private lazy val genStringTypeImpl = new GenStringTypeMaker[c.type](c)
+    private val equalTypeName = "Equal"
+    private val equalAllValsTypeName = "EqualAllVals"
+
+    def make: Template = createTemplate(c.enclosingTemplate, genEqual(), equalTypeName)
+
+    def makeAll: Template = createTemplate(c.enclosingTemplate, genEqualAllVals(), equalAllValsTypeName)
+
+    def addToTemplate(template: Template): Template = {
+      if (hasScalaEqualsType(equalTypeName, template.parents))
+        createTemplate(template, genEqual(), equalTypeName)
+      else if (hasScalaEqualsType(equalAllValsTypeName, template.parents))
+        createTemplate(template, genEqualAllVals(), equalAllValsTypeName)
+      else
+        template
+    }
+
+    private def createTemplate(template: Template, equalMethod: Tree, equalName: String): Template = {
+      val Template(parents, self, existingCode) = c.enclosingTemplate
+      val filteredParents = filterScalaEqualsType(equalName, parents)
+      val parentsWithEquals = filteredParents :+ Ident(typeOf[Equals].typeSymbol)
+      val newMethods = List(equalMethod, genHash(), genCanEquals(parents))
+      val newTemplate = Template(parentsWithEquals, self, existingCode ++ newMethods)
+      genStringTypeImpl.addToTemplate(newTemplate)
+    }
+
+    private def genEqual(): Tree =
+      q"override def equals(other: Any): Boolean = org.scalaequals.ScalaEquals.equal".asInstanceOf[DefDef]
+    private def genEqualAllVals(): Tree =
+      q"override def equals(other: Any): Boolean = org.scalaequals.ScalaEquals.equalAllVals".asInstanceOf[DefDef]
+    private def genHash(): Tree =
+      q"override def hashCode(): Int = org.scalaequals.ScalaEquals.hash".asInstanceOf[DefDef]
+    private def genCanEquals(parents: List[Tree]): Tree =
+      if (hasSuperWithCanEqual(parents))
+        q"override def canEqual(other: Any): Boolean = org.scalaequals.ScalaEquals.canEquals".asInstanceOf[DefDef]
+      else
+        q"def canEqual(other: Any): Boolean = org.scalaequals.ScalaEquals.canEquals".asInstanceOf[DefDef]
   }
-  private val equalTypeName = "Equal"
-  private val equalAllValsTypeName = "EqualAllVals"
-
-  def make: Template = createTemplate(c.enclosingTemplate, genEqual(), equalTypeName)
-
-  def makeAll: Template = createTemplate(c.enclosingTemplate, genEqualAllVals(), equalAllValsTypeName)
-
-  def addToTemplate(template: Template): Template = {
-    if (locator.hasScalaEqualsType(equalTypeName, template.parents))
-      createTemplate(template, genEqual(), equalTypeName)
-    else if (locator.hasScalaEqualsType(equalAllValsTypeName, template.parents))
-      createTemplate(template, genEqualAllVals(), equalAllValsTypeName)
-    else
-      template
-  }
-
-  private def createTemplate(template: Template, equalMethod: Tree, equalName: String): Template = {
-    val Template(parents, self, existingCode) = c.enclosingTemplate
-    val filteredParents = locator.filterScalaEqualsType(equalName, parents)
-    val parentsWithEquals = filteredParents :+ Ident(typeOf[Equals].typeSymbol)
-    val newMethods = List(equalMethod, genHash(), genCanEquals(parents))
-    val newTemplate = Template(parentsWithEquals, self, existingCode ++ newMethods)
-    genStringTypeImpl.addToTemplate(newTemplate)
-  }
-
-  private def genEqual(): Tree =
-    q"override def equals(other: Any): Boolean = org.scalaequals.ScalaEquals.equal".asInstanceOf[DefDef]
-  private def genEqualAllVals(): Tree =
-    q"override def equals(other: Any): Boolean = org.scalaequals.ScalaEquals.equalAllVals".asInstanceOf[DefDef]
-  private def genHash(): Tree =
-    q"override def hashCode(): Int = org.scalaequals.ScalaEquals.hash".asInstanceOf[DefDef]
-  private def genCanEquals(parents: List[Tree]): Tree =
-    if (locator.hasSuperWithCanEqual(parents))
-      q"override def canEqual(other: Any): Boolean = org.scalaequals.ScalaEquals.canEquals".asInstanceOf[DefDef]
-    else
-      q"def canEqual(other: Any): Boolean = org.scalaequals.ScalaEquals.canEquals".asInstanceOf[DefDef]
 }

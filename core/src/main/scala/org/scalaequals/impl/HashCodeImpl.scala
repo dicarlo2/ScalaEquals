@@ -32,13 +32,14 @@ import scala.language.existentials
   * @since 0.2.0
   */
 private[scalaequals] object HashCodeImpl {
-  def hash(c: Context) = new HashMaker[c.type](c, c.enclosingMethod == null).make()
+  def hash(c: Context) = new HashMaker[c.type](c).make()
 
-  private[HashCodeImpl] class HashMaker[A <: Context](val c: A, isLazy: Boolean) extends Locator {
+  private[HashCodeImpl] class HashMaker[A <: Context](val c: A) extends Locator {
     type C = A
     import c.universe._
 
-    abortIf(!isLazy && !isHashCode(c.enclosingMethod.symbol), badHashCallSite)
+    val isLazy = enclosingDef.isEmpty
+    abortIf(!isLazy && !isHashCode(c.enclosingDef.symbol), badHashCallSite)
     abortIf(isLazy && findLazyHash(tpe).isEmpty, badHashCallSite)
 
     def make() = {
@@ -51,7 +52,7 @@ private[scalaequals] object HashCodeImpl {
     }
 
     def extractPayload() = {
-      findEquals(c.enclosingClass) match {
+      findEquals(c.enclosingTemplate) match {
         case Some(method) => method.attachments.get[EqualsImpl.EqualsPayload] match {
           case Some(payload) => payload
           case None => c.typeCheck(method).attachments.get[EqualsImpl.EqualsPayload] match {
@@ -64,10 +65,10 @@ private[scalaequals] object HashCodeImpl {
     }
 
     def mkSuperHashCode = mkApply(mkSuperSelect(_hashCode))
-    def mkSeqHash = mkSelect(newTermName("scala"), newTermName("util"), newTermName("hashing"),
-      newTermName("MurmurHash3"), newTermName("seqHash"))
-    def mkList = mkSelect(newTermName("scala"), newTermName("collection"), newTermName("immutable"),
-      newTermName("List"), newTermName("apply"))
+    def mkSeqHash = mkSelect(TermName("scala"), TermName("util"), TermName("hashing"),
+      TermName("MurmurHash3"), TermName("seqHash"))
+    def mkList = mkSelect(TermName("scala"), TermName("collection"), TermName("immutable"),
+      TermName("List"), TermName("apply"))
     def createHash(terms: List[Tree]) = mkApply(mkSeqHash, Apply(mkList, terms))
   }
 }

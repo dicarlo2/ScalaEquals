@@ -43,8 +43,8 @@ private[scalaequals] object EqualsImpl {
     import c.universe._
     import definitions._
 
-    val that = c.fresh("that$": TermName)
-    val eqMethod = c.enclosingMethod
+    val that = c.freshName("that$": TermName)
+    val eqMethod = c.enclosingDef
     val canEqMethod = findCanEqual(tpe)
     val lazyHashMethod = findLazyHash(tpe)
     val superEquals = hasSuperOverridingEquals(tpe)
@@ -53,7 +53,7 @@ private[scalaequals] object EqualsImpl {
     warnIf(!isConsistentWithInheritance(tpe, eqMethod), warnings.notSafeToSubclass)
 
     def make() = {
-      warnClassIf(c.enclosingClass.symbol.asClass.isTrait, warnings.equalWithTrait)
+      warnClassIf(c.enclosingImpl.symbol.asClass.isTrait, warnings.equalWithTrait)
       makeIt(constructorValsNotInherited(tpe))
     }
 
@@ -100,7 +100,7 @@ private[scalaequals] object EqualsImpl {
     }
 
     def mkBind = Bind(that, Typed(Ident(nme.WILDCARD), TypeTree(tpe)))
-    def mkCase(condition: Tree) = CaseDef(mkBind, condition)
+    def mkCase(condition: Tree) = CaseDef(mkBind, EmptyTree, condition)
     def mkFalseCase = CaseDef(Ident(nme.WILDCARD), EmptyTree, Literal(Constant(false)))
     def mkMatch(other: Name, condition: Tree) = Match(Ident(other), List(mkCase(condition), mkFalseCase))
   }

@@ -40,18 +40,18 @@ private[scalaequals] object GenStringImpl {
     type C = A
     import c.universe._
 
-    abortIf(!isToString(c.enclosingMethod.symbol), badGenStringCallSite)
+    abortIf(!isToString(c.enclosingDef.symbol), badGenStringCallSite)
 
     def make() = {
-      warnClassIf(c.enclosingClass.symbol.asClass.isTrait, warnings.genStringWithTrait)
-      makeString(findCtorArguments(c.enclosingClass, tpe))
+      warnClassIf(c.enclosingImpl.symbol.asClass.isTrait, warnings.genStringWithTrait)
+      makeString(findCtorArguments(c.enclosingImpl, tpe))
     }
 
     def make(params: Seq[c.Expr[Any]]) = makeString((params map {_.tree.symbol.name.toTermName}).to[List])
 
     def makeString(args: List[TermName]) = {
       val stringArgs = mkNestedAdd(args)
-      val className = mkString(c.enclosingClass.symbol.name.toString + "(")
+      val className = mkString(c.enclosingImpl.symbol.name.toString + "(")
       val tree = mkAdd(className, stringArgs)
       c.Expr[String](tree)
     }

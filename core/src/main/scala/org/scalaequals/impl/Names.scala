@@ -31,13 +31,13 @@ package org.scalaequals.impl
 private[impl] trait Names {self: Locator =>
   import c.universe._
 
-  val _equals = newTermName("equals")
-  val _canEqual = newTermName("canEqual")
-  val _hashCode = newTermName("hashCode")
-  val _toString = newTermName("toString")
-  val _and = newTermName("$amp$amp")
-  val _plus = newTermName("$plus")
-  val _eqeq = newTermName("$eq$eq")
-  val _compareTo = newTermName("compareTo")
-  val _isInstanceOf = newTermName("isInstanceOf")
+  val _equals = TermName("equals")
+  val _canEqual = TermName("canEqual")
+  val _hashCode = TermName("hashCode")
+  val _toString = TermName("toString")
+  val _and = TermName("$amp$amp")
+  val _plus = TermName("$plus")
+  val _eqeq = TermName("$eq$eq")
+  val _compareTo = TermName("compareTo")
+  val _isInstanceOf = TermName("isInstanceOf")
 }

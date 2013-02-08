@@ -30,7 +30,7 @@ import scala.reflect.macros.Context
   * @version 2.0.0
   * @since 1.0.1
   */
-private[impl] trait Locator extends Names with Signatures with Verifier with TreeGen with Errors {
+private[impl] trait Locator extends Utils with Names with Signatures with Verifier with TreeGen with Errors {
   type C <: Context
   val c: C
   import c.universe._
@@ -73,13 +73,16 @@ private[impl] trait Locator extends Names with Signatures with Verifier with Tre
       }
   }).head
 
-  def hasScalaEqualsType(name: String, parents: List[Tree]): Boolean =
+  def hasSuperWithCanEqual(parents: List[Tree]) =
+    parents filter {_.symbol.isType} exists {t => findCanEqual(t.symbol.asType.toType).isDefined}
+
+  def hasScalaEqualsType(name: String, parents: List[Tree]) =
     parents exists {_ exists {t => isScalaEqualsType(name, t)}}
 
-  def filterScalaEqualsType(name: String, parents: List[Tree]): List[Tree] =
+  def filterScalaEqualsType(name: String, parents: List[Tree]) =
     parents filterNot {_ exists {t => isScalaEqualsType(name, t)}}
 
-  private def isScalaEqualsType(name: String, tree: Tree): Boolean = tree match {
+  private def isScalaEqualsType(name: String, tree: Tree) = tree match {
     case Ident(TypeName(`name`)) => true
     case Select(Ident(TermName("ScalaEquals")), TypeName(`name`)) => true
     case _ => false

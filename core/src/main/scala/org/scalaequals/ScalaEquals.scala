@@ -199,9 +199,9 @@ object ScalaEquals {
    */
   def genString(param: Any, params: Any*): String = macro GenStringImpl.genStringParamsImpl
 
-  type Equal = macro EqualTypeImpl.make
+  type Equal = macro EqualTypeImpl.equalTypeImpl
 
-  type EqualAllVals = macro EqualTypeImpl.makeAll
+  type EqualAllVals = macro EqualTypeImpl.equalTypeImplAll
 
-  type GenString = macro GenStringTypeImpl.make
+  type GenString = macro GenStringTypeImpl.genStringTypeImpl
 }

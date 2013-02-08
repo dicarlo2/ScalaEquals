@@ -30,10 +30,11 @@ package org.scalaequals.impl
   */
 trait Errors {self: Locator =>
   val warn = !(c.settings contains "scala-equals-no-warn")
+  private val enclosingDefPos = enclosingDef map {_.pos} getOrElse c.enclosingPosition.pos
 
-  def abortIf(failed: Boolean, msg: String) { if (failed) c.abort(c.enclosingMethod.pos, msg) }
-  def warnIf(failed: Boolean, msg: String) { if (failed && warn) c.warning(c.enclosingMethod.pos, msg) }
-  def warnClassIf(failed: Boolean, msg: String) { if (failed && warn) c.warning(c.enclosingClass.pos, msg) }
+  def abortIf(failed: Boolean, msg: String) { if (failed) c.abort(enclosingDefPos, msg) }
+  def warnIf(failed: Boolean, msg: String) { if (failed && warn) c.warning(enclosingDefPos, msg) }
+  def warnClassIf(failed: Boolean, msg: String) { if (failed && warn) c.warning(c.enclosingImpl.pos, msg) }
 
   /* `ScalaEquals.canEquals` must be called from within a `canEqual` method */
   val badCanEqualsCallSite =

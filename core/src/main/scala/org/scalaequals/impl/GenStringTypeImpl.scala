@@ -22,7 +22,8 @@
 
 package org.scalaequals.impl
 
-import scala.reflect.macros.Macro
+import scala.reflect.macros.{Context, Macro}
+import org.scalaequals.impl.EqualTypeImpl.EqualTypeMaker
 
 /** Implementation of `ScalaEquals.GenString` type macro
   *
@@ -30,26 +31,28 @@ import scala.reflect.macros.Macro
   * @version 2.0.0
   * @since 2.0.0
   */
-trait GenStringTypeImpl extends Macro {
-  import c.universe._
 
-  private lazy val locator = new Locator[c.type](c)
-  private lazy val equalTypeImpl = new EqualTypeImpl {
-    val c: GenStringTypeImpl.this.c.type = GenStringTypeImpl.this.c
+object GenStringTypeImpl {
+  def genStringTypeImpl(c: Context): c.universe.Template = new GenStringTypeMaker[c.type](c).make
+
+  private[impl] class GenStringTypeMaker[A <: Context](val c: A) extends Locator {
+    type C = A
+    import c.universe._
+
+    private lazy val equalTypeImpl = new EqualTypeMaker[c.type](c)
+    def make: Template = addGenString(c.enclosingTemplate)
+
+    def addToTemplate(template: Template): Template =
+      if (hasScalaEqualsType("GenString", template.parents)) addGenString(template) else template
+
+    private def addGenString(template: Template): Template = {
+      val Template(parents, self, body) = template
+      val filteredParents = filterScalaEqualsType("GenString", parents)
+      val newTemplate = Template(filteredParents, self, body ++ Seq(genString()))
+      equalTypeImpl.addToTemplate(newTemplate)
+    }
+
+    private def genString(): Tree =
+      q"override def toString: String = org.scalaequals.ScalaEquals.genString".asInstanceOf[DefDef]
   }
-
-  def make: Template = addGenString(c.enclosingTemplate)
-
-  def addToTemplate(template: Template): Template =
-    if (locator.hasScalaEqualsType("GenString", template.parents)) addGenString(template) else template
-
-  private def addGenString(template: Template): Template = {
-    val Template(parents, self, body) = template
-    val filteredParents = locator.filterScalaEqualsType("GenString", parents)
-    val newTemplate = Template(filteredParents, self, body ++ Seq(genString()))
-    equalTypeImpl.addToTemplate(newTemplate)
-  }
-
-  private def genString(): Tree =
-    q"override def toString: String = org.scalaequals.ScalaEquals.genString".asInstanceOf[DefDef]
 }

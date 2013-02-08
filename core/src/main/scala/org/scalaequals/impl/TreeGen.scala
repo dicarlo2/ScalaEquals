@@ -30,7 +30,7 @@ package org.scalaequals.impl
   */
 trait TreeGen {self: Locator =>
   import c.universe._
-  val tpe: Type = c.enclosingClass.symbol.asType.toType
+  val tpe: Type = c.enclosingImpl.symbol.asType.toType
 
   def mkThis = This(tpe.typeSymbol)
   def mkSuper = Super(mkThis, tpnme.EMPTY)

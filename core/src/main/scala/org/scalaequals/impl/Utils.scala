@@ -22,28 +22,13 @@
 
 package org.scalaequals.impl
 
-import scala.reflect.macros.Context
+trait Utils {self: Locator =>
+  import c.universe._
 
-/** Implementation of `ScalaEquals.canEquals` macro
-  *
-  * @author Alex DiCarlo
-  * @version 2.0.0
-  * @since 0.2.0
-  */
-private[scalaequals] object CanEqualImpl {
-  def canEquals(c: Context): c.Expr[Boolean] = new StringMaker[c.type](c).make()
-  
-  private[CanEqualImpl] class StringMaker[A <: Context](val c: A) extends Locator {
-    type C = A
-    import c.universe._
-
-    val canEqMethod = c.enclosingDef
-    abortIf(!isCanEqual(canEqMethod.symbol), badCanEqualsCallSite)
-
-    def make() = {
-      val arg = findArgument(canEqMethod)
-      val tree = mkTpeApply(mkSelect(arg, _isInstanceOf), TypeTree(tpe))
-      c.Expr[Boolean](tree)
+  def enclosingDef: Option[DefDef] =
+    try {
+      Some(c.enclosingDef)
+    } catch {
+      case _: c.EnclosureException => None
     }
-  }
 }
