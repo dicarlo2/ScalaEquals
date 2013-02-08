@@ -31,13 +31,10 @@ import scala.reflect.macros.Context
   * @since 1.1.0
   */
 private[scalaequals] object GenStringImpl {
-  def genStringImpl(c: Context): c.Expr[String] = {
-    new GenStringMaker[c.type](c).make()
-  }
+  def genStringImpl(c: Context): c.Expr[String] = new GenStringMaker[c.type](c).make()
 
-  def genStringParamsImpl(c: Context)(param: c.Expr[Any], params: c.Expr[Any]*): c.Expr[String] = {
+  def genStringParamsImpl(c: Context)(param: c.Expr[Any], params: c.Expr[Any]*): c.Expr[String] =
     new GenStringMaker[c.type](c).make((param +: params).to[List])
-  }
 
   private[GenStringImpl] class GenStringMaker[A <: Context](val c: A) extends Locator {
     type C = A
