@@ -31,53 +31,35 @@ import scala.reflect.macros.Context
   * @since 1.1.0
   */
 private[scalaequals] object GenStringImpl {
-  def genStringImpl(c: Context): c.Expr[String] = {
-    new GenStringMaker[c.type](c).make()
-  }
+  def genStringImpl(c: Context): c.Expr[String] = new GenStringMaker[c.type](c).make()
 
-  def genStringParamsImpl(c: Context)(param: c.Expr[Any], params: c.Expr[Any]*): c.Expr[String] = {
+  def genStringParamsImpl(c: Context)(param: c.Expr[Any], params: c.Expr[Any]*): c.Expr[String] =
     new GenStringMaker[c.type](c).make((param +: params).to[List])
-  }
 
-  private[GenStringImpl] class GenStringMaker[C <: Context](val c: C) {
+  private[GenStringImpl] class GenStringMaker[A <: Context](val c: A) extends Locator {
+    type C = A
     import c.universe._
 
-    val locator = new Locator[c.type](c)
-    val warn = !(c.settings contains "scala-equals-no-warn")
+    abortIf(!isToString(c.enclosingMethod.symbol), badGenStringCallSite)
 
-    def make(): c.Expr[String] = {
-      if(c.enclosingImpl.symbol.asClass.isTrait)
-        c.warning(c.enclosingImpl.pos, Warnings.genStringWithTrait)
-      makeString(locator.constructorArgs(c.enclosingImpl, c.enclosingImpl.symbol.asType.toType))
+    def make() = {
+      warnClassIf(c.enclosingClass.symbol.asClass.isTrait, warnings.genStringWithTrait)
+      makeString(findCtorArguments(c.enclosingClass, tpe))
     }
 
-    def make(params: Seq[c.Expr[Any]]): c.Expr[String] = {
-      val args = (params map {_.tree.symbol.name.toTermName}).to[List]
-      makeString(args)
-    }
+    def make(params: Seq[c.Expr[Any]]) = makeString((params map {_.tree.symbol.name.toTermName}).to[List])
 
-    def makeString(args: List[TermName]): c.Expr[String] = {
-      if (!locator.isToString(c.enclosingDef.symbol))
-        c.abort(c.enclosingDef.pos, Errors.badToStringCallSite)
-
-      val stringArgs = nestedAdd(args)
-      val className = Literal(Constant(c.enclosingImpl.symbol.name.toString + "("))
-      val tree = stringAdd(className, stringArgs)
+    def makeString(args: List[TermName]) = {
+      val stringArgs = mkNestedAdd(args)
+      val className = mkString(c.enclosingClass.symbol.name.toString + "(")
+      val tree = mkAdd(className, stringArgs)
       c.Expr[String](tree)
     }
 
-    def nestedAdd(terms: List[TermName]): Tree = terms match {
-      case Nil => Literal(Constant(")"))
-      case x :: Nil => stringAdd(Ident(x), Literal(Constant(")")))
-      case x :: xs => stringAdd(stringAdd(Ident(x), Literal(Constant(", "))), nestedAdd(xs))
+    def mkNestedAdd(terms: List[TermName]): Tree = terms match {
+      case Nil => mkString(")")
+      case x :: Nil => mkAdd(Ident(x), mkString(")"))
+      case x :: xs => mkAdd(mkAdd(Ident(x), mkString(", ")), mkNestedAdd(xs))
     }
-
-    def stringAdd(left: Tree, right: Tree): Tree =
-      Apply(
-        Select(
-          left,
-          TermName("$plus")),
-        List(
-          right))
   }
 }

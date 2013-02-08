@@ -22,28 +22,22 @@
 
 package org.scalaequals.impl
 
-import scala.reflect.macros.Context
-
-/** Implementation of `ScalaEquals.canEquals` macro
+/** Names contains all `TermName`s used by ScalaEquals
   *
   * @author Alex DiCarlo
-  * @version 2.0.0
-  * @since 0.2.0
+  * @version 1.2.0
+  * @since 1.1.1
   */
-private[scalaequals] object CanEqualImpl {
-  def canEquals(c: Context): c.Expr[Boolean] = new StringMaker[c.type](c).make()
-  
-  private[CanEqualImpl] class StringMaker[A <: Context](val c: A) extends Locator {
-    type C = A
-    import c.universe._
+private[impl] trait Names {self: Locator =>
+  import c.universe._
 
-    val canEqMethod = c.enclosingMethod
-    abortIf(!isCanEqual(canEqMethod.symbol), badCanEqualsCallSite)
-
-    def make() = {
-      val arg = findArgument(canEqMethod)
-      val tree = mkTpeApply(mkSelect(arg, _isInstanceOf), TypeTree(tpe))
-      c.Expr[Boolean](tree)
-    }
-  }
+  val _equals = newTermName("equals")
+  val _canEqual = newTermName("canEqual")
+  val _hashCode = newTermName("hashCode")
+  val _toString = newTermName("toString")
+  val _and = newTermName("$amp$amp")
+  val _plus = newTermName("$plus")
+  val _eqeq = newTermName("$eq$eq")
+  val _compareTo = newTermName("compareTo")
+  val _isInstanceOf = newTermName("isInstanceOf")
 }

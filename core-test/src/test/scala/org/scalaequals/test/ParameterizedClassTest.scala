@@ -5,7 +5,7 @@ import org.scalacheck.Gen
 
 case class ParameterizedClassArg(string: String, num: Int)
 
-class ParameterizedClassTest extends EqualsFixture[ParameterizedClass[String, Int], ParameterizedClassArg] {
+class ParameterizedClassTest extends EqualsFixture[ParameterizedClass[String, Int, AnyRef], ParameterizedClassArg] {
   def name: String = "ParameterizedClass[String]"
 
   def gen: Gen[ParameterizedClassArg] = for {
@@ -14,8 +14,8 @@ class ParameterizedClassTest extends EqualsFixture[ParameterizedClass[String, In
   } yield ParameterizedClassArg(string, num)
 
   /* Creates a T from B */
-  def create(arg: ParameterizedClassArg): ParameterizedClass[String, Int] =
-    new ParameterizedClass[String, Int](arg.string, arg.num)
+  def create(arg: ParameterizedClassArg): ParameterizedClass[String, Int, AnyRef] =
+    new ParameterizedClass[String, Int, AnyRef](arg.string, arg.num)
 
   /* Creates a String to test toString = A(arg) */
   def createToString(arg: ParameterizedClassArg): String = s"ParameterizedClass(${arg.string}, ${arg.num})"
