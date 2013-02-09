@@ -30,8 +30,8 @@ class Point(val x: Int, val y: Int, val z: Int) extends Product {
   def canEqual(other: Any): Boolean = ScalaEquals.canEquals
   override def toString: String = ScalaEquals.genString
   def productElement(n: Int): Any = ScalaEquals.productElement
-  override def productPrefix: String = ScalaEquals.productPrefix
   def productArity: Int = ScalaEquals.productArity
+  override def productPrefix: String = ScalaEquals.productPrefix
 }
 
 object Color extends Enumeration {
