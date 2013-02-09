@@ -50,4 +50,6 @@ trait TreeGen {self: Locator =>
 
   def mkString(string: String) = Literal(Constant(string))
   def mkToString(term: Name) = mkApply(mkSelect(term, _toString))
+
+  def mkNew(tpe: Type) = Select(New(TypeTree(tpe)), nme.CONSTRUCTOR)
 }

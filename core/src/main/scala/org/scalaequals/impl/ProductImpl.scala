@@ -36,7 +36,7 @@ private[scalaequals] object ProductImpl {
     type C = A
     import c.universe._
 
-    val productElementMethod = c.enclosingMethod
+    val productElementMethod = c.enclosingDef
 
     abortIf(!isProductElement(productElementMethod.symbol), badProductElementCallSite)
 
@@ -47,9 +47,9 @@ private[scalaequals] object ProductImpl {
       c.Expr[Any](mkMatch(arg, cases :+ mkDefault(arg)))
     }
 
+    def mkThrow(arg: Name) = Throw(mkApply(mkNew(typeOf[IndexOutOfBoundsException]), mkToString(arg)))
     def mkElementCase(n: Int, member: TermName) = CaseDef(Literal(Constant(n)), EmptyTree, mkThisSelect(member))
-    def mkDefault(arg: Name) =
-      CaseDef(Ident(nme.WILDCARD), EmptyTree, Throw(typeOf[IndexOutOfBoundsException], mkToString(arg)))
+    def mkDefault(arg: Name) = CaseDef(Ident(nme.WILDCARD), EmptyTree, mkThrow(arg))
     def mkMatch(arg: Name, cases: List[CaseDef]) = Match(Ident(arg), cases)
   }
 
@@ -57,18 +57,18 @@ private[scalaequals] object ProductImpl {
     type C = A
     import c.universe._
 
-    val productPrefixMethod = c.enclosingMethod
+    val productPrefixMethod = c.enclosingDef
 
     abortIf(!isProductPrefix(productPrefixMethod.symbol), badProductPrefixCallSite)
 
-    def make = c.Expr[String](Literal(Constant(c.enclosingClass.symbol.name.decoded)))
+    def make = c.Expr[String](Literal(Constant(c.enclosingImpl.symbol.name.decoded)))
   }
 
   private[ProductImpl] class ProductArityMaker[A <: Context](val c: A) extends Locator {
     type C = A
     import c.universe._
 
-    val productArityMethod = c.enclosingMethod
+    val productArityMethod = c.enclosingDef
 
     abortIf(!isProductArity(productArityMethod.symbol), badProductArityCallSite)
 
