@@ -44,7 +44,7 @@ private[scalaequals] object GenStringImpl {
 
     def make() = {
       warnClassIf(c.enclosingClass.symbol.asClass.isTrait, warnings.genStringWithTrait)
-      makeString(findCtorArguments(c.enclosingClass, tpe))
+      makeString(constrArgs(tpe) map {_.name.toTermName})
     }
 
     def make(params: Seq[c.Expr[Any]]) = makeString((params map {_.tree.symbol.name.toTermName}).to[List])

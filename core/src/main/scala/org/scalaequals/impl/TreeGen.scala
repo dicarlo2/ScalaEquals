@@ -39,6 +39,7 @@ trait TreeGen {self: Locator =>
   def mkSelect(fst: Name, snd: Name, rest: Name*) =
     (rest foldLeft Select(Ident(fst), snd)){case (curr, name) => Select(curr, name)}
   def mkThisSelect(member: Symbol) = Select(mkThis, member)
+  def mkThisSelect(member: Name) = Select(mkThis, member)
   def mkSuperSelect(member: Name) = Select(mkSuper, member)
 
   def mkApply(left: Tree, right: Tree) = Apply(left, List(right))
