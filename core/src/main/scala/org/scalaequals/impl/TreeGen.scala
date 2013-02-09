@@ -42,9 +42,8 @@ trait TreeGen {self: Locator =>
   def mkThisSelect(member: Name) = Select(mkThis, member)
   def mkSuperSelect(member: Name) = Select(mkSuper, member)
 
-  def mkApply(left: Tree, right: Tree) = Apply(left, List(right))
-  def mkApply(left: Tree) = Apply(left, List())
-  def mkTpeApply(left: Tree, right: Tree) = TypeApply(left, List(right))
+  def mkApply(left: Tree, args: Tree*) = Apply(left, args.to[List])
+  def mkTpeApply(left: Tree, args: Tree*) = TypeApply(left, args.to[List])
 
   def mkAnd(left: Tree, right: Tree) = mkApply(Select(left, _and), right)
   def mkAdd(left: Tree, right: Tree) = mkApply(Select(left, _plus), right)

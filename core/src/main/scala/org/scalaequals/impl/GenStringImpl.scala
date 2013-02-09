@@ -51,7 +51,7 @@ private[scalaequals] object GenStringImpl {
 
     def makeString(args: List[TermName]) = {
       val stringArgs = mkNestedAdd(args)
-      val className = mkString(c.enclosingClass.symbol.name.toString + "(")
+      val className = mkString(c.enclosingClass.symbol.name.decoded + "(")
       val tree = mkAdd(className, stringArgs)
       c.Expr[String](tree)
     }
