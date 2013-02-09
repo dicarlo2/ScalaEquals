@@ -54,7 +54,7 @@ private[scalaequals] object EqualsImpl {
 
     def make() = {
       warnClassIf(c.enclosingClass.symbol.asClass.isTrait, warnings.equalWithTrait)
-      createCondition(constrValsNotInherited(tpe))
+      makeIt(constrValsNotInherited(tpe))
     }
 
     def makeAll() = makeIt(valsNotInherited(tpe))

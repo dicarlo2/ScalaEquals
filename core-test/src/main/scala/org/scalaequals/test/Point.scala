@@ -29,6 +29,7 @@ class Point(val x: Int, val y: Int, val z: Int) {
   override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
   def canEqual(other: Any): Boolean = ScalaEquals.canEquals
   override def toString: String = ScalaEquals.genString
+  def productElement(n: Int): Any = ScalaEquals.productElement
 }
 
 object Color extends Enumeration {

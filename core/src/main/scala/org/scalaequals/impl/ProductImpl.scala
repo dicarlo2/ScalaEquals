@@ -22,26 +22,30 @@
 
 package org.scalaequals.impl
 
-/** Names contains all `TermName`s used by ScalaEquals
-  *
-  * @author Alex DiCarlo
-  * @version 1.2.0
-  * @since 1.1.1
-  */
-private[impl] trait Names {self: Locator =>
-  import c.universe._
+import scala.reflect.macros.Context
+import scala.language.existentials
 
-  val _equals = newTermName("equals")
-  val _canEqual = newTermName("canEqual")
-  val _hashCode = newTermName("hashCode")
-  val _toString = newTermName("toString")
-  val _and = newTermName("$amp$amp")
-  val _plus = newTermName("$plus")
-  val _eqeq = newTermName("$eq$eq")
-  val _compareTo = newTermName("compareTo")
-  val _isInstanceOf = newTermName("isInstanceOf")
-  val _productArity = newTermName("productArity")
-  val _productElement = newTermName("productElement")
-  val _productIterator = newTermName("productIterator")
-  val _productPrefix = newTermName("productPrefix")
+private [scalaequals] object ProductImpl {
+  def productElementImpl(c: Context) = new ProductElementMaker[c.type](c).make
+
+  private[ProductImpl] class ProductElementMaker[A <: Context](val c: A) extends Locator {
+    type C = A
+    import c.universe._
+
+    val productElementMethod = c.enclosingMethod
+
+    abortIf(!isProductElement(productElementMethod.symbol), badProductElementCallSite)
+
+    def make = {
+      val constrArgs = constrValsNotInherited(tpe)
+      val cases = constrArgs.zipWithIndex map {case (constrArg, idx) => mkElementCase(idx, constrArg.name.toTermName)}
+      val arg = argN(productElementMethod, 0).name
+      c.Expr[Any](mkMatch(arg, cases :+ mkDefault(arg)))
+    }
+
+    def mkElementCase(n: Int, member: TermName) = CaseDef(Literal(Constant(n)), EmptyTree, mkThisSelect(member))
+    def mkDefault(arg: Name) =
+      CaseDef(Ident(nme.WILDCARD), EmptyTree, Throw(typeOf[IndexOutOfBoundsException], mkToString(arg)))
+    def mkMatch(arg: Name, cases: List[CaseDef]) = Match(Ident(arg), cases)
+  }
 }

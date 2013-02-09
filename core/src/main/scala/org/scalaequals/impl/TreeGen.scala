@@ -50,4 +50,5 @@ trait TreeGen {self: Locator =>
   def mkAdd(left: Tree, right: Tree) = mkApply(Select(left, _plus), right)
 
   def mkString(string: String) = Literal(Constant(string))
+  def mkToString(term: Name) = mkApply(mkSelect(term, _toString))
 }
