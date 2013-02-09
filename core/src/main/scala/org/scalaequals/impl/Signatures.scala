@@ -32,11 +32,18 @@ private[impl] trait Signatures {self: Locator =>
   import c.universe._
   import definitions._
 
+  private val EqualsTpe = typeOf[scala.Equals]
+  private val LazyHashCodeTpe = typeOf[LazyHashCode]
+  private val ProductTpe = typeOf[scala.Product]
+
   val Any_equals = AnyTpe.member(_equals)
   val Any_hashCode = AnyTpe.member(_hashCode)
   val Any_toString = AnyTpe.member(_toString)
-  val Equals_canEqual = typeOf[Equals].member(_canEqual)
-  val LazyHashCode_hashCode = typeOf[LazyHashCode].member(_hashCode)
+  val Equals_canEqual = EqualsTpe.member(_canEqual)
+  val LazyHashCode_hashCode = LazyHashCodeTpe.member(_hashCode)
+  val Product_productArity = ProductTpe.member(_productArity)
+  val Product_productElement = ProductTpe.member(_productElement)
+  val Product_productPrefix = ProductTpe.member(_productPrefix)
 
   private[Signatures] trait LazyHashCode {
     override lazy val hashCode: Int = 10

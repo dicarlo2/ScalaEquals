@@ -39,14 +39,15 @@ trait TreeGen {self: Locator =>
   def mkSelect(fst: Name, snd: Name, rest: Name*) =
     (rest foldLeft Select(Ident(fst), snd)){case (curr, name) => Select(curr, name)}
   def mkThisSelect(member: Symbol) = Select(mkThis, member)
+  def mkThisSelect(member: Name) = Select(mkThis, member)
   def mkSuperSelect(member: Name) = Select(mkSuper, member)
 
-  def mkApply(left: Tree, right: Tree) = Apply(left, List(right))
-  def mkApply(left: Tree) = Apply(left, List())
-  def mkTpeApply(left: Tree, right: Tree) = TypeApply(left, List(right))
+  def mkApply(left: Tree, args: Tree*) = Apply(left, args.to[List])
+  def mkTpeApply(left: Tree, args: Tree*) = TypeApply(left, args.to[List])
 
   def mkAnd(left: Tree, right: Tree) = mkApply(Select(left, _and), right)
   def mkAdd(left: Tree, right: Tree) = mkApply(Select(left, _plus), right)
 
   def mkString(string: String) = Literal(Constant(string))
+  def mkToString(term: Name) = mkApply(mkSelect(term, _toString))
 }

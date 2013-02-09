@@ -54,7 +54,7 @@ private[scalaequals] object EqualsImpl {
 
     def make() = {
       warnClassIf(c.enclosingImpl.symbol.asClass.isTrait, warnings.equalWithTrait)
-      makeIt(constructorValsNotInherited(tpe))
+      makeIt(constrValsNotInherited(tpe))
     }
 
     def makeAll() = makeIt(valsNotInherited(tpe))
@@ -80,7 +80,7 @@ private[scalaequals] object EqualsImpl {
       val withCanEqual = canEqMethod map {_ => mkCanEqual(that) :: withSuper} getOrElse withSuper
       val and = withCanEqual reduce {(a, b) => mkAnd(a, b)}
 
-      val arg = findArgument(eqMethod)
+      val arg = argN(eqMethod, 0).name
 
       c.Expr[Boolean](mkMatch(arg, and))
     }
@@ -91,12 +91,14 @@ private[scalaequals] object EqualsImpl {
     def mkCanEqual(that: Name) = mkApply(mkSelect(that, _canEqual), mkThis)
     def mkSuperEquals(that: Name) = mkApply(Select(mkSuper, _equals), Ident(that))
     def mkTermEquals(term: Symbol) = {
-      def isFloatOrDouble(term: Symbol) =
-        term.asMethod.returnType =:= DoubleTpe || term.asMethod.returnType =:= FloatTpe
-      val thatTerm = mkSelect(that, term)
-      val thisTerm = mkThisSelect(term)
+      def isFloatOrDouble(term: Symbol) = {
+        if (term.isMethod) term.asMethod.returnType =:= DoubleTpe || term.asMethod.returnType =:= FloatTpe
+        else term.typeSignature =:= DoubleTpe || term.typeSignature =:= FloatTpe
+      }
+      val thatTerm = mkSelect(that, term.name)
+      val thisTerm = mkThisSelect(term.name)
       if (isFloatOrDouble(term)) mkEquals(mkCompareTo(thatTerm, thisTerm), Literal(Constant(0)))
-      else mkEquals(mkSelect(that, term), mkThisSelect(term))
+      else mkEquals(thatTerm, thisTerm)
     }
 
     def mkBind = Bind(that, Typed(Ident(nme.WILDCARD), TypeTree(tpe)))

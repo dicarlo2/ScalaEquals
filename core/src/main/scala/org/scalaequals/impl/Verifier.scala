@@ -39,6 +39,9 @@ trait Verifier {self: Locator =>
     symbol.typeSignature =:= LazyHashCode_hashCode.typeSignature && symbol.allOverriddenSymbols.contains(Any_hashCode)
   def isCanEqual(symbol: Symbol) = symbol.typeSignature =:= Equals_canEqual.typeSignature && symbol.name == _canEqual
   def isToString(symbol: Symbol) = symbol.allOverriddenSymbols.contains(Any_toString)
+  def isProductArity(symbol: Symbol) = symbol.typeSignature =:= Product_productArity.typeSignature
+  def isProductElement(symbol: Symbol) = symbol.typeSignature =:= Product_productElement.typeSignature
+  def isProductPrefix(symbol: Symbol) = symbol.typeSignature =:= Product_productPrefix.typeSignature
 
   def isEqualsOverride(term: Symbol) = term match {
     case eq: TermSymbol => eq.alternatives map {_.asTerm} exists {_.allOverriddenSymbols.contains(Any_equals)}

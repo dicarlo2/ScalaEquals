@@ -44,14 +44,14 @@ private[scalaequals] object GenStringImpl {
 
     def make() = {
       warnClassIf(c.enclosingImpl.symbol.asClass.isTrait, warnings.genStringWithTrait)
-      makeString(findCtorArguments(c.enclosingImpl, tpe))
+      makeString(constrArgs(tpe) map {_.name.toTermName})
     }
 
     def make(params: Seq[c.Expr[Any]]) = makeString((params map {_.tree.symbol.name.toTermName}).to[List])
 
     def makeString(args: List[TermName]) = {
       val stringArgs = mkNestedAdd(args)
-      val className = mkString(c.enclosingImpl.symbol.name.toString + "(")
+      val className = mkString(c.enclosingImpl.symbol.name.decoded + "(")
       val tree = mkAdd(className, stringArgs)
       c.Expr[String](tree)
     }

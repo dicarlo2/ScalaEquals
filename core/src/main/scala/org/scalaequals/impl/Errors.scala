@@ -70,6 +70,21 @@ trait Errors {self: Locator =>
   val badLazyHashVals: String =
     "Lazy hashCode must use only vals otherwise hashCode could change, and equals would be defined incorrectly."
 
+  /* `ScalaEquals.productElement` must be called from within a `productElement` method */
+  val badProductElementCallSite =
+    "ScalaEquals.productElement must be called from within a productElement method. " +
+      "Check that your method signature matches \"def productElement(n: Int): Any\""
+
+  /* `ScalaEquals.productArity` must be called from within a `productArity` method */
+  val badProductArityCallSite =
+    "ScalaEquals.productArity must be called from within a productArity method. " +
+      "Check that your method signature matches \"def productArity: Int\""
+
+  /* `ScalaEquals.productPrefix` must be called from within a `productPrefix` method */
+  val badProductPrefixCallSite =
+    "ScalaEquals.productPrefix must be called from within a productPrefix method. " +
+      "Check that your method signature matches \"override def productPrefix: String\""
+
   object warnings {
     /* `ScalaEquals.equal` will only expand to a `super.equals(that)` call for traits. */
     val equalWithTrait =
