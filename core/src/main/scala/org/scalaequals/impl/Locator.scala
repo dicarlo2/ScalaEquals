@@ -35,12 +35,17 @@ private[impl] trait Locator extends Names with Signatures with Verifier with Tre
   val c: C
   import c.universe._
 
-  def constructorValsNotInherited(tpe: Type) = valsNotInherited(tpe) filter {_.isParamAccessor}
+  def constrArgs(tpe: Type) = tpe.member(nme.CONSTRUCTOR).asMethod.paramss.head
+
+  def constrValsNotInherited(tpe: Type) = {
+    val args = constrArgs(tpe)
+    valsNotInherited(tpe) filter {t => args exists {_.name == t.name}}
+  }
 
   def valsNotInherited(tpe: Type) = {
     def isVal(term: TermSymbol) = term.isStable && term.isMethod
     def isInherited(term: Symbol) = term.owner != tpe.typeSymbol || term.isOverride
-    (tpe.members filter {_.isTerm} map {_.asTerm} filter {t => isVal(t) && !isInherited(t)}).toList
+    (tpe.members.sorted collect {case t: TermSymbol if isVal(t) && !isInherited(t) => t}).to[List]
   }
 
   def findCanEqual(tpe: Type) = {
@@ -55,17 +60,5 @@ private[impl] trait Locator extends Names with Signatures with Verifier with Tre
 
   def findEquals(tree: Tree) = tree filter {_.isDef} find {t => isEqualsOverride(t.symbol)}
 
-  def findArgument(tree: Tree) = (tree collect {
-    case DefDef(_, _, _, List(List(ValDef(_, termName, _, _))), _, _) => termName
-  }).head
-
-  def findCtorArguments(tree: Tree, tpe: Type) = (tree collect {
-    case ClassDef(_, name, _, Template(_, _, body)) if name == tpe.typeSymbol.name.toTypeName =>
-      body takeWhile {
-        case x: ValDef => true
-        case _ => false
-      } map {
-        case ValDef(_, termName, _, _) => termName
-      }
-  }).head
+  def argN(tree: Tree, n: Int) = tree.symbol.asMethod.paramss.head(n)
 }

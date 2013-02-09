@@ -41,7 +41,7 @@ private[scalaequals] object CanEqualImpl {
     abortIf(!isCanEqual(canEqMethod.symbol), badCanEqualsCallSite)
 
     def make() = {
-      val arg = findArgument(canEqMethod)
+      val arg = argN(canEqMethod, 0).name
       val tree = mkTpeApply(mkSelect(arg, _isInstanceOf), TypeTree(tpe))
       c.Expr[Boolean](tree)
     }
