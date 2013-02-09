@@ -200,4 +200,6 @@ object ScalaEquals {
   def genString(param: Any, params: Any*): String = macro GenStringImpl.genStringParamsImpl
 
   def productElement: Any = macro ProductImpl.productElementImpl
+
+  def productPrefix: String = macro ProductImpl.productPrefixImpl
 }

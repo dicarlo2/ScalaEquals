@@ -28,6 +28,8 @@ import scala.language.existentials
 private [scalaequals] object ProductImpl {
   def productElementImpl(c: Context) = new ProductElementMaker[c.type](c).make
 
+  def productPrefixImpl(c: Context) = new ProductPrefixMaker[c.type](c).make
+
   private[ProductImpl] class ProductElementMaker[A <: Context](val c: A) extends Locator {
     type C = A
     import c.universe._
@@ -47,5 +49,16 @@ private [scalaequals] object ProductImpl {
     def mkDefault(arg: Name) =
       CaseDef(Ident(nme.WILDCARD), EmptyTree, Throw(typeOf[IndexOutOfBoundsException], mkToString(arg)))
     def mkMatch(arg: Name, cases: List[CaseDef]) = Match(Ident(arg), cases)
+  }
+
+  private[ProductImpl] class ProductPrefixMaker[A <: Context](val c: A) extends Locator {
+    type C = A
+    import c.universe._
+
+    val productPrefixMethod = c.enclosingMethod
+
+    abortIf(!isProductPrefix(productPrefixMethod.symbol), badProductPrefixCallSite)
+
+    def make = c.Expr[String](Literal(Constant(c.enclosingClass.symbol.name.decoded)))
   }
 }
