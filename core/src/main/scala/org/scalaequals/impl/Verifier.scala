@@ -41,7 +41,6 @@ trait Verifier {self: Locator =>
   def isToString(symbol: Symbol) = symbol.allOverriddenSymbols.contains(Any_toString)
   def isProductArity(symbol: Symbol) = symbol.typeSignature =:= Product_productArity.typeSignature
   def isProductElement(symbol: Symbol) = symbol.typeSignature =:= Product_productElement.typeSignature
-  def isProductIterator(symbol: Symbol) = symbol.typeSignature =:= Product_iterator.typeSignature
   def isProductPrefix(symbol: Symbol) = symbol.typeSignature =:= Product_productPrefix.typeSignature
 
   def isEqualsOverride(term: Symbol) = term match {

@@ -43,7 +43,6 @@ private[impl] trait Signatures {self: Locator =>
   val LazyHashCode_hashCode = LazyHashCodeTpe.member(_hashCode)
   val Product_productArity = ProductTpe.member(_productArity)
   val Product_productElement = ProductTpe.member(_productElement)
-  val Product_iterator = ProductTpe.member(_productIterator)
   val Product_productPrefix = ProductTpe.member(_productPrefix)
 
   private[Signatures] trait LazyHashCode {

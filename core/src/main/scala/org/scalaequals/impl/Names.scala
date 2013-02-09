@@ -42,6 +42,5 @@ private[impl] trait Names {self: Locator =>
   val _isInstanceOf = newTermName("isInstanceOf")
   val _productArity = newTermName("productArity")
   val _productElement = newTermName("productElement")
-  val _productIterator = newTermName("productIterator")
   val _productPrefix = newTermName("productPrefix")
 }
