@@ -1,0 +1,46 @@
+/*
+ * Copyright (c) 2013 Alex DiCarlo
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+package org.scalaequals.impl
+
+import scala.reflect.macros.Context
+
+object TypeMacros {
+  def equalTypeImpl(c: Context): c.universe.Template = new TypeMaker[c.type](c).make
+
+  def equalTypeImplAll(c: Context): c.universe.Template = new TypeMaker[c.type](c).make
+
+  def genStringTypeImpl(c: Context): c.universe.Template = new TypeMaker[c.type](c).make
+
+  def productTypeImpl(c: Context): c.universe.Template = new TypeMaker[c.type](c).make
+
+  private[impl] class TypeMaker[A <: Context](val c: A)
+    extends Locator with EqualTypeMaker with GenStringTypeMaker with ProductTypeMaker {
+    type C = A
+
+    def make = {
+      val t1 = addEqualType(c.enclosingTemplate)
+      val t2 = addGenStringType(t1)
+      addProductType(t2)
+    }
+  }
+}

@@ -22,14 +22,10 @@
 
 package org.scalaequals.test
 
-import org.scalaequals.ScalaEquals.{Equal, GenString}
+import org.scalaequals.ScalaEquals.{Equal, GenString, Prodct}
 import org.scalaequals.ScalaEquals
 
-class Point(val x: Int, val y: Int, val z: Int) extends Equal with GenString with Product {
-  def productElement(n: Int): Any = ScalaEquals.productElement
-  def productArity: Int = ScalaEquals.productArity
-  override def productPrefix: String = ScalaEquals.productPrefix
-}
+class Point(val x: Int, val y: Int, val z: Int) extends Equal with GenString with Prodct
 
 object Color extends Enumeration {
   val Red, Orange, Yellow, Green, Blue, Indigo, Violet = Value
