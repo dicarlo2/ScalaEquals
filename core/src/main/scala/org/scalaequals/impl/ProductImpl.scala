@@ -25,8 +25,10 @@ package org.scalaequals.impl
 import scala.reflect.macros.Context
 import scala.language.existentials
 
-private [scalaequals] object ProductImpl {
+private[scalaequals] object ProductImpl {
   def productElementImpl(c: Context) = new ProductElementMaker[c.type](c).make
+
+  def productArityImpl(c: Context) = new ProductArityMaker[c.type](c).make
 
   def productPrefixImpl(c: Context) = new ProductPrefixMaker[c.type](c).make
 
@@ -60,5 +62,16 @@ private [scalaequals] object ProductImpl {
     abortIf(!isProductPrefix(productPrefixMethod.symbol), badProductPrefixCallSite)
 
     def make = c.Expr[String](Literal(Constant(c.enclosingClass.symbol.name.decoded)))
+  }
+
+  private[ProductImpl] class ProductArityMaker[A <: Context](val c: A) extends Locator {
+    type C = A
+    import c.universe._
+
+    val productArityMethod = c.enclosingMethod
+
+    abortIf(!isProductArity(productArityMethod.symbol), badProductArityCallSite)
+
+    def make = c.Expr[Int](Literal(Constant(constrValsNotInherited(tpe).size)))
   }
 }

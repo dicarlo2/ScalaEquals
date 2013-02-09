@@ -202,4 +202,6 @@ object ScalaEquals {
   def productElement: Any = macro ProductImpl.productElementImpl
 
   def productPrefix: String = macro ProductImpl.productPrefixImpl
+
+  def productArity: Int = macro ProductImpl.productArityImpl
 }

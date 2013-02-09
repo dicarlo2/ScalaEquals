@@ -74,6 +74,11 @@ trait Errors {self: Locator =>
     "ScalaEquals.productElement must be called from within a productElement method. " +
       "Check that your method signature matches \"override def productElement(n: Int): Any\""
 
+  /* `ScalaEquals.productArity` must be called from within a `productArity` method */
+  val badProductArityCallSite =
+    "ScalaEquals.productArity must be called from within a productArity method. " +
+      "Check that your method signature matches \"override def productArity: Int\""
+
   /* `ScalaEquals.productPrefix` must be called from within a `productPrefix` method */
   val badProductPrefixCallSite =
     "ScalaEquals.productPrefix must be called from within a productPrefix method. " +
