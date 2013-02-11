@@ -205,11 +205,15 @@ object ScalaEquals {
 
   def productArity: Int = macro ProductImpl.productArityImpl
 
-  type Equal = macro TypeMacros.equalTypeImpl
+  type Equal = macro TypeMacros.impl
 
-  type EqualAllVals = macro TypeMacros.equalTypeImplAll
+  type EqualAllVals = macro TypeMacros.impl
 
-  type GenString = macro TypeMacros.genStringTypeImpl
+  type GenString = macro TypeMacros.impl
 
-  type Prodct = macro TypeMacros.productTypeImpl
+  type Prodct = macro TypeMacros.impl
+
+  type Copy = macro TypeMacros.impl
+
+  type CopyArg(list: Int)(idx: Int) = macro CopyArgMacro.argImpl
 }

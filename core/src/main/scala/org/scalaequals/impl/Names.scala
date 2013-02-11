@@ -43,4 +43,6 @@ private[impl] trait Names {self: Locator =>
   val _productArity = TermName("productArity")
   val _productElement = TermName("productElement")
   val _productPrefix = TermName("productPrefix")
+  val _constructor = TermName("<init>")
+  val _mixinConstructor = TermName("$init$")
 }

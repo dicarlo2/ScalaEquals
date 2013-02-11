@@ -22,8 +22,14 @@
 
 package org.scalaequals.test
 
-import org.scalaequals.ScalaEquals.{Equal, GenString, Prodct}
+import org.scalaequals.ScalaEquals.{Equal, GenString, Prodct, Copy}
 import org.scalaequals.ScalaEquals
+
+class A {
+  class C {}
+  trait D {}
+  class B(x: C)(y: D) extends A with Copy
+}
 
 class Point(val x: Int, val y: Int, val z: Int) extends Equal with GenString with Prodct
 

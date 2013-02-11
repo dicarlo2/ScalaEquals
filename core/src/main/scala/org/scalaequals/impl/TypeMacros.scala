@@ -25,22 +25,20 @@ package org.scalaequals.impl
 import scala.reflect.macros.Context
 
 object TypeMacros {
-  def equalTypeImpl(c: Context): c.universe.Template = new TypeMaker[c.type](c).make
+  def impl(c: Context): c.universe.Template = new TypeMaker[c.type](c).make
 
-  def equalTypeImplAll(c: Context): c.universe.Template = new TypeMaker[c.type](c).make
-
-  def genStringTypeImpl(c: Context): c.universe.Template = new TypeMaker[c.type](c).make
-
-  def productTypeImpl(c: Context): c.universe.Template = new TypeMaker[c.type](c).make
-
-  private[impl] class TypeMaker[A <: Context](val c: A)
-    extends Locator with EqualTypeMaker with GenStringTypeMaker with ProductTypeMaker {
+  private[impl] class TypeMaker[A <: Context](val c: A) extends Locator with
+                                                                EqualTypeMaker with
+                                                                GenStringTypeMaker with
+                                                                ProductTypeMaker with
+                                                                CopyTypeMaker {
     type C = A
 
     def make = {
       val t1 = addEqualType(c.enclosingTemplate)
       val t2 = addGenStringType(t1)
-      addProductType(t2)
+      val t3 = addProductType(t2)
+      addCopyType(t3)
     }
   }
 }

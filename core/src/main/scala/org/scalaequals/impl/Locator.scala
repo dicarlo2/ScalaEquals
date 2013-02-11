@@ -30,7 +30,7 @@ import scala.reflect.macros.Context
   * @version 2.0.0
   * @since 1.0.1
   */
-private[impl] trait Locator extends Utils with Names with Signatures with Verifier with TreeGen with Errors {
+private[impl] trait Locator extends Utils with Names with Signatures with Verifier with TreeGen with Errors with Debug {
   type C <: Context
   val c: C
   import c.universe._

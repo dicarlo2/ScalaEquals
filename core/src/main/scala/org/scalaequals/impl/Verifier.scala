@@ -60,4 +60,6 @@ trait Verifier {self: Locator =>
     ownsCanEqual(tpe) || ((eqMethod.symbol.isFinal || tpe.typeSymbol.isFinal) && !hasSuperOverridingEquals(tpe))
 
   def isVal(term: Symbol) = term.isTerm && term.asTerm.isStable && term.isMethod
+
+  def isConstructorName(name: Name) = name == _constructor || name == _mixinConstructor
 }
