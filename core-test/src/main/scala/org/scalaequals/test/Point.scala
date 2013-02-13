@@ -24,14 +24,11 @@ package org.scalaequals.test
 
 import org.scalaequals.{ScalaEqualsExtend, ScalaEquals}
 
-class Point(val x: Int, val y: Int, val z: Int) extends Product {
+class Point(val x: Int, val y: Int, val z: Int) {
   override def hashCode: Int = ScalaEqualsExtend.hash(Hasher.testHash)
   override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
   def canEqual(other: Any): Boolean = ScalaEquals.canEquals
   override def toString: String = ScalaEquals.genString
-  def productElement(n: Int): Any = ScalaEquals.productElement
-  def productArity: Int = ScalaEquals.productArity
-  override def productPrefix: String = ScalaEquals.productPrefix
 }
 
 object Color extends Enumeration {

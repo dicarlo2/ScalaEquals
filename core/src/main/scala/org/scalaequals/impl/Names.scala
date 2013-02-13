@@ -40,7 +40,4 @@ private[impl] trait Names {self: Locator =>
   val _eqeq = newTermName("$eq$eq")
   val _compareTo = newTermName("compareTo")
   val _isInstanceOf = newTermName("isInstanceOf")
-  val _productArity = newTermName("productArity")
-  val _productElement = newTermName("productElement")
-  val _productPrefix = newTermName("productPrefix")
 }

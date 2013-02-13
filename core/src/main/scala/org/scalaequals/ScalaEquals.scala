@@ -199,10 +199,4 @@ object ScalaEquals {
    * @return "ClassName(param1, param2, ...)"
    */
   def genString(param: Any, params: Any*): String = macro GenStringImpl.genStringParamsImpl
-
-  def productElement: Any = macro ProductImpl.productElementImpl
-
-  def productPrefix: String = macro ProductImpl.productPrefixImpl
-
-  def productArity: Int = macro ProductImpl.productArityImpl
 }

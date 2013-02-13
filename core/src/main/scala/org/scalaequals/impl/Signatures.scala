@@ -41,9 +41,6 @@ private[impl] trait Signatures {self: Locator =>
   val Any_toString = AnyTpe.member(_toString)
   val Equals_canEqual = EqualsTpe.member(_canEqual)
   val LazyHashCode_hashCode = LazyHashCodeTpe.member(_hashCode)
-  val Product_productArity = ProductTpe.member(_productArity)
-  val Product_productElement = ProductTpe.member(_productElement)
-  val Product_productPrefix = ProductTpe.member(_productPrefix)
 
   private[Signatures] trait LazyHashCode {
     override lazy val hashCode: Int = 10
