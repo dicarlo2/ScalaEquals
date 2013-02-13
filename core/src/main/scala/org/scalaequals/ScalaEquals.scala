@@ -24,6 +24,7 @@ package org.scalaequals
 
 import org.scalaequals.impl._
 import scala.language.experimental.macros
+import scala.util.hashing.MurmurHash3
 
 /** Entry point for ScalaEquals
   *
@@ -167,6 +168,17 @@ object ScalaEquals {
    * @return hashCode generated from fields used in `equals`
    */
   def hash: Int = macro HashCodeImpl.hash
+
+  /**
+   * Looks up the elements tested in `equals` (including `super.equals`) and uses them
+   * in `hashFunction(List(elements))`. Works with all 3 forms of `equal`. Does not
+   * work with custom `equals` implementations, one of `ScalaEquals.equal`,
+   * `ScalaEquals.equal(params)`, or `ScalaEquals.equalAllVals` must be used
+   *
+   * @param hashFunction to use to produce a hashCode for the elements used in `equals`
+   * @return hashCode generated from fields used in `equals`
+   */
+  def hash(hashFunction: Seq[Any] => Int): Int = macro HashCodeImpl.customHash
 
   /**
    * Simple macro that expands to the following:

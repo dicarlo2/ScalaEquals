@@ -32,7 +32,11 @@ import scala.language.existentials
   * @since 0.2.0
   */
 private[scalaequals] object HashCodeImpl {
-  def hash(c: Context) = new HashMaker[c.type](c, c.enclosingMethod == null).make()
+  def hash(c: Context) =
+    new HashMaker[c.type](c, c.enclosingMethod == null).make()
+
+  def customHash(c: Context)(hashFunction: c.Expr[Seq[Any] => Int]) =
+    new HashMaker[c.type](c, c.enclosingMethod == null).make(hashFunction)
 
   private[HashCodeImpl] class HashMaker[A <: Context](val c: A, isLazy: Boolean) extends Locator {
     type C = A
@@ -41,11 +45,11 @@ private[scalaequals] object HashCodeImpl {
     abortIf(!isLazy && !isHashCode(c.enclosingMethod.symbol), badHashCallSite)
     abortIf(isLazy && findLazyHash(tpe).isEmpty, badHashCallSite)
 
-    def make() = {
+    def make(f: c.Expr[Seq[Any] => Int] = c.Expr[Seq[Any] => Int](mkSeqHash)) = {
       val payload = extractPayload()
       val values = tpe.members filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
       val terms = (values map {t => Select(This(tpnme.EMPTY), t)}).toList
-      val hash = if (payload.superHashCode) createHash(mkSuperHashCode :: terms) else createHash(terms)
+      val hash = if (payload.superHashCode) createHash(f, mkSuperHashCode :: terms) else createHash(f, terms)
 
       c.Expr[Int](hash)
     }
@@ -68,6 +72,7 @@ private[scalaequals] object HashCodeImpl {
       newTermName("MurmurHash3"), newTermName("seqHash"))
     def mkList = mkSelect(newTermName("scala"), newTermName("collection"), newTermName("immutable"),
       newTermName("List"), newTermName("apply"))
-    def createHash(terms: List[Tree]) = mkApply(mkSeqHash, Apply(mkList, terms))
+    def createHash(hashFunction: c.Expr[Seq[Any] => Int], terms: List[Tree]) =
+      mkApply(hashFunction.tree, Apply(mkList, terms))
   }
 }
