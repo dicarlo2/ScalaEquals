@@ -25,7 +25,7 @@ package org.scalaequals.test
 import org.scalaequals.ScalaEquals
 
 class Point(val x: Int, val y: Int, val z: Int) extends Product {
-  override def hashCode: Int = ScalaEquals.hash
+  override def hashCode: Int = ScalaEquals.hash(Hasher.testHash)
   override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
   def canEqual(other: Any): Boolean = ScalaEquals.canEquals
   override def toString: String = ScalaEquals.genString
@@ -40,14 +40,14 @@ object Color extends Enumeration {
 
 class ColoredPoint(x: Int, y: Int, z: Int, val color: Color.Value) extends Point(x, y, z) {
   override def equals(other: Any): Boolean = ScalaEquals.equal
-  override def hashCode: Int = ScalaEquals.hash
+  override def hashCode: Int = ScalaEquals.hash(Hasher.testHash)
   override def canEqual(othr: Any): Boolean = ScalaEquals.canEquals
   override def toString: String = ScalaEquals.genString
 }
 
 class FourDColoredPoint(val w: Int, x: Int, y: Int, z: Int, color: Color.Value) extends ColoredPoint(x, y, z, color) {
   override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
-  override def hashCode: Int = ScalaEquals.hash
+  override def hashCode: Int = ScalaEquals.hash(Hasher.testHash)
   override def canEqual(a: Any): Boolean = ScalaEquals.canEquals
   override def toString: String = ScalaEquals.genString
 }
