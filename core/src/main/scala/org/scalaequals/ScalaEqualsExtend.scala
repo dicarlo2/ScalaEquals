@@ -22,7 +22,7 @@
 
 package org.scalaequals
 
-import org.scalaequals.impl.EqualsImpl
+import org.scalaequals.impl.{HashCodeImpl, EqualsImpl}
 import scala.language.experimental.macros
 
 object ScalaEqualsExtend {
@@ -76,4 +76,16 @@ object ScalaEqualsExtend {
    * @return true if instance.equals(other)
    */
   def equal(param: Any, params: Any*): Boolean = macro EqualsImpl.equalParamImpl
+
+  /**
+   * Looks up the elements tested in `equals` (including `super.equals`) and uses them
+   * in `hashFunction(List(elements))`. Works with all 3 forms of `equal`. Does not
+   * work with custom `equals` implementations, one of `ScalaEquals.equal`,
+   * `ScalaEquals.equal(params)`, or `ScalaEquals.equalAllVals` must be used. Use this
+   * function only if you know what you are doing, and proceed with caution.
+   *
+   * @param hashFunction to use to produce a hashCode for the elements used in `equals`
+   * @return hashCode generated from fields used in `equals`
+   */
+  def hash(hashFunction: Array[Any] => Int): Int = macro HashCodeImpl.customHash
 }

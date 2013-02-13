@@ -156,7 +156,7 @@ object ScalaEquals {
    * @param params rest of the params
    * @return true if instance.equals(other)
    */
-  @deprecated("Use ScalaEqualsExtend.equal(param, params...) instead", "1.2.0")
+  @deprecated("Use ScalaEqualsExtend.equal(param, params...) instead. Will be removed in 1.3.0", "1.2.0")
   def equal(param: Any, params: Any*): Boolean = macro EqualsImpl.equalParamImpl
 
   /**
@@ -168,17 +168,6 @@ object ScalaEquals {
    * @return hashCode generated from fields used in `equals`
    */
   def hash: Int = macro HashCodeImpl.hash
-
-  /**
-   * Looks up the elements tested in `equals` (including `super.equals`) and uses them
-   * in `hashFunction(List(elements))`. Works with all 3 forms of `equal`. Does not
-   * work with custom `equals` implementations, one of `ScalaEquals.equal`,
-   * `ScalaEquals.equal(params)`, or `ScalaEquals.equalAllVals` must be used
-   *
-   * @param hashFunction to use to produce a hashCode for the elements used in `equals`
-   * @return hashCode generated from fields used in `equals`
-   */
-  def hash(hashFunction: Array[Any] => Int): Int = macro HashCodeImpl.customHash
 
   /**
    * Simple macro that expands to the following:
