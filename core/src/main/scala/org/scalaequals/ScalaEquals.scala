@@ -24,7 +24,6 @@ package org.scalaequals
 
 import org.scalaequals.impl._
 import scala.language.experimental.macros
-import scala.util.hashing.MurmurHash3
 
 /** Entry point for ScalaEquals
   *
@@ -157,6 +156,7 @@ object ScalaEquals {
    * @param params rest of the params
    * @return true if instance.equals(other)
    */
+  @deprecated("Use ScalaEqualsExtend.equal(param, params...) instead", "1.2.0")
   def equal(param: Any, params: Any*): Boolean = macro EqualsImpl.equalParamImpl
 
   /**

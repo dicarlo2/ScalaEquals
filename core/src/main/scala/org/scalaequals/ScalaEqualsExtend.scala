@@ -23,6 +23,7 @@
 package org.scalaequals
 
 import org.scalaequals.impl.EqualsImpl
+import scala.language.experimental.macros
 
 object ScalaEqualsExtend {
   /**
@@ -60,4 +61,19 @@ object ScalaEqualsExtend {
    * @return true if instance.equals(other)
    */
   def equalNoCompareTo(param: Any, params: Any*): Boolean = macro EqualsImpl.equalParamImplNoCompareTo
+
+  /**
+   * Equality check using only parameters passed in to test for equality.
+   *
+   * Acceptable arguments include private/protected/public vals, vars, lazy vals,
+   * and defs with no arguments. Do note that it is possible the implementation created
+   * by this macro will be inconsistent with the `equals`/`hashCode` contract if you
+   * use `var`s or `def`s where the value changes. Use this function only if you know
+   * what you are doing, and proceed with caution.
+   *
+   * @param param first param to test with
+   * @param params rest of the params
+   * @return true if instance.equals(other)
+   */
+  def equal(param: Any, params: Any*): Boolean = macro EqualsImpl.equalParamImpl
 }
