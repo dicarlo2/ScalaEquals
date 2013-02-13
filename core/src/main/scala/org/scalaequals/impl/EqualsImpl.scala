@@ -31,14 +31,21 @@ import scala.reflect.macros.Context
   * @since 0.1.0
   */
 private[scalaequals] object EqualsImpl {
-  def equalImpl(c: Context): c.Expr[Boolean] = new EqualsMaker[c.type](c).make()
+  def equalImpl(c: Context): c.Expr[Boolean] = new EqualsMaker[c.type](c)(true).make()
 
-  def equalAllValsImpl(c: Context): c.Expr[Boolean] = new EqualsMaker[c.type](c).makeAll()
+  def equalImplNoCompareTo(c: Context): c.Expr[Boolean] = new EqualsMaker[c.type](c)(false).make()
+
+  def equalAllValsImpl(c: Context): c.Expr[Boolean] = new EqualsMaker[c.type](c)(true).makeAll()
+
+  def equalAllValsImplNoCompareTo(c: Context): c.Expr[Boolean] = new EqualsMaker[c.type](c)(false).makeAll()
 
   def equalParamImpl(c: Context)(param: c.Expr[Any], params: c.Expr[Any]*): c.Expr[Boolean] =
-    new EqualsMaker[c.type](c).make(param +: params)
+    new EqualsMaker[c.type](c)(true).make(param +: params)
 
-  private[EqualsImpl] class EqualsMaker[A <: Context](val c: A) extends Locator {
+  def equalParamImplNoCompareTo(c: Context)(param: c.Expr[Any], params: c.Expr[Any]*): c.Expr[Boolean] =
+    new EqualsMaker[c.type](c)(false).make(param +: params)
+
+  private[EqualsImpl] class EqualsMaker[A <: Context](val c: A)(compareTo: Boolean) extends Locator {
     type C = A
     import c.universe._
     import definitions._
@@ -97,7 +104,7 @@ private[scalaequals] object EqualsImpl {
       }
       val thatTerm = mkSelect(that, term.name)
       val thisTerm = mkThisSelect(term.name)
-      if (isFloatOrDouble(term)) mkEquals(mkCompareTo(thatTerm, thisTerm), Literal(Constant(0)))
+      if (compareTo && isFloatOrDouble(term)) mkEquals(mkCompareTo(thatTerm, thisTerm), Literal(Constant(0)))
       else mkEquals(thatTerm, thisTerm)
     }
 
