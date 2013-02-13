@@ -178,7 +178,7 @@ object ScalaEquals {
    * @param hashFunction to use to produce a hashCode for the elements used in `equals`
    * @return hashCode generated from fields used in `equals`
    */
-  def hash(hashFunction: Seq[Any] => Int): Int = macro HashCodeImpl.customHash
+  def hash(hashFunction: Array[Any] => Int): Int = macro HashCodeImpl.customHash
 
   /**
    * Simple macro that expands to the following:

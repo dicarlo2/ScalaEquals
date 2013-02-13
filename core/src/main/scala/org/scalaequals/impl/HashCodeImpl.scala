@@ -35,7 +35,7 @@ private[scalaequals] object HashCodeImpl {
   def hash(c: Context) =
     new HashMaker[c.type](c, c.enclosingMethod == null).make()
 
-  def customHash(c: Context)(hashFunction: c.Expr[Seq[Any] => Int]) =
+  def customHash(c: Context)(hashFunction: c.Expr[Array[Any] => Int]) =
     new HashMaker[c.type](c, c.enclosingMethod == null).make(hashFunction)
 
   private[HashCodeImpl] class HashMaker[A <: Context](val c: A, isLazy: Boolean) extends Locator {
@@ -45,7 +45,7 @@ private[scalaequals] object HashCodeImpl {
     abortIf(!isLazy && !isHashCode(c.enclosingMethod.symbol), badHashCallSite)
     abortIf(isLazy && findLazyHash(tpe).isEmpty, badHashCallSite)
 
-    def make(f: c.Expr[Seq[Any] => Int] = c.Expr[Seq[Any] => Int](mkSeqHash)) = {
+    def make(f: c.Expr[Array[Any] => Int] = c.Expr[Array[Any] => Int](mkArrayHash)) = {
       val payload = extractPayload()
       val values = tpe.members filter {t => t.isTerm && (payload.values contains {t.name.encoded})} map {_.asTerm}
       val terms = (values map {t => Select(This(tpnme.EMPTY), t)}).toList
@@ -68,11 +68,11 @@ private[scalaequals] object HashCodeImpl {
     }
 
     def mkSuperHashCode = mkApply(mkSuperSelect(_hashCode))
-    def mkSeqHash = mkSelect(newTermName("scala"), newTermName("util"), newTermName("hashing"),
-      newTermName("MurmurHash3"), newTermName("seqHash"))
-    def mkList = mkSelect(newTermName("scala"), newTermName("collection"), newTermName("immutable"),
-      newTermName("List"), newTermName("apply"))
-    def createHash(hashFunction: c.Expr[Seq[Any] => Int], terms: List[Tree]) =
-      mkApply(hashFunction.tree, Apply(mkList, terms))
+    def mkArrayHash = mkSelect(newTermName("scala"), newTermName("util"), newTermName("hashing"),
+      newTermName("MurmurHash3"), newTermName("arrayHash"))
+    def mkArray = mkTpeApply(mkSelect(newTermName("scala"), newTermName("Array"), newTermName("apply")),
+      Ident(newTypeName("Any")))
+    def createHash(hashFunction: c.Expr[Array[Any] => Int], terms: List[Tree]) =
+      mkApply(hashFunction.tree, Apply(mkArray, terms))
   }
 }
