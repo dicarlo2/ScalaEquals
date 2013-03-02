@@ -22,7 +22,7 @@
 
 package org.scalaequals.test
 
-import org.scalaequals.ScalaEquals
+import org.scalaequals.{ScalaEqualsExtend, ScalaEquals}
 
 // Equals on b, c, d, h, i, j, q, r, and s
 class Dummy(
@@ -173,7 +173,7 @@ class DummyParams(
 
   def canEqual(other: Any): Boolean = ScalaEquals.canEquals
 
-  override def equals(other: Any): Boolean = ScalaEquals.equal(b, c, e, f, k, n, o, p, q, r, s)
+  override def equals(other: Any): Boolean = ScalaEqualsExtend.equal(b, c, e, f, k, n, o, p, q, r, s)
 
   override def hashCode: Int = ScalaEquals.hash
 
@@ -204,5 +204,5 @@ class DummyParamsSub(
 
   override def toString: String = ScalaEquals.genString(a, b, c, e, f, g, y, _h, _q)
 
-  override def equals(other: Any): Boolean = ScalaEquals.equal(a, b, h, y, o)
+  override def equals(other: Any): Boolean = ScalaEqualsExtend.equal(a, b, h, y, o)
 }
