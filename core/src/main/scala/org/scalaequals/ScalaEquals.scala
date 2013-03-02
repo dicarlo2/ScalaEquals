@@ -161,7 +161,7 @@ object ScalaEquals {
 
   /**
    * Looks up the elements tested in `equals` (including `super.equals`) and uses them
-   * in `MurmurHash3.seqHash(List(elements))`. Works with all 3 forms of `equal`. Does not
+   * in `MurmurHash3.arrayHash(Array(elements))`. Works with all 3 forms of `equal`. Does not
    * work with custom `equals` implementations, one of `ScalaEquals.equal`,
    * `ScalaEquals.equal(params)`, or `ScalaEquals.equalAllVals` must be used
    *

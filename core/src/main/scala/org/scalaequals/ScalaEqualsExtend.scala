@@ -25,6 +25,14 @@ package org.scalaequals
 import org.scalaequals.impl.{HashCodeImpl, EqualsImpl}
 import scala.language.experimental.macros
 
+/** Entry point for custom ScalaEquals macros. Functions here are not guaranteed
+  * to produce correct equals/hashCode implementations if used incorrectly.
+  * See individual function documentation for additional details.
+  *
+  * @author Alex DiCarlo
+  * @version 1.2.0
+  * @since 1.1.2
+  */
 object ScalaEqualsExtend {
   /**
    * Equality check using all private/protected/public vals of the class
@@ -79,10 +87,10 @@ object ScalaEqualsExtend {
 
   /**
    * Looks up the elements tested in `equals` (including `super.equals`) and uses them
-   * in `hashFunction(List(elements))`. Works with all 3 forms of `equal`. Does not
+   * in `hashFunction(Array(elements))`. Works with all 3 forms of `equal`. Does not
    * work with custom `equals` implementations, one of `ScalaEquals.equal`,
-   * `ScalaEquals.equal(params)`, or `ScalaEquals.equalAllVals` must be used. Use this
-   * function only if you know what you are doing, and proceed with caution.
+   * `ScalaEquals.equal(params)`, or `ScalaEquals.equalAllVals` must be used (or their compareTo
+   * equivalents). Use this function only if you know what you are doing, and proceed with caution.
    *
    * @param hashFunction to use to produce a hashCode for the elements used in `equals`
    * @return hashCode generated from fields used in `equals`
