@@ -18,7 +18,7 @@ You can download ScalaEquals directly from [Sonatype][sona], or to use with [sbt
 following to your project file:
 
 ```
-libraryDependencies += "org.scalaequals" %% "scalaequals-core" % "1.1.0"
+libraryDependencies += "org.scalaequals" %% "scalaequals-core" % "1.2.0"
 ```
 
 ## How To Use
@@ -97,7 +97,7 @@ traits and abstract classes.
 macros that if used incorrectly will not produce implementations that obey the contract.
 Use at your own risk.
 
- - Use "-Xmacro-settings:scala-equals-no-warn" to silence warnings from macros.
+ - Use `-Xmacro-settings:scala-equals-no-warn` to silence warnings from macros.
 
 ## Example Macro Expansion
 
