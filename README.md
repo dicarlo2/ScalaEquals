@@ -82,6 +82,8 @@ may also be used. Use at your own risk
  - `ScalaEquals.hash` will use `super.hashCode()` if and only if `super.equals(that)` is called 
 in `equals`.
 
+ - `ScalaEquals.hash` will work with lazy hashCode, i.e. - `override lazy val hashCode: Int = ScalaEquals.hash`
+
  - `ScalaEquals.canEquals` is a simple macro that converts to `other.isInstanceOf[Class]`
 
  - `ScalaEquals.genString` uses all constructor parameters in the generated string.
@@ -94,6 +96,8 @@ traits and abstract classes.
  - `ScalaEqualsExtend` contains various additional flavors of the `equals`/`hashCode`
 macros that if used incorrectly will not produce implementations that obey the contract.
 Use at your own risk.
+
+ - Use "-Xmacro-settings:scala-equals-no-warn" to silence warnings from macros.
 
 ## Example Macro Expansion
 
