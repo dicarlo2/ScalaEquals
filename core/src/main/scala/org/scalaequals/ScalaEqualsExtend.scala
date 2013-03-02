@@ -31,7 +31,7 @@ import scala.language.experimental.macros
   *
   * @author Alex DiCarlo
   * @version 1.2.0
-  * @since 1.1.2
+  * @since 1.2.0
   */
 object ScalaEqualsExtend {
   /**

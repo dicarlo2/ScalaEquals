@@ -34,21 +34,23 @@ class Point(val x: Int, val y: Int) {
 ````
 ### Equals Using All `val`s In Constructor And Body
 ````scala
+// TIP: Statically importing ScalaEquals will make the methods look even cleaner!
+import org.scalaequals.ScalaEquals._
 class Point(_x: Int, val y: Int) {
   val x: Int = _x
-  override def equals(other: Any): Boolean = ScalaEquals.equalAllVals
-  override def hashCode(): Int = ScalaEquals.hash
-  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
-  override def toString: String = ScalaEquals.genString               // returns "Point(_x, y)"
+  override def equals(other: Any): Boolean = equalAllVals
+  override def hashCode(): Int = hash
+  def canEqual(other: Any): Boolean = canEquals
+  override def toString: String = genString                          // returns "Point(_x, y)"
 }
 ````
 ### Equals Using User-Defined Fields
 ````scala
-// TIP: Statically importing ScalaEquals will make the methods look even cleaner!
 import org.scalaequals.ScalaEquals._
+import org.scalaequals.ScalaEqualsExtend
 class Point(_x: Int, var y: Int) {
   def x: Int = _x
-  override def equals(other: Any): Boolean = equal(x, y)
+  override def equals(other: Any): Boolean = ScalaEqualsExtend.equal(x, y)
   override def hashCode(): Int = hash
   def canEqual(other: Any): Boolean = canEquals
   override def toString: String = genString(x, y)                    // returns "Point(x, y)"
@@ -69,11 +71,11 @@ qualified with `override`.
  - `ScalaEquals.equalAllVals` will use all `val`s in constructor AND body of class,
 subject to the same constraints as above.
 
- - `ScalaEquals.equal(params)` will use *only* the fields specified in `params` (as well as
+ - `ScalaEqualsExtend.equal(params)` will use *only* the fields specified in `params` (as well as
 `super.equals` if applicable). Valid arguments include `val`, `var`, `lazy val`, 
 and `def` that take no arguments. Any access modifier is allowed, and unlike `equal` 
 and `equalAllVals`, arguments inherited from a super class and/or qualified with `override` 
-may also be used.
+may also be used. Use at your own risk
 
  - `ScalaEquals.hash` will use exactly the values checked in `equals`
 
@@ -88,6 +90,10 @@ in `equals`.
  - Works with classes, traits, abstract classes and generic variants (parameterized and
 with abstract type members). As always, be careful about initialization order when using 
 traits and abstract classes.
+
+ - `ScalaEqualsExtend` contains various additional flavors of the `equals`/`hashCode`
+macros that if used incorrectly will not produce implementations that obey the contract.
+Use at your own risk.
 
 ## Example Macro Expansion
 
@@ -112,6 +118,27 @@ class Point(val x: Int, val y: Int) {
   override def toString: String = "Point(" + x + ", " + y + ")"
 }
 ````
+
+## Additional Features
+
+### Equals Without Using `compareTo` for `Double`/`Float` values
+```scala
+ScalaEqualsExtend.equalNoCompareTo
+ScalaEqualsExtend.equalAllValsNoCompareTo
+ScalaEqualsExtend.equalNoCompareTo(param, params...)
+```
+
+### Hash using a custom hash function of type `Array[Any] => Int`
+```scala
+import org.scalaequals.ScalaEquals
+import org.scalaequals.ScalaEqualsExtend
+class Point(val x: Int, val y: Int) {
+  override def equals(other: Any): Boolean = ScalaEquals.equal
+  override def hashCode(): Int = ScalaEqualsExtend.hash(myCustomHashFunction)
+  def canEqual(other: Any): Boolean = ScalaEquals.canEquals
+  override def toString: String = ScalaEquals.genString
+}
+```
 
 ## Feedback
 
