@@ -34,7 +34,6 @@ private[impl] trait Signatures {self: Locator =>
 
   private val EqualsTpe = typeOf[scala.Equals]
   private val LazyHashCodeTpe = typeOf[LazyHashCode]
-  private val ProductTpe = typeOf[scala.Product]
 
   val Any_equals = AnyTpe.member(_equals)
   val Any_hashCode = AnyTpe.member(_hashCode)
