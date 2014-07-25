@@ -31,6 +31,14 @@ import scala.reflect.macros.Context
   * @since 0.1.0
   */
 private[scalaequals] object EqualsImpl {
+  // provides a source compatibility stub
+  // in Scala 2.10.x, it will make `import compat._` compile just fine,
+  // even though `c.universe` doesn't have `compat`
+  // in Scala 2.11.0, it will be ignored, becase `import c.universe._`
+  // brings its own `compat` in scope and that one takes precedence
+  private object HasCompat { val compat = ??? }
+  import HasCompat._
+
   def equalImpl(c: Context): c.Expr[Boolean] = new EqualsMaker[c.type](c)(true).make()
 
   def equalImplNoCompareTo(c: Context): c.Expr[Boolean] = new EqualsMaker[c.type](c)(false).make()
@@ -48,6 +56,7 @@ private[scalaequals] object EqualsImpl {
   private[EqualsImpl] class EqualsMaker[A <: Context](val c: A)(compareTo: Boolean) extends Locator {
     type C = A
     import c.universe._
+    import compat._
     import definitions._
 
     val that = c.fresh("that$": TermName)

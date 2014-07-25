@@ -43,7 +43,7 @@ private[impl] trait Locator extends Names with Signatures with Verifier with Tre
   }
 
   def valsNotInherited(tpe: Type) = {
-    def isInherited(term: Symbol) = term.owner != tpe.typeSymbol || term.isOverride
+    def isInherited(term: Symbol) = term.owner != tpe.typeSymbol || term.allOverriddenSymbols.nonEmpty
     (tpe.members.sorted collect {case t: TermSymbol if isVal(t) && !isInherited(t) => t}).to[List]
   }
 
