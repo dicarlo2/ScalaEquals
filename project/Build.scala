@@ -25,12 +25,12 @@ import Keys._
 
 object BuildSettings {
   val buildVersion = "1.2.0"
-  val buildScalaVersion = "2.10.0"
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "org.scalaequals",
     version := buildVersion,
-    scalaVersion := buildScalaVersion,
+    scalaVersion := "2.11.2",
+    crossScalaVersions := Seq("2.10.4", "2.11.2"),
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature"),
 
     publishTo <<= version { (v: String) =>
@@ -66,9 +66,9 @@ object BuildSettings {
 }
 
 object Dependencies {
-  val scalatest =  "org.scalatest" %% "scalatest" % "2.0.M5b"
-  val scalacheck = "org.scalacheck" %% "scalacheck" % "1.10.0"
-  val reflect = "org.scala-lang" % "scala-reflect" % BuildSettings.buildScalaVersion
+  val scalatest =  "org.scalatest" %% "scalatest" % "2.1.7"
+  val scalacheck = "org.scalacheck" %% "scalacheck" % "1.11.4"
+  val reflect = "org.scala-lang" % "scala-reflect"
 }
 
 object ScalaEqualsBuild extends Build {
@@ -89,7 +89,7 @@ object ScalaEqualsBuild extends Build {
     base = file("core"),
     settings = buildSettings ++ Seq(
       name := "ScalaEquals Core",
-      libraryDependencies ++= Seq(reflect)
+      libraryDependencies <<= (libraryDependencies, scalaVersion) { (deps, v) => deps :+ (reflect % v) }
     ))
 
   lazy val core_test = Project(

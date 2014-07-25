@@ -32,6 +32,15 @@ import scala.language.existentials
   * @since 0.2.0
   */
 private[scalaequals] object HashCodeImpl {
+
+  // provides a source compatibility stub
+  // in Scala 2.10.x, it will make `import compat._` compile just fine,
+  // even though `c.universe` doesn't have `compat`
+  // in Scala 2.11.0, it will be ignored, becase `import c.universe._`
+  // brings its own `compat` in scope and that one takes precedence
+  private object HasCompat { val compat = ??? }
+  import HasCompat._
+
   def hash(c: Context) =
     new HashMaker[c.type](c, c.enclosingMethod == null).make()
 
@@ -41,6 +50,7 @@ private[scalaequals] object HashCodeImpl {
   private[HashCodeImpl] class HashMaker[A <: Context](val c: A, isLazy: Boolean) extends Locator {
     type C = A
     import c.universe._
+    import compat._
 
     abortIf(!isLazy && !isHashCode(c.enclosingMethod.symbol), badHashCallSite)
     abortIf(isLazy && findLazyHash(tpe).isEmpty, badHashCallSite)
